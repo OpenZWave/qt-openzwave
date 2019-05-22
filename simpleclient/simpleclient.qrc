@@ -1,0 +1,7 @@
+<RCC>
+    <qresource prefix="/">
+        <file>res/ozw_logo.icns</file>
+        <file>res/ozw_logo.ico</file>
+        <file>res/ozw_SF2_notext.png</file>
+    </qresource>
+</RCC>
