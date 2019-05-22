@@ -1,19 +1,12 @@
-QT += widgets remoteobjects websockets
+include(../qt-openzwave.pri)
 
-SOURCES = main.cpp \
-    mainwindow.cpp \
-    qtozw_itemdelegate.cpp \
-    startup.cpp
+QT += widgets remoteobjects
 
-#CONFIG   -= app_bundle
-#CONFIG   += static
 CONFIG += silent
 DEFINES  += remote
 
-LIBS += -L../qt-openzwave/ -lqt-openzwave -L../open-zwave/ -lopenzwave -lresolv
-INCLUDEPATH += ../qt-openzwave ../open-zwave/cpp/src
-
-requires(qtConfig(treeview))
+LIBS += -L../qt-openzwave/ -lqt-openzwave -lresolv
+INCLUDEPATH += ../qt-openzwave
 
 macx {
     QMAKE_MACOSX_DEPLOYMENT_TARGET = 10.14
@@ -26,6 +19,11 @@ win32 {
 FORMS += \
     mainwindow.ui \
     startup.ui
+
+SOURCES = main.cpp \
+    mainwindow.cpp \
+    qtozw_itemdelegate.cpp \
+    startup.cpp
 
 HEADERS += \
     mainwindow.h \
