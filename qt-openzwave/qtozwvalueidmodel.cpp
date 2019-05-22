@@ -119,8 +119,14 @@ Qt::ItemFlags QTOZW_ValueIds::flags(const QModelIndex &index) const {
     if (!index.isValid())
         return Qt::ItemIsEnabled;
     switch (static_cast<ValueIdColumns>(index.column())) {
-        case Value:
-            return QAbstractTableModel::flags(index) | Qt::ItemIsEditable;
+        case Value: {
+            QBitArray flags = index.sibling(index.row(), ValueIdColumns::ValueFlags).data().value<QBitArray>();
+            if (flags.at(ValueIDFlags::ReadOnly) == true) {
+                return QAbstractTableModel::flags(index);
+            } else {
+                return QAbstractTableModel::flags(index) | Qt::ItemIsEditable;
+            }
+        }
         default:
             return QAbstractTableModel::flags(index);
     }
@@ -180,7 +186,6 @@ void QTOZW_ValueIds_internal::addValue(uint64_t _vidKey)
         qWarning() << "ValueID " << _vidKey << " Already Exists";
         return;
     }
-//    QMap<int32_t, QMap<ValueIdColumns, QVariant> >
     QMap<ValueIdColumns, QVariant> newValue;
     newValue[QTOZW_ValueIds::ValueIDKey] = _vidKey;
     QBitArray flags(static_cast<int>(ValueIDFlags::FlagCount));
@@ -211,12 +216,11 @@ void QTOZW_ValueIds_internal::setValueFlags(uint64_t _vidKey, QTOZW_ValueIds::Va
         qWarning() << "setValueFlags: Value " << _vidKey << " does not exist";
         return;
     }
-    QBitArray flag = this->m_valueData[row][QTOZW_ValueIds::ValueFlags].toBitArray();
-    if (flag.at(_flags) != _value) {
-        flag.setBit(_flags, _value);
-        this->m_valueData[row][QTOZW_ValueIds::ValueFlags] = flag;
+    if (this->m_valueData[row][QTOZW_ValueIds::ValueFlags].toBitArray().at(_flags) != _value) {
+        QBitArray flags = this->m_valueData[row][QTOZW_ValueIds::ValueFlags].value<QBitArray>();
+        flags.setBit(_flags, _value);
+        this->m_valueData[row][QTOZW_ValueIds::ValueFlags] = flags;
         this->dataChanged(this->createIndex(row, QTOZW_ValueIds::ValueFlags), this->createIndex(row, QTOZW_ValueIds::ValueFlags));
-
     }
 }
 

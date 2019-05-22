@@ -85,6 +85,9 @@ void MainWindow::QTOZW_Ready() {
     this->ui->configView->setSelectionBehavior(QAbstractItemView::SelectRows);
     this->ui->configView->setSelectionMode(QAbstractItemView::SingleSelection);
 
+    this->ui->configView->setItemDelegateForColumn(QTOZW_ValueIds::ValueIdColumns::Value, delegate);
+
+
     QTOZW_proxyValueModel *proxySystemValueModel = new QTOZW_proxyValueModel(this);
     proxySystemValueModel->setSourceModel(this->m_qtozwmanager->getValueModel());
     proxySystemValueModel->setSelectionModel(selectNodeModel);
@@ -95,6 +98,8 @@ void MainWindow::QTOZW_Ready() {
     this->ui->systemView->verticalHeader()->hide();
     this->ui->systemView->setSelectionBehavior(QAbstractItemView::SelectRows);
     this->ui->systemView->setSelectionMode(QAbstractItemView::SingleSelection);
+
+    this->ui->systemView->setItemDelegateForColumn(QTOZW_ValueIds::ValueIdColumns::Value, delegate);
 
 
     QTOZW_proxyAssociationModel *proxyAssociationModel = new QTOZW_proxyAssociationModel(this);

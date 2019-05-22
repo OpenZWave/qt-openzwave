@@ -1,4 +1,3 @@
-include(../qt-openzwave.pri)
 
 QT += widgets remoteobjects
 
@@ -8,13 +7,16 @@ DEFINES  += remote
 LIBS += -L../qt-openzwave/ -lqt-openzwave -lresolv
 INCLUDEPATH += ../qt-openzwave
 
+include(../qt-openzwave.pri)
+
+
 macx {
     QMAKE_MACOSX_DEPLOYMENT_TARGET = 10.14
     ICON = res/ozw_logo.icns
 }
 
 unix {
-    QMAKE_POST_LINK += ln -s $$OZW_LIB_PATH/config config
+    QMAKE_POST_LINK += "if [ ! -e config ]; then ln -s $$OZW_LIB_PATH/config config; fi"
 }
 
 win32 {

@@ -4,7 +4,6 @@
 #
 #-------------------------------------------------
 
-include(../qt-openzwave.pri)
 
 QT       -= gui
 QT       += remoteobjects
@@ -18,10 +17,14 @@ CONFIG += silent
 
 !versionAtLeast(QT_VERSION, 5.11.2):error("Use at least Qt version 5.11.2")
 
+include(../qt-openzwave.pri)
+
+
 qtConfig(static) {
  # this is a static build
 }
 
+#INCLUDEPATH += $$absolute_path($$top_srcdir/../open-zwave/cpp/src/)/
 
 DEFINES += QTOPENZWAVE_LIBRARY
 
