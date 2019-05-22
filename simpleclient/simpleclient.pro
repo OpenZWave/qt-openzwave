@@ -13,6 +13,10 @@ macx {
     ICON = res/ozw_logo.icns
 }
 
+unix {
+    QMAKE_POST_LINK += ln -s $$OZW_LIB_PATH/config config
+}
+
 win32 {
     RC_ICONS += res/ozw_logo.ico
 }

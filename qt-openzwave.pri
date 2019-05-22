@@ -1,6 +1,10 @@
 top_srcdir=$$PWD
 top_builddir=$$shadowed($$PWD)
 
+mac {
+    PKG_CONFIG = /usr/local/bin/pkg-config
+}
+
 unix {
     isEmpty(OZW_LIB_PATH) {
         QT_CONFIG -= no-pkg-config
