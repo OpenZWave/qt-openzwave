@@ -51,12 +51,12 @@ QVariant QTOZW_ValueIds::data(const QModelIndex &index, int role) const {
         return QVariant();
 
     if (role == Qt::DisplayRole) {
-        QMap<ValueIdColumns, QVariant> node = this->m_valueData[index.row()];
-        if (node.size() == 0) {
+        QMap<ValueIdColumns, QVariant> value = this->m_valueData[index.row()];
+        if (value.size() == 0) {
             qWarning() << "data: Cant find any Node on Row " << index.row();
             return QVariant();
         }
-        return node[static_cast<ValueIdColumns>(index.column())];
+        return value[static_cast<ValueIdColumns>(index.column())];
     }
     return QVariant();
 

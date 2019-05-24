@@ -12,18 +12,13 @@ class QTOZW_ItemDelegate : public QStyledItemDelegate
 public:
     explicit QTOZW_ItemDelegate(QObject *parent = nullptr);
     virtual void paint(QPainter *painter, const QStyleOptionViewItem &option, const QModelIndex &index) const override;
-
     virtual QSize sizeHint(const QStyleOptionViewItem &option, const QModelIndex &index) const override;
+    QWidget *createEditor(QWidget *parent, const QStyleOptionViewItem &option, const QModelIndex &index) const override;
+    void updateEditorGeometry(QWidget *editor, const QStyleOptionViewItem &option, const QModelIndex &index) const override;
+    void setEditorData(QWidget *editor, const QModelIndex &index) const override;
 
-
-signals:
-
-public slots:
-
-private:
-    QComboBox *m_comboBox;
-    QCheckBox *m_checkBox;
-    QSpinBox *m_spinBox;
+private slots:
+    void commitAndCloseEditor();
 };
 
 #endif // QTOZW_ITEMDELEGATE_H

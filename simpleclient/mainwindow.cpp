@@ -73,6 +73,7 @@ void MainWindow::QTOZW_Ready() {
     this->ui->userView->verticalHeader()->hide();
     this->ui->userView->setSelectionBehavior(QAbstractItemView::SelectRows);
     this->ui->userView->setSelectionMode(QAbstractItemView::SingleSelection);
+    this->ui->userView->setEditTriggers(QAbstractItemView::AllEditTriggers);
 
     QTOZW_proxyValueModel *proxyConfigValueModel = new QTOZW_proxyValueModel(this);
     proxyConfigValueModel->setSourceModel(this->m_qtozwmanager->getValueModel());

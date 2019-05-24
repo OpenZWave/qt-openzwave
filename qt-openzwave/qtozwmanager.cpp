@@ -513,7 +513,8 @@ bool QTOZWManager_Internal::convertValueID(uint64_t vidKey) {
         {
             uint8_t value;
             this->m_manager->GetValueAsByte(vid, &value);
-            this->m_valueModel->setValueData(vidKey, QTOZW_ValueIds::ValueIdColumns::Value, QVariant::fromValue(value));
+            /* QT has a habbit of treating uint8_t as char... so cast it to 32 to get around that */
+            this->m_valueModel->setValueData(vidKey, QTOZW_ValueIds::ValueIdColumns::Value, QVariant::fromValue(static_cast<uint32_t>(value)));
             this->m_valueModel->setValueData(vidKey, QTOZW_ValueIds::ValueIdColumns::Type, QTOZW_ValueIds::ValueIdTypes::Byte);
             return true;
         }

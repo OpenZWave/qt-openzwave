@@ -1,13 +1,11 @@
 #include <QPainter>
 #include <QDebug>
+#include <QApplication>
 #include "qtozw_itemdelegate.h"
 #include "qtozwvalueidmodel.h"
 
 QTOZW_ItemDelegate::QTOZW_ItemDelegate(QObject *parent) : QStyledItemDelegate(parent)
 {
-    this->m_comboBox = new QComboBox();
-    this->m_checkBox = new QCheckBox();
-    this->m_spinBox = new QSpinBox();
 }
 
 void QTOZW_ItemDelegate::paint(QPainter *painter, const QStyleOptionViewItem &option, const QModelIndex &index) const
@@ -20,30 +18,40 @@ void QTOZW_ItemDelegate::paint(QPainter *painter, const QStyleOptionViewItem &op
     switch (typeIndex.data().value<QTOZW_ValueIds::ValueIdTypes>()) {
         case QTOZW_ValueIds::ValueIdTypes::List: {
             QTOZW_ValueIDList val = index.data().value<QTOZW_ValueIDList>();
-            this->m_comboBox->setFrame(false);
-            this->m_comboBox->addItems(val.labels);
-            this->m_comboBox->setCurrentText(val.selectedItem);
-            this->m_comboBox->resize(option.rect.size());
-            this->m_comboBox->setEnabled(!readOnly);
-            painter->save();
-            painter->translate(option.rect.topLeft());
-            this->m_comboBox->render(painter, QPoint(), QRegion(), QWidget::DrawChildren);
-            painter->restore();
+            QStyleOptionComboBox comboBoxOption;
+            comboBoxOption.rect = option.rect;
+            comboBoxOption.state = option.state;
+            if (readOnly) {
+                comboBoxOption.state |= QStyle::State_ReadOnly;
+            }
+            comboBoxOption.currentText = val.selectedItem;
+
+            QApplication::style()->drawComplexControl(QStyle::CC_ComboBox, &comboBoxOption, painter);
+            QApplication::style()->drawControl(QStyle::CE_ComboBoxLabel, &comboBoxOption, painter);
+
             break;
         }
         case QTOZW_ValueIds::ValueIdTypes::Bool: {
-            this->m_checkBox->setChecked(index.data().value<bool>());
-            this->m_checkBox->setEnabled(!readOnly);
-            this->m_checkBox->resize(option.rect.size());
-            painter->save();
-            painter->translate(option.rect.topLeft());
-            this->m_checkBox->render(painter, QPoint(), QRegion(), QWidget::DrawChildren);
-            painter->restore();
+            QStyleOptionButton cbOption;
+            cbOption.rect = option.rect;
+            cbOption.state |= index.data().value<bool>() ? QStyle::State_On : QStyle::State_Off;
+            cbOption.state |= QStyle::State_Enabled;
+            if (readOnly)
+                cbOption.state |= QStyle::State_ReadOnly;
+            QApplication::style()->drawControl(QStyle::CE_CheckBox, &cbOption, painter);
+
             break;
         }
+#if 0
         case QTOZW_ValueIds::ValueIdTypes::Int:
         case QTOZW_ValueIds::ValueIdTypes::Byte:
         case QTOZW_ValueIds::ValueIdTypes::Short: {
+            QSpinBox sb;
+            sb.setValue(index.data().toInt());
+            sb.resize(option.rect.size());
+            this->m_spinBox->render(painter, QPoint(), QRegion(), QWidget::DrawChildren);
+
+
             this->m_spinBox->setValue(index.data().toInt());
             this->m_spinBox->setEnabled(!readOnly);
             this->m_spinBox->resize(option.rect.size());
@@ -63,7 +71,8 @@ void QTOZW_ItemDelegate::paint(QPainter *painter, const QStyleOptionViewItem &op
             painter->restore();
             break;
         }
-        default: {
+#endif
+    default: {
             return QStyledItemDelegate::paint(painter, option, index);
         }
 
@@ -77,17 +86,68 @@ QSize QTOZW_ItemDelegate::sizeHint(const QStyleOptionViewItem &option, const QMo
     QModelIndex typeIndex = index.sibling(index.row(), QTOZW_ValueIds::ValueIdColumns::Type);
     switch (typeIndex.data().value<QTOZW_ValueIds::ValueIdTypes>()) {
         case QTOZW_ValueIds::ValueIdTypes::List: {
-            return this->m_comboBox->minimumSizeHint();
+            QTOZW_ValueIDList val = index.data().value<QTOZW_ValueIDList>();
+            QStyleOptionComboBox comboBoxOption;
+            comboBoxOption.rect = option.rect;
+            comboBoxOption.state = option.state;
+            comboBoxOption.currentText = val.selectedItem;
+            return QSize(QFontMetrics(option.font).width(val.selectedItem), comboBoxOption.rect.height());
         }
         case QTOZW_ValueIds::ValueIdTypes::Bool: {
-            return this->m_checkBox->minimumSizeHint();
-        }
-        case QTOZW_ValueIds::ValueIdTypes::Int:
-        case QTOZW_ValueIds::ValueIdTypes::Byte:
-        case QTOZW_ValueIds::ValueIdTypes::Short: {
-            return this->m_spinBox->minimumSize();
+            QStyleOptionButton cbOption;
+            cbOption.rect = option.rect;
+            cbOption.state |= index.data().value<bool>() ? QStyle::State_On : QStyle::State_Off;
+            cbOption.state |= QStyle::State_Enabled;
+            return cbOption.rect.size();
         }
         default:
             return QStyledItemDelegate::sizeHint(option, index);
     }
 }
+
+QWidget *QTOZW_ItemDelegate::createEditor(QWidget *parent, const QStyleOptionViewItem &option, const QModelIndex &index) const
+{
+    QModelIndex typeIndex = index.sibling(index.row(), QTOZW_ValueIds::ValueIdColumns::Type);
+    switch (typeIndex.data().value<QTOZW_ValueIds::ValueIdTypes>()) {
+        case QTOZW_ValueIds::ValueIdTypes::List: {
+            QComboBox *editor = new QComboBox(parent);
+            editor->setAutoFillBackground(true);
+            connect(editor, &QComboBox::currentTextChanged, this, &QTOZW_ItemDelegate::commitAndCloseEditor);
+            return editor;
+        }
+
+
+        default:
+            return QStyledItemDelegate::createEditor(parent, option, index);
+    }
+}
+
+void QTOZW_ItemDelegate::updateEditorGeometry(QWidget *editor, const QStyleOptionViewItem &option, const QModelIndex &index) const
+{
+    Q_UNUSED(index);
+    editor->setGeometry(option.rect);
+}
+
+void QTOZW_ItemDelegate::setEditorData(QWidget *editor, const QModelIndex &index) const
+{
+    QModelIndex typeIndex = index.sibling(index.row(), QTOZW_ValueIds::ValueIdColumns::Type);
+    switch (typeIndex.data().value<QTOZW_ValueIds::ValueIdTypes>()) {
+        case QTOZW_ValueIds::ValueIdTypes::List: {
+            QComboBox *cb =  static_cast<QComboBox*>(editor);
+            QTOZW_ValueIDList val = index.data().value<QTOZW_ValueIDList>();
+            cb->addItems(val.labels);
+            cb->setCurrentText(val.selectedItem);
+            cb->showPopup();
+            break;
+        }
+        default:
+            QStyledItemDelegate::setEditorData(editor, index);
+    }
+}
+
+void QTOZW_ItemDelegate::commitAndCloseEditor() {
+    QWidget *editor = qobject_cast<QWidget *>(sender());
+    emit commitData(editor);
+    emit closeEditor(editor);
+}
+
