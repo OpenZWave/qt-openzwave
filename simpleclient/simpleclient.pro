@@ -23,15 +23,18 @@ win32 {
     RC_ICONS += res/ozw_logo.ico
 }
 FORMS += \
+    bitsetwidget.ui \
     mainwindow.ui \
     startup.ui
 
 SOURCES = main.cpp \
+    bitsetwidget.cpp \
     mainwindow.cpp \
     qtozw_itemdelegate.cpp \
     startup.cpp
 
 HEADERS += \
+    bitsetwidget.h \
     mainwindow.h \
     qtozw_itemdelegate.h \
     startup.h

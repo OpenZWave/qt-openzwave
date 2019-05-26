@@ -135,6 +135,7 @@ bool QTOZW_ValueIds::setData(const QModelIndex &index, const QVariant &value, in
     if (role != Qt::EditRole) {
         return false;
     }
+
     switch (static_cast<ValueIdColumns>(index.column())) {
         case Value:
             if (this->m_valueData[index.row()][static_cast<ValueIdColumns>(index.column())] != value) {

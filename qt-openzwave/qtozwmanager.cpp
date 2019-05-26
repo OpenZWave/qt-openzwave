@@ -37,7 +37,7 @@ QTOZWManager_Internal::QTOZWManager_Internal(QObject *parent)
     this->m_options->AddOptionInt( "SaveLogLevel", OpenZWave::LogLevel_Detail );
     this->m_options->AddOptionInt( "QueueLogLevel", OpenZWave::LogLevel_Debug );
     this->m_options->AddOptionInt( "DumpTrigger", OpenZWave::LogLevel_Error );
-    this->m_options->AddOptionBool("ConsoleOutput", false);
+    this->m_options->AddOptionBool("ConsoleOutput", true);
     this->m_options->AddOptionInt( "PollInterval", 500 );
     this->m_options->AddOptionBool( "IntervalBetweenPolls", true );
     this->m_options->AddOptionBool( "ValidateValueChanges", true);

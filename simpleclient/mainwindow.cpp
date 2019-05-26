@@ -85,6 +85,8 @@ void MainWindow::QTOZW_Ready() {
     this->ui->configView->verticalHeader()->hide();
     this->ui->configView->setSelectionBehavior(QAbstractItemView::SelectRows);
     this->ui->configView->setSelectionMode(QAbstractItemView::SingleSelection);
+    this->ui->configView->setEditTriggers(QAbstractItemView::AllEditTriggers);
+
 
     this->ui->configView->setItemDelegateForColumn(QTOZW_ValueIds::ValueIdColumns::Value, delegate);
 
@@ -99,6 +101,8 @@ void MainWindow::QTOZW_Ready() {
     this->ui->systemView->verticalHeader()->hide();
     this->ui->systemView->setSelectionBehavior(QAbstractItemView::SelectRows);
     this->ui->systemView->setSelectionMode(QAbstractItemView::SingleSelection);
+    this->ui->systemView->setEditTriggers(QAbstractItemView::AllEditTriggers);
+
 
     this->ui->systemView->setItemDelegateForColumn(QTOZW_ValueIds::ValueIdColumns::Value, delegate);
 
