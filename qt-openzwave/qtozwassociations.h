@@ -35,8 +35,8 @@ public:
     QVariant headerData(int section, Qt::Orientation orientation, int role) const;
 
 protected:
-    QVariant getassocationData(uint8_t _node, uint8_t _groupIDX, uint8_t _targetNodeId, uint8_t _targetNodeInstance, QTOZW_Associations::associationColumns _column);
-    int32_t getassocationRow(uint8_t _node, uint8_t _groupIDX, uint8_t _targetNodeId, uint8_t _targetNodeInstance);
+    QVariant getassocationData(quint8 _node, quint8 _groupIDX, quint8 _targetNodeId, quint8 _targetNodeInstance, QTOZW_Associations::associationColumns _column);
+    int32_t getassocationRow(quint8 _node, quint8 _groupIDX, quint8 _targetNodeId, quint8 _targetNodeInstance);
 
     QMap<int32_t, QMap<QTOZW_Associations::associationColumns, QVariant> > m_associationData;
 };
@@ -46,19 +46,19 @@ class QTOZW_Associations_internal : public QTOZW_Associations {
 public:
     QTOZW_Associations_internal(QObject *parent=nullptr);
 public Q_SLOTS:
-    void addAssociation(uint8_t _nodeID, uint8_t _groupIDX, uint8_t _targetNodeId, uint8_t _targetNodeInstance);
-    void delAssociation(uint8_t _nodeID, uint8_t _groupIDX, uint8_t _targetNodeId, uint8_t _targetNodeInstance);
-    void setAssociationData(uint8_t _nodeID, uint8_t _groupIDX, uint8_t _targetNodeId, uint8_t _targetNodeInstance, QTOZW_Associations::associationColumns column, QVariant data);
-    void setAssociationFlags(uint8_t _nodeID, uint8_t _groupIDX, uint8_t _targetNodeId, uint8_t _targetNodeInstance, QTOZW_Associations::associationFlags _flags, bool _value);
-    bool isAssociationExists(uint8_t _node, uint8_t _groupIDX, uint8_t _targetNodeId, uint8_t _targetNodeInstance);
-    void setDefaultGroupData(uint8_t _nodeID, uint8_t _groupIDX, QTOZW_Associations::associationColumns column, QVariant data);
-    void setDefaultGroupFlags(uint8_t _nodeID, uint8_t _groupIDX, QTOZW_Associations::associationFlags _flags, bool _value);
-    void delNode(uint8_t _nodeID);
-    void delGroup(uint8_t _nodeID, uint8_t _groupIDX);
+    void addAssociation(quint8 _nodeID, quint8 _groupIDX, quint8 _targetNodeId, quint8 _targetNodeInstance);
+    void delAssociation(quint8 _nodeID, quint8 _groupIDX, quint8 _targetNodeId, quint8 _targetNodeInstance);
+    void setAssociationData(quint8 _nodeID, quint8 _groupIDX, quint8 _targetNodeId, quint8 _targetNodeInstance, QTOZW_Associations::associationColumns column, QVariant data);
+    void setAssociationFlags(quint8 _nodeID, quint8 _groupIDX, quint8 _targetNodeId, quint8 _targetNodeInstance, QTOZW_Associations::associationFlags _flags, bool _value);
+    bool isAssociationExists(quint8 _node, quint8 _groupIDX, quint8 _targetNodeId, quint8 _targetNodeInstance);
+    void setDefaultGroupData(quint8 _nodeID, quint8 _groupIDX, QTOZW_Associations::associationColumns column, QVariant data);
+    void setDefaultGroupFlags(quint8 _nodeID, quint8 _groupIDX, QTOZW_Associations::associationFlags _flags, bool _value);
+    void delNode(quint8 _nodeID);
+    void delGroup(quint8 _nodeID, quint8 _groupIDX);
     void resetModel();
 private:
 
-    QMap<uint8_t, QMap<uint8_t, QMap<QTOZW_Associations::associationColumns, QVariant> > > m_defaultData;
+    QMap<quint8, QMap<quint8, QMap<QTOZW_Associations::associationColumns, QVariant> > > m_defaultData;
 };
 
 #endif // QTOZWASSOCIATIONS_H

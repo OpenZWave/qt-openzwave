@@ -153,7 +153,7 @@ bool QTOZW_Nodes::setData(const QModelIndex &index, const QVariant &value, int r
     return true;
 }
 
-QVariant QTOZW_Nodes::getNodeData(uint8_t _node, QTOZW_Nodes::NodeColumns _column) {
+QVariant QTOZW_Nodes::getNodeData(quint8 _node, QTOZW_Nodes::NodeColumns _column) {
     int32_t row = this->getNodeRow(_node);
     if (row >= 0)
         return this->m_nodeData[row][_column];
@@ -161,7 +161,7 @@ QVariant QTOZW_Nodes::getNodeData(uint8_t _node, QTOZW_Nodes::NodeColumns _colum
     return QVariant();
 }
 
-int32_t QTOZW_Nodes::getNodeRow(uint8_t _node) {
+int32_t QTOZW_Nodes::getNodeRow(quint8 _node) {
     if (this->m_nodeData.count() == 0) {
         return -1;
     }
@@ -185,7 +185,7 @@ QTOZW_Nodes_internal::QTOZW_Nodes_internal(QObject *parent)
 
 }
 
-void QTOZW_Nodes_internal::addNode(uint8_t _nodeID)
+void QTOZW_Nodes_internal::addNode(quint8 _nodeID)
 {
     if (this->getNodeRow(_nodeID) >= 0) {
         qWarning() << "Node " << _nodeID << " Already Exists";
@@ -201,7 +201,7 @@ void QTOZW_Nodes_internal::addNode(uint8_t _nodeID)
     this->endInsertRows();
 }
 
-void QTOZW_Nodes_internal::setNodeData(uint8_t _nodeID, QTOZW_Nodes::NodeColumns column, QVariant data)
+void QTOZW_Nodes_internal::setNodeData(quint8 _nodeID, QTOZW_Nodes::NodeColumns column, QVariant data)
 {
     int row = this->getNodeRow(_nodeID);
     if (row == -1) {
@@ -216,7 +216,7 @@ void QTOZW_Nodes_internal::setNodeData(uint8_t _nodeID, QTOZW_Nodes::NodeColumns
     }
 }
 
-void QTOZW_Nodes_internal::setNodeFlags(uint8_t _nodeID, QTOZW_Nodes::nodeFlags _flags, bool _value)
+void QTOZW_Nodes_internal::setNodeFlags(quint8 _nodeID, QTOZW_Nodes::nodeFlags _flags, bool _value)
 {
     int row = this->getNodeRow(_nodeID);
     if (row == -1) {
@@ -232,7 +232,7 @@ void QTOZW_Nodes_internal::setNodeFlags(uint8_t _nodeID, QTOZW_Nodes::nodeFlags 
         this->dataChanged(this->createIndex(row, QTOZW_Nodes::NodeFlags), this->createIndex(row, QTOZW_Nodes::NodeFlags), roles);
     }
 }
-void QTOZW_Nodes_internal::delNode(uint8_t _nodeID) {
+void QTOZW_Nodes_internal::delNode(quint8 _nodeID) {
     QMap<int32_t, QMap<NodeColumns, QVariant> >::iterator it;
     QMap<int32_t, QMap<NodeColumns, QVariant> > newNodeMap;
     int32_t newrow = 0;

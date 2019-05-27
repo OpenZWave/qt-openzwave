@@ -8,7 +8,7 @@ QTOpenZwave::QTOpenZwave
     QObject (parent),
     m_manager(nullptr)
 {
-    qRegisterMetaType<uint32_t>("uint32_t");
+    //qRegisterMetaType<uint32_t>("uint32_t");
     qRegisterMetaType<QTOZW_ValueIDList>("QTOZW_ValueIDList");
     qRegisterMetaTypeStreamOperators<QTOZW_ValueIDList>("QTOZW_ValueIDList");
     qRegisterMetaType<QTOZW_ValueIDBitSet>("QTOZW_ValueIDBitSet");

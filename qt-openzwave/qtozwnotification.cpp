@@ -25,12 +25,12 @@ void OZWNotification::processNotification
     //qDebug() << QString(_notification->GetAsString().c_str());
     //qDebug() << _notification;
 #if 0
-    void valueAdded(uint64_t vidKey);
-    void valueRemoved(uint64_t vidKey);
-    void valueChanged(uint64_t vidKey);
-    void valueRefreshed(uint64_t vidKey);
-    void valuePollingEnabled(uint64_t vidKey);
-    void valuePollingDisabled(uint64_t vidKey);
+    void valueAdded(quint64 vidKey);
+    void valueRemoved(quint64 vidKey);
+    void valueChanged(quint64 vidKey);
+    void valueRefreshed(quint64 vidKey);
+    void valuePollingEnabled(quint64 vidKey);
+    void valuePollingDisabled(quint64 vidKey);
 #endif
 
     switch( _notification->GetType() )

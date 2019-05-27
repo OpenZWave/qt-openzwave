@@ -69,9 +69,9 @@ void QTOZW_ItemDelegate::paint(QPainter *painter, const QStyleOptionViewItem &op
             if (typeIndex.data().value<QTOZW_ValueIds::ValueIdTypes>() == QTOZW_ValueIds::ValueIdTypes::Int) {
                 max = qMin(max, std::numeric_limits<int>::max());
             } else if (typeIndex.data().value<QTOZW_ValueIds::ValueIdTypes>() == QTOZW_ValueIds::ValueIdTypes::Byte) {
-                max = qMin(static_cast<uint8_t>(max), std::numeric_limits<uint8_t>::max());
+                max = qMin(static_cast<quint8>(max), std::numeric_limits<quint8>::max());
             } else if (typeIndex.data().value<QTOZW_ValueIds::ValueIdTypes>() == QTOZW_ValueIds::ValueIdTypes::Short) {
-                max = qMin(static_cast<uint16_t>(max), std::numeric_limits<uint16_t>::max());
+                max = qMin(static_cast<quint16>(max), std::numeric_limits<quint16>::max());
             }
             this->m_spinBox->setRange(min, max);
             painter->save();
@@ -184,9 +184,9 @@ void QTOZW_ItemDelegate::setEditorData(QWidget *editor, const QModelIndex &index
             if (typeIndex.data().value<QTOZW_ValueIds::ValueIdTypes>() == QTOZW_ValueIds::ValueIdTypes::Int) {
                 max = qMin(max, std::numeric_limits<int>::max());
             } else if (typeIndex.data().value<QTOZW_ValueIds::ValueIdTypes>() == QTOZW_ValueIds::ValueIdTypes::Byte) {
-                max = qMin(static_cast<uint8_t>(max), std::numeric_limits<uint8_t>::max());
+                max = qMin(static_cast<quint8>(max), std::numeric_limits<quint8>::max());
             } else if (typeIndex.data().value<QTOZW_ValueIds::ValueIdTypes>() == QTOZW_ValueIds::ValueIdTypes::Short) {
-                max = qMin(static_cast<uint16_t>(max), std::numeric_limits<uint16_t>::max());
+                max = qMin(static_cast<quint16>(max), std::numeric_limits<quint16>::max());
             }
             sb->setRange(min, max);
             sb->setValue(index.data().toInt());

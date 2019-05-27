@@ -124,7 +124,7 @@ bool QTOZWManager_Internal::open(QString SerialPort)
     return true;
 }
 
-bool QTOZWManager_Internal::refreshNodeInfo(uint8_t _node) {
+bool QTOZWManager_Internal::refreshNodeInfo(quint8 _node) {
     if (!this->checkHomeId() || !this->checkNodeId(_node))
         return false;
     try {
@@ -136,7 +136,7 @@ bool QTOZWManager_Internal::refreshNodeInfo(uint8_t _node) {
     return false;
 }
 
-bool QTOZWManager_Internal::requestNodeState(uint8_t _node) {
+bool QTOZWManager_Internal::requestNodeState(quint8 _node) {
     if (!this->checkHomeId() || !this->checkNodeId(_node))
         return false;
     try {
@@ -148,7 +148,7 @@ bool QTOZWManager_Internal::requestNodeState(uint8_t _node) {
     return false;
 }
 
-bool QTOZWManager_Internal::requestNodeDynamic(uint8_t _node) {
+bool QTOZWManager_Internal::requestNodeDynamic(quint8 _node) {
     if (!this->checkHomeId() || !this->checkNodeId(_node))
         return false;
     try {
@@ -160,7 +160,7 @@ bool QTOZWManager_Internal::requestNodeDynamic(uint8_t _node) {
     return false;
 }
 
-bool QTOZWManager_Internal::setConfigParam(uint8_t _node, uint8_t _param, int32_t _value, uint8_t const _size) {
+bool QTOZWManager_Internal::setConfigParam(quint8 _node, quint8 _param, qint32 _value, quint8 const _size) {
     if (!this->checkHomeId() || !this->checkNodeId(_node))
         return false;
     try {
@@ -172,7 +172,7 @@ bool QTOZWManager_Internal::setConfigParam(uint8_t _node, uint8_t _param, int32_
     return false;
 }
 
-void QTOZWManager_Internal::requestConfigParam(uint8_t _node, uint8_t _param) {
+void QTOZWManager_Internal::requestConfigParam(quint8 _node, quint8 _param) {
     if (!this->checkHomeId() || !this->checkNodeId(_node))
         return;
     try {
@@ -184,7 +184,7 @@ void QTOZWManager_Internal::requestConfigParam(uint8_t _node, uint8_t _param) {
     return;
 }
 
-void QTOZWManager_Internal::requestAllConfigParam(uint8_t _node) {
+void QTOZWManager_Internal::requestAllConfigParam(quint8 _node) {
     if (!this->checkHomeId() || !this->checkNodeId(_node))
         return;
     try {
@@ -234,7 +234,7 @@ bool QTOZWManager_Internal::cancelControllerCommand() {
     return false;
 }
 
-void QTOZWManager_Internal::testNetworkNode(uint8_t _node, uint32_t const _count) {
+void QTOZWManager_Internal::testNetworkNode(quint8 _node, quint32 const _count) {
     if (!this->checkHomeId() || !this->checkNodeId(_node))
         return;
     try {
@@ -245,7 +245,7 @@ void QTOZWManager_Internal::testNetworkNode(uint8_t _node, uint32_t const _count
     }
     return;
 }
-void QTOZWManager_Internal::testNetwork(uint32_t const _count) {
+void QTOZWManager_Internal::testNetwork(quint32 const _count) {
     if (!this->checkHomeId() )
         return;
     try {
@@ -256,7 +256,7 @@ void QTOZWManager_Internal::testNetwork(uint32_t const _count) {
     }
     return;
 }
-void QTOZWManager_Internal::healNetworkNode(uint8_t _node, bool _doRR) {
+void QTOZWManager_Internal::healNetworkNode(quint8 _node, bool _doRR) {
     if (!this->checkHomeId() || !this->checkNodeId(_node))
         return;
     try {
@@ -300,7 +300,7 @@ bool QTOZWManager_Internal::removeNode() {
     }
     return false;
 }
-bool QTOZWManager_Internal::removeFailedNode(uint8_t _node) {
+bool QTOZWManager_Internal::removeFailedNode(quint8 _node) {
     if (!this->checkHomeId() || !this->checkNodeId(_node))
         return false;
     try {
@@ -311,7 +311,7 @@ bool QTOZWManager_Internal::removeFailedNode(uint8_t _node) {
     }
     return false;
 }
-bool QTOZWManager_Internal::hasNodeFailed(uint8_t _node) {
+bool QTOZWManager_Internal::hasNodeFailed(quint8 _node) {
     if (!this->checkHomeId() || !this->checkNodeId(_node))
         return false;
     try {
@@ -322,7 +322,7 @@ bool QTOZWManager_Internal::hasNodeFailed(uint8_t _node) {
     }
     return false;
 }
-bool QTOZWManager_Internal::requestNodeNeighborUpdate(uint8_t _node) {
+bool QTOZWManager_Internal::requestNodeNeighborUpdate(quint8 _node) {
     if (!this->checkHomeId() || !this->checkNodeId(_node))
         return false;
     try {
@@ -333,7 +333,7 @@ bool QTOZWManager_Internal::requestNodeNeighborUpdate(uint8_t _node) {
     }
     return false;
 }
-bool QTOZWManager_Internal::assignReturnRoute(uint8_t _node) {
+bool QTOZWManager_Internal::assignReturnRoute(quint8 _node) {
     if (!this->checkHomeId() || !this->checkNodeId(_node))
         return false;
     try {
@@ -344,7 +344,7 @@ bool QTOZWManager_Internal::assignReturnRoute(uint8_t _node) {
     }
     return false;
 }
-bool QTOZWManager_Internal::deleteAllReturnRoute(uint8_t _node) {
+bool QTOZWManager_Internal::deleteAllReturnRoute(quint8 _node) {
     if (!this->checkHomeId() || !this->checkNodeId(_node))
         return false;
     try {
@@ -355,7 +355,7 @@ bool QTOZWManager_Internal::deleteAllReturnRoute(uint8_t _node) {
     }
     return false;
 }
-bool QTOZWManager_Internal::sendNodeInfomation(uint8_t _node) {
+bool QTOZWManager_Internal::sendNodeInfomation(quint8 _node) {
     if (!this->checkHomeId() || !this->checkNodeId(_node))
         return false;
     try {
@@ -366,7 +366,7 @@ bool QTOZWManager_Internal::sendNodeInfomation(uint8_t _node) {
     }
     return false;
 }
-bool QTOZWManager_Internal::replaceFailedNode(uint8_t _node) {
+bool QTOZWManager_Internal::replaceFailedNode(quint8 _node) {
     if (!this->checkHomeId() || !this->checkNodeId(_node))
         return false;
     try {
@@ -377,7 +377,7 @@ bool QTOZWManager_Internal::replaceFailedNode(uint8_t _node) {
     }
     return false;
 }
-bool QTOZWManager_Internal::requestNetworkUpdate(uint8_t _node) {
+bool QTOZWManager_Internal::requestNetworkUpdate(quint8 _node) {
     if (!this->checkHomeId() || !this->checkNodeId(_node))
         return false;
     try {
@@ -389,7 +389,7 @@ bool QTOZWManager_Internal::requestNetworkUpdate(uint8_t _node) {
     return false;
 }
 
-bool QTOZWManager_Internal::checkLatestConfigFileRevision(uint8_t const _node) {
+bool QTOZWManager_Internal::checkLatestConfigFileRevision(quint8 const _node) {
     if (!this->checkHomeId() || !this->checkNodeId(_node))
         return false;
     try {
@@ -413,7 +413,7 @@ bool QTOZWManager_Internal::checkLatestMFSRevision() {
     return false;
 }
 
-bool QTOZWManager_Internal::downloadLatestConfigFileRevision(uint8_t const _node) {
+bool QTOZWManager_Internal::downloadLatestConfigFileRevision(quint8 const _node) {
     if (!this->checkHomeId() || !this->checkNodeId(_node))
         return false;
     try {
@@ -480,7 +480,7 @@ bool QTOZWManager_Internal::checkHomeId() {
     }
     return true;
 }
-bool QTOZWManager_Internal::checkNodeId(uint8_t _node) {
+bool QTOZWManager_Internal::checkNodeId(quint8 _node) {
     if (!this->m_validNodes.contains(_node)) {
         emit this->error(QTOZWErrorCodes::nodeId_Invalid);
         this->setErrorString("Invalid nodeID");
@@ -489,7 +489,7 @@ bool QTOZWManager_Internal::checkNodeId(uint8_t _node) {
     return true;
 }
 
-bool QTOZWManager_Internal::checkValueKey(uint64_t _vidKey) {
+bool QTOZWManager_Internal::checkValueKey(quint64 _vidKey) {
     if (!this->m_validValues.contains(_vidKey)) {
         emit this->error(QTOZWErrorCodes::valueIDKey_Invalid);
         this->setErrorString("Invalid ValueID Key");
@@ -498,7 +498,7 @@ bool QTOZWManager_Internal::checkValueKey(uint64_t _vidKey) {
     return true;
 }
 
-bool QTOZWManager_Internal::convertValueID(uint64_t vidKey) {
+bool QTOZWManager_Internal::convertValueID(quint64 vidKey) {
     OpenZWave::ValueID vid(this->homeId(), vidKey);
     switch (vid.GetType()) {
         case OpenZWave::ValueID::ValueType_Bool:
@@ -511,10 +511,10 @@ bool QTOZWManager_Internal::convertValueID(uint64_t vidKey) {
         }
         case OpenZWave::ValueID::ValueType_Byte:
         {
-            uint8_t value;
+            quint8 value;
             this->m_manager->GetValueAsByte(vid, &value);
-            /* QT has a habbit of treating uint8_t as char... so cast it to 32 to get around that */
-            this->m_valueModel->setValueData(vidKey, QTOZW_ValueIds::ValueIdColumns::Value, QVariant::fromValue(static_cast<uint32_t>(value)));
+            /* QT has a habbit of treating quint8 as char... so cast it to 32 to get around that */
+            this->m_valueModel->setValueData(vidKey, QTOZW_ValueIds::ValueIdColumns::Value, QVariant::fromValue(static_cast<quint32>(value)));
             this->m_valueModel->setValueData(vidKey, QTOZW_ValueIds::ValueIdColumns::Type, QTOZW_ValueIds::ValueIdTypes::Byte);
             return true;
         }
@@ -528,7 +528,7 @@ bool QTOZWManager_Internal::convertValueID(uint64_t vidKey) {
         }
         case OpenZWave::ValueID::ValueType_Int:
         {
-            int32_t value;
+            qint32 value;
             this->m_manager->GetValueAsInt(vid, &value);
             this->m_valueModel->setValueData(vidKey, QTOZW_ValueIds::ValueIdColumns::Value, QVariant::fromValue(value));
             this->m_valueModel->setValueData(vidKey, QTOZW_ValueIds::ValueIdColumns::Type, QTOZW_ValueIds::ValueIdTypes::Int);
@@ -592,8 +592,8 @@ bool QTOZWManager_Internal::convertValueID(uint64_t vidKey) {
         }
         case OpenZWave::ValueID::ValueType_BitSet:
         {
-            uint8_t bssize;
-            int32_t bsmask;
+            quint8 bssize;
+            qint32 bsmask;
             this->m_manager->GetBitSetSize(vid, &bssize);
             this->m_manager->GetBitMask(vid, &bsmask);
             QTOZW_ValueIDBitSet vidbs;
@@ -602,7 +602,7 @@ bool QTOZWManager_Internal::convertValueID(uint64_t vidKey) {
                 vidbs.mask[i] = (bsmask & (1 << i));
             }
             vidbs.values.resize(bssize * 8);
-            for (uint8_t i = 1; i <= bssize * 8; ++i) {
+            for (quint8 i = 1; i <= bssize * 8; ++i) {
                 /* OZW is 1 base - QT is 0 base. */
                 if (vidbs.mask.at(i-1)) {
                     bool value;
@@ -614,7 +614,7 @@ bool QTOZWManager_Internal::convertValueID(uint64_t vidKey) {
                 }
             }
 #if 0
-            qDebug() << (uint32_t)bsmask;
+            qDebug() << (quint32)bsmask;
             this->m_manager->GetBitMask(vid, &bsmask);
             qDebug().noquote() << BitSettoQString(vidbs.mask);
             qDebug().noquote() << BitSettoQString(vidbs.values);
@@ -628,7 +628,7 @@ bool QTOZWManager_Internal::convertValueID(uint64_t vidKey) {
 }
 
 
-void QTOZWManager_Internal::pvt_valueAdded(uint64_t vidKey)
+void QTOZWManager_Internal::pvt_valueAdded(quint64 vidKey)
 {
     qDebug() << "Notification pvt_valueAdded";
     if (!this->m_validValues.contains(vidKey))
@@ -662,7 +662,7 @@ void QTOZWManager_Internal::pvt_valueAdded(uint64_t vidKey)
     }
     emit this->valueAdded(vidKey);
 }
-void QTOZWManager_Internal::pvt_valueRemoved(uint64_t vidKey)
+void QTOZWManager_Internal::pvt_valueRemoved(quint64 vidKey)
 {
     qDebug() << "Notification pvt_valueRemoved";
     if (this->m_validValues.contains(vidKey))
@@ -671,32 +671,32 @@ void QTOZWManager_Internal::pvt_valueRemoved(uint64_t vidKey)
     emit this->valueRemoved(vidKey);
     Q_UNUSED(vidKey);
 }
-void QTOZWManager_Internal::pvt_valueChanged(uint64_t vidKey)
+void QTOZWManager_Internal::pvt_valueChanged(quint64 vidKey)
 {
     qDebug() << "Notification pvt_valueChanged";
     this->convertValueID(vidKey);
     emit this->valueChanged(vidKey);
 }
-void QTOZWManager_Internal::pvt_valueRefreshed(uint64_t vidKey)
+void QTOZWManager_Internal::pvt_valueRefreshed(quint64 vidKey)
 {
     qDebug() << "Notification pvt_valueRefreshed";
 
     this->convertValueID(vidKey);
     emit this->valueRefreshed(vidKey);
 }
-void QTOZWManager_Internal::pvt_valuePollingEnabled(uint64_t vidKey)
+void QTOZWManager_Internal::pvt_valuePollingEnabled(quint64 vidKey)
 {
     qDebug() << "Notification pvt_valuePollingEnabled";
     this->m_valueModel->setValueFlags(vidKey, QTOZW_ValueIds::ValueIDFlags::ValuePolled, true);
 
 }
-void QTOZWManager_Internal::pvt_valuePollingDisabled(uint64_t vidKey)
+void QTOZWManager_Internal::pvt_valuePollingDisabled(quint64 vidKey)
 {
     qDebug() << "Notification pvt_valuePollingDisabled";
     this->m_valueModel->setValueFlags(vidKey, QTOZW_ValueIds::ValueIDFlags::ValuePolled, false);
 
 }
-void QTOZWManager_Internal::pvt_nodeGroupChanged(uint8_t node, uint8_t group)
+void QTOZWManager_Internal::pvt_nodeGroupChanged(quint8 node, quint8 group)
 {
     qDebug() << "Notification pvt_nodeGroupChanged";
 
@@ -709,8 +709,8 @@ void QTOZWManager_Internal::pvt_nodeGroupChanged(uint8_t node, uint8_t group)
         this->m_associationDefaultsSet[node][group] = true;
     }
     OpenZWave::InstanceAssociation *ia;
-    uint32_t count = this->m_manager->GetAssociations(this->homeId(), node, group, &ia);
-    for (uint32_t i = 0;  i < count; i++) {
+    quint32 count = this->m_manager->GetAssociations(this->homeId(), node, group, &ia);
+    for (quint32 i = 0;  i < count; i++) {
         if (!this->m_associationsModel->isAssociationExists(node, group, ia[i].m_nodeId, ia[i].m_instance)) {
             this->m_associationsModel->addAssociation(node, group, ia[i].m_nodeId, ia[i].m_instance);
         }
@@ -719,7 +719,7 @@ void QTOZWManager_Internal::pvt_nodeGroupChanged(uint8_t node, uint8_t group)
     for (int row = 0; row < this->m_associationsModel->rowCount(QModelIndex()); ++row) {
         QMap<QTOZW_Associations::associationColumns, QVariant> data = this->m_associationsModel->m_associationData[row];
         bool found = false;
-        for (uint32_t i = 0; i < count; i++) {
+        for (quint32 i = 0; i < count; i++) {
             if (data[QTOZW_Associations::associationColumns::NodeID] == node) {
                 if (data[QTOZW_Associations::associationColumns::GroupID] == group) {
                     if (data[QTOZW_Associations::associationColumns::MemberNodeID] == ia[i].m_nodeId) {
@@ -731,13 +731,13 @@ void QTOZWManager_Internal::pvt_nodeGroupChanged(uint8_t node, uint8_t group)
             }
         }
         if (found == false) {
-            this->m_associationsModel->delAssociation(node, group, data[QTOZW_Associations::associationColumns::MemberNodeID].value<uint8_t>(), data[QTOZW_Associations::associationColumns::MemberNodeInstance].value<uint8_t>());
+            this->m_associationsModel->delAssociation(node, group, data[QTOZW_Associations::associationColumns::MemberNodeID].value<quint8>(), data[QTOZW_Associations::associationColumns::MemberNodeInstance].value<quint8>());
         }
     }
     if (ia != nullptr)
         delete [] ia;
 }
-void QTOZWManager_Internal::pvt_nodeNew(uint8_t node)
+void QTOZWManager_Internal::pvt_nodeNew(quint8 node)
 {
     qDebug() << "Notification pvt_nodeNew";
     if (!this->m_validNodes.contains(node))
@@ -760,7 +760,7 @@ void QTOZWManager_Internal::pvt_nodeNew(uint8_t node)
 
     emit this->nodeNew(node);
 }
-void QTOZWManager_Internal::pvt_nodeAdded(uint8_t node)
+void QTOZWManager_Internal::pvt_nodeAdded(quint8 node)
 {
     qDebug() << "Notification pvt_nodeAdded";
     if (!this->m_validNodes.contains(node))
@@ -784,7 +784,7 @@ void QTOZWManager_Internal::pvt_nodeAdded(uint8_t node)
     emit this->nodeAdded(node);
 
 }
-void QTOZWManager_Internal::pvt_nodeRemoved(uint8_t node)
+void QTOZWManager_Internal::pvt_nodeRemoved(quint8 node)
 {
     qDebug() << "Notification pvt_nodeRemoved";
     if (this->m_validNodes.contains(node))
@@ -796,7 +796,7 @@ void QTOZWManager_Internal::pvt_nodeRemoved(uint8_t node)
     emit this->nodeRemoved(node);
 
 }
-void QTOZWManager_Internal::pvt_nodeReset(uint8_t node)
+void QTOZWManager_Internal::pvt_nodeReset(quint8 node)
 {
     qDebug() << "Notification pvt_nodeReset";
     if (this->m_validNodes.contains(node))
@@ -809,7 +809,7 @@ void QTOZWManager_Internal::pvt_nodeReset(uint8_t node)
     emit this->nodeReset(node);
 
 }
-void QTOZWManager_Internal::pvt_nodeNaming(uint8_t node)
+void QTOZWManager_Internal::pvt_nodeNaming(quint8 node)
 {
     qDebug() << "Notification pvt_nodeNaming";
     try {
@@ -833,7 +833,7 @@ void QTOZWManager_Internal::pvt_nodeNaming(uint8_t node)
     }
     emit this->nodeNaming(node);
 }
-void QTOZWManager_Internal::pvt_nodeEvent(uint8_t node, uint8_t event)
+void QTOZWManager_Internal::pvt_nodeEvent(quint8 node, quint8 event)
 {
     qDebug() << "Notification pvt_nodeEvent";
     try {
@@ -850,7 +850,7 @@ void QTOZWManager_Internal::pvt_nodeEvent(uint8_t node, uint8_t event)
     }
     emit this->nodeEvent(node, event);
 }
-void QTOZWManager_Internal::pvt_nodeProtocolInfo(uint8_t node)
+void QTOZWManager_Internal::pvt_nodeProtocolInfo(quint8 node)
 {
     qDebug() << "Notification pvt_nodeProtocolInfo";
     try {
@@ -924,7 +924,7 @@ void QTOZWManager_Internal::pvt_nodeProtocolInfo(uint8_t node)
     }
     emit this->nodeProtocolInfo(node);
 }
-void QTOZWManager_Internal::pvt_nodeEssentialNodeQueriesComplete(uint8_t node)
+void QTOZWManager_Internal::pvt_nodeEssentialNodeQueriesComplete(quint8 node)
 {
     qDebug() << "Notification pvt_nodeEssentialNodeQueriesComplete";
     try {
@@ -1001,7 +1001,7 @@ void QTOZWManager_Internal::pvt_nodeEssentialNodeQueriesComplete(uint8_t node)
     }
     emit this->nodeEssentialNodeQueriesComplete(node);
 }
-void QTOZWManager_Internal::pvt_nodeQueriesComplete(uint8_t node)
+void QTOZWManager_Internal::pvt_nodeQueriesComplete(quint8 node)
 {
     qDebug() << "Notification pvt_nodeQueriesComplete";
     /* Plus Type Info here */
@@ -1090,14 +1090,14 @@ void QTOZWManager_Internal::pvt_nodeQueriesComplete(uint8_t node)
     }
     emit this->nodeQueriesComplete(node);
 }
-void QTOZWManager_Internal::pvt_driverReady(uint32_t _homeID)
+void QTOZWManager_Internal::pvt_driverReady(quint32 _homeID)
 {
     qDebug() << "Notification pvt_driverRead";
     this->setHomeId(_homeID);
     emit this->started(_homeID);
     emit this->driverReady(_homeID);
 }
-void QTOZWManager_Internal::pvt_driverFailed(uint32_t _homeID)
+void QTOZWManager_Internal::pvt_driverFailed(quint32 _homeID)
 {
     qDebug() << "Notification pvt_driverFailed";
     this->m_associationsModel->resetModel();
@@ -1107,7 +1107,7 @@ void QTOZWManager_Internal::pvt_driverFailed(uint32_t _homeID)
     emit this->driverFailed(_homeID);
     this->setHomeId(0);
 }
-void QTOZWManager_Internal::pvt_driverReset(uint32_t _homeID)
+void QTOZWManager_Internal::pvt_driverReset(quint32 _homeID)
 {
     qDebug() << "Notification pvt_driverReset";
     this->m_associationsModel->resetModel();
@@ -1117,7 +1117,7 @@ void QTOZWManager_Internal::pvt_driverReset(uint32_t _homeID)
     emit this->driverReset(_homeID);
     this->setHomeId(0);
 }
-void QTOZWManager_Internal::pvt_driverRemoved(uint32_t _homeID)
+void QTOZWManager_Internal::pvt_driverRemoved(quint32 _homeID)
 {
     qDebug() << "Notification pvt_driverRemoved";
     this->m_associationsModel->resetModel();
@@ -1142,7 +1142,7 @@ void QTOZWManager_Internal::pvt_driverAwakeNodesQueried()
     qDebug() << "Notification pvt_driverAwakeNodesQueried";
     emit this->driverAllNodesQueried();
 }
-void QTOZWManager_Internal::pvt_controllerCommand(uint8_t command)
+void QTOZWManager_Internal::pvt_controllerCommand(quint8 command)
 {
     qDebug() << "Notification pvt_controllerCommand";
     emit this->controllerCommand(command);
@@ -1174,7 +1174,7 @@ void QTOZWManager_Internal::pvt_nodeModelDataChanged(const QModelIndex &topLeft,
     qDebug() << "nodeModel Changed!" << static_cast<QTOZW_Nodes::NodeColumns>(topLeft.column()) << ": "<< topLeft.data();
     /* get the Node Number */
     QModelIndex nodeIdIndex = topLeft.siblingAtColumn(QTOZW_Nodes::NodeColumns::NodeID);
-    uint8_t nodeId = this->m_nodeModel->data(nodeIdIndex, Qt::DisplayRole).value<uint8_t>();
+    quint8 nodeId = this->m_nodeModel->data(nodeIdIndex, Qt::DisplayRole).value<quint8>();
     try {
         switch (static_cast<QTOZW_Nodes::NodeColumns>(topLeft.column())) {
             case QTOZW_Nodes::NodeColumns::NodeName:
@@ -1202,7 +1202,7 @@ void QTOZWManager_Internal::pvt_valueModelDataChanged(const QModelIndex &topLeft
     }
     qDebug() << "valueModel Changed!" << static_cast<QTOZW_ValueIds::ValueIdColumns>(topLeft.column()) << ": "<< topLeft.data();
     /* get the Node Number */
-    uint64_t vidKey = this->m_valueModel->data(topLeft.siblingAtColumn(QTOZW_ValueIds::ValueIdColumns::ValueIDKey), Qt::DisplayRole).value<uint64_t>();
+    quint64 vidKey = this->m_valueModel->data(topLeft.siblingAtColumn(QTOZW_ValueIds::ValueIdColumns::ValueIDKey), Qt::DisplayRole).value<quint64>();
     try {
         OpenZWave::ValueID vid(this->homeId(), vidKey);
         switch (static_cast<OpenZWave::ValueID::ValueType>(vid.GetType())) {
@@ -1213,7 +1213,7 @@ void QTOZWManager_Internal::pvt_valueModelDataChanged(const QModelIndex &topLeft
             }
             case OpenZWave::ValueID::ValueType_Byte:
             {
-                this->m_manager->SetValue(vid, topLeft.data().value<uint8_t>());
+                this->m_manager->SetValue(vid, topLeft.data().value<quint8>());
                 return;
             }
             case OpenZWave::ValueID::ValueType_Decimal:
@@ -1262,13 +1262,13 @@ void QTOZWManager_Internal::pvt_valueModelDataChanged(const QModelIndex &topLeft
                 for (int i = 0; i <= bs.values.size()-1; i++) {
                     if (bs.mask.at(i)) {
                         bool curval;
-                        this->m_manager->GetValueAsBitSet(vid, (uint8_t)i+1, &curval);
+                        this->m_manager->GetValueAsBitSet(vid, (quint8)i+1, &curval);
                         if (curval != bs.values.at(i)) {
-                            /* we send this as a uint32_t so its a atomic change... and return.
+                            /* we send this as a quint32 so its a atomic change... and return.
                              * as the chances of other Bits changing are probably high, and a
                              * each call to SetValue generates traffis, so instead by sending a
-                             * uint32_t here, we only send one packet*/
-                            this->m_manager->SetValue(vid, (int32_t)BitSettoInteger(bs.values));
+                             * quint32 here, we only send one packet*/
+                            this->m_manager->SetValue(vid, (qint32)BitSettoInteger(bs.values));
                             return;
                         }
                     }
@@ -1488,22 +1488,22 @@ void QTOZWManager::connectSignals() {
 bool QTOZWManager::open(QString serialPort) {
     CALL_DPTR_RTN(open(serialPort), bool);
 }
-bool QTOZWManager::refreshNodeInfo(uint8_t _node) {
+bool QTOZWManager::refreshNodeInfo(quint8 _node) {
     CALL_DPTR_RTN(refreshNodeInfo(_node), bool);
 }
-bool QTOZWManager::requestNodeState(uint8_t _node) {
+bool QTOZWManager::requestNodeState(quint8 _node) {
     CALL_DPTR_RTN(requestNodeState(_node), bool);
 }
-bool QTOZWManager::requestNodeDynamic(uint8_t _node) {
+bool QTOZWManager::requestNodeDynamic(quint8 _node) {
     CALL_DPTR_RTN(requestNodeDynamic(_node), bool);
 }
-bool QTOZWManager::setConfigParam(uint8_t _node, uint8_t _param, int32_t _value, uint8_t const _size) {
+bool QTOZWManager::setConfigParam(quint8 _node, quint8 _param, qint32 _value, quint8 const _size) {
     CALL_DPTR_RTN(setConfigParam(_node, _param, _value, _size), bool);
 }
-void QTOZWManager::requestConfigParam(uint8_t _node, uint8_t _param) {
+void QTOZWManager::requestConfigParam(quint8 _node, quint8 _param) {
     CALL_DPTR(requestConfigParam(_node, _param));
 }
-void QTOZWManager::requestAllConfigParam(uint8_t _node) {
+void QTOZWManager::requestAllConfigParam(quint8 _node) {
     CALL_DPTR(requestAllConfigParam(_node));
 }
 void QTOZWManager::softResetController() {
@@ -1515,13 +1515,13 @@ void QTOZWManager::hardResetController() {
 bool QTOZWManager::cancelControllerCommand() {
     CALL_DPTR_RTN(cancelControllerCommand(), bool);
 }
-void QTOZWManager::testNetworkNode(uint8_t _node, uint32_t const _count) {
+void QTOZWManager::testNetworkNode(quint8 _node, quint32 const _count) {
     CALL_DPTR(testNetworkNode(_node, _count));
 }
-void QTOZWManager::testNetwork(uint32_t const _count) {
+void QTOZWManager::testNetwork(quint32 const _count) {
     CALL_DPTR(testNetwork(_count));
 }
-void QTOZWManager::healNetworkNode(uint8_t _node, bool _doRR) {
+void QTOZWManager::healNetworkNode(quint8 _node, bool _doRR) {
     CALL_DPTR(healNetworkNode(_node, _doRR));
 }
 void QTOZWManager::healNetwork(bool _doRR) {
@@ -1533,37 +1533,37 @@ bool QTOZWManager::addNode(bool _doSecure) {
 bool QTOZWManager::removeNode() {
     CALL_DPTR_RTN(removeNode(), bool);
 }
-bool QTOZWManager::removeFailedNode(uint8_t _node) {
+bool QTOZWManager::removeFailedNode(quint8 _node) {
     CALL_DPTR_RTN(removeFailedNode(_node), bool);
 }
-bool QTOZWManager::hasNodeFailed(uint8_t _node) {
+bool QTOZWManager::hasNodeFailed(quint8 _node) {
     CALL_DPTR_RTN(hasNodeFailed(_node), bool);
 }
-bool QTOZWManager::requestNodeNeighborUpdate(uint8_t _node) {
+bool QTOZWManager::requestNodeNeighborUpdate(quint8 _node) {
     CALL_DPTR_RTN(requestNodeNeighborUpdate(_node), bool);
 }
-bool QTOZWManager::assignReturnRoute(uint8_t _node) {
+bool QTOZWManager::assignReturnRoute(quint8 _node) {
     CALL_DPTR_RTN(assignReturnRoute(_node), bool);
 }
-bool QTOZWManager::deleteAllReturnRoute(uint8_t _node) {
+bool QTOZWManager::deleteAllReturnRoute(quint8 _node) {
     CALL_DPTR_RTN(deleteAllReturnRoute(_node), bool);
 }
-bool QTOZWManager::sendNodeInfomation(uint8_t _node) {
+bool QTOZWManager::sendNodeInfomation(quint8 _node) {
     CALL_DPTR_RTN(sendNodeInfomation(_node), bool);
 }
-bool QTOZWManager::replaceFailedNode(uint8_t _node) {
+bool QTOZWManager::replaceFailedNode(quint8 _node) {
     CALL_DPTR_RTN(replaceFailedNode(_node), bool)
 }
-bool QTOZWManager::requestNetworkUpdate(uint8_t _node) {
+bool QTOZWManager::requestNetworkUpdate(quint8 _node) {
     CALL_DPTR_RTN(requestNetworkUpdate(_node), bool);
 }
-bool QTOZWManager::checkLatestConfigFileRevision(uint8_t const _node) {
+bool QTOZWManager::checkLatestConfigFileRevision(quint8 const _node) {
     CALL_DPTR_RTN(checkLatestConfigFileRevision(_node), bool);
 }
 bool QTOZWManager::checkLatestMFSRevision() {
     CALL_DPTR_RTN(checkLatestMFSRevision(), bool);
 }
-bool QTOZWManager::downloadLatestConfigFileRevision(uint8_t const _node) {
+bool QTOZWManager::downloadLatestConfigFileRevision(quint8 const _node) {
     CALL_DPTR_RTN(downloadLatestConfigFileRevision(_node), bool);
 }
 bool QTOZWManager::downloadLatestMFSRevision() {

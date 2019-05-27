@@ -61,8 +61,8 @@ public:
     bool setData(const QModelIndex &index, const QVariant &value, int role=Qt::EditRole);
 
 protected:
-    QVariant getNodeData(uint8_t, NodeColumns);
-    int32_t getNodeRow(uint8_t _node);
+    QVariant getNodeData(quint8, NodeColumns);
+    int32_t getNodeRow(quint8 _node);
 
     QMap<int32_t, QMap<NodeColumns, QVariant> > m_nodeData;
 };
@@ -72,10 +72,10 @@ class QTOZW_Nodes_internal : public QTOZW_Nodes {
 public:
     QTOZW_Nodes_internal(QObject *parent=nullptr);
 public Q_SLOTS:
-    void addNode(uint8_t _nodeID);
-    void setNodeData(uint8_t _nodeID, QTOZW_Nodes::NodeColumns column, QVariant data);
-    void setNodeFlags(uint8_t _nodeID, QTOZW_Nodes::nodeFlags _flags, bool _value);
-    void delNode(uint8_t _nodeID);
+    void addNode(quint8 _nodeID);
+    void setNodeData(quint8 _nodeID, QTOZW_Nodes::NodeColumns column, QVariant data);
+    void setNodeFlags(quint8 _nodeID, QTOZW_Nodes::nodeFlags _flags, bool _value);
+    void delNode(quint8 _nodeID);
     void resetModel();
 
 };

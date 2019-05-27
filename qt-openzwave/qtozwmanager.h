@@ -39,65 +39,65 @@ public:
 
 public Q_SLOTS:
     bool open(QString serialPort);
-    bool refreshNodeInfo(uint8_t _node);
-    bool requestNodeState(uint8_t _node);
-    bool requestNodeDynamic(uint8_t _node);
+    bool refreshNodeInfo(quint8 _node);
+    bool requestNodeState(quint8 _node);
+    bool requestNodeDynamic(quint8 _node);
 
-    bool setConfigParam(uint8_t _node, uint8_t _param, int32_t _value, uint8_t const _size);
-    void requestConfigParam(uint8_t _node, uint8_t _param);
-    void requestAllConfigParam(uint8_t _node);
+    bool setConfigParam(quint8 _node, quint8 _param, int32_t _value, quint8 const _size);
+    void requestConfigParam(quint8 _node, quint8 _param);
+    void requestAllConfigParam(quint8 _node);
 
     void softResetController();
     void hardResetController();
 
     bool cancelControllerCommand();
 
-    void testNetworkNode(uint8_t _node, uint32_t const _count);
-    void testNetwork(uint32_t const _count);
-    void healNetworkNode(uint8_t _node, bool _doRR);
+    void testNetworkNode(quint8 _node, quint32 const _count);
+    void testNetwork(quint32 const _count);
+    void healNetworkNode(quint8 _node, bool _doRR);
     void healNetwork(bool _doRR);
     bool addNode(bool _doSecure);
     bool removeNode();
-    bool removeFailedNode(uint8_t _node);
-    bool hasNodeFailed(uint8_t _node);
-    bool requestNodeNeighborUpdate(uint8_t _node);
-    bool assignReturnRoute(uint8_t _node);
-    bool deleteAllReturnRoute(uint8_t _node);
-    bool sendNodeInfomation(uint8_t _node);
-    bool replaceFailedNode(uint8_t _node);
-    bool requestNetworkUpdate(uint8_t _node);
+    bool removeFailedNode(quint8 _node);
+    bool hasNodeFailed(quint8 _node);
+    bool requestNodeNeighborUpdate(quint8 _node);
+    bool assignReturnRoute(quint8 _node);
+    bool deleteAllReturnRoute(quint8 _node);
+    bool sendNodeInfomation(quint8 _node);
+    bool replaceFailedNode(quint8 _node);
+    bool requestNetworkUpdate(quint8 _node);
 
-    bool checkLatestConfigFileRevision(uint8_t const _node);
+    bool checkLatestConfigFileRevision(quint8 const _node);
     bool checkLatestMFSRevision();
-    bool downloadLatestConfigFileRevision(uint8_t const _node);
+    bool downloadLatestConfigFileRevision(quint8 const _node);
     bool downloadLatestMFSRevision();
 
 
     /* these slots are called from our OZWNotification Class. Applications should not call them */
-    void pvt_valueAdded(uint64_t vidKey);
-    void pvt_valueRemoved(uint64_t vidKey);
-    void pvt_valueChanged(uint64_t vidKey);
-    void pvt_valueRefreshed(uint64_t vidKey);
-    void pvt_valuePollingEnabled(uint64_t vidKey);
-    void pvt_valuePollingDisabled(uint64_t vidKey);
-    void pvt_nodeGroupChanged(uint8_t node, uint8_t group);
-    void pvt_nodeNew(uint8_t node);
-    void pvt_nodeAdded(uint8_t node);
-    void pvt_nodeRemoved(uint8_t node);
-    void pvt_nodeReset(uint8_t node);
-    void pvt_nodeNaming(uint8_t node);
-    void pvt_nodeEvent(uint8_t node, uint8_t event);
-    void pvt_nodeProtocolInfo(uint8_t node);
-    void pvt_nodeEssentialNodeQueriesComplete(uint8_t node);
-    void pvt_nodeQueriesComplete(uint8_t node);
-    void pvt_driverReady(uint32_t homeID);
-    void pvt_driverFailed(uint32_t homeID);
-    void pvt_driverReset(uint32_t homeID);
-    void pvt_driverRemoved(uint32_t homeID);
+    void pvt_valueAdded(quint64 vidKey);
+    void pvt_valueRemoved(quint64 vidKey);
+    void pvt_valueChanged(quint64 vidKey);
+    void pvt_valueRefreshed(quint64 vidKey);
+    void pvt_valuePollingEnabled(quint64 vidKey);
+    void pvt_valuePollingDisabled(quint64 vidKey);
+    void pvt_nodeGroupChanged(quint8 node, quint8 group);
+    void pvt_nodeNew(quint8 node);
+    void pvt_nodeAdded(quint8 node);
+    void pvt_nodeRemoved(quint8 node);
+    void pvt_nodeReset(quint8 node);
+    void pvt_nodeNaming(quint8 node);
+    void pvt_nodeEvent(quint8 node, quint8 event);
+    void pvt_nodeProtocolInfo(quint8 node);
+    void pvt_nodeEssentialNodeQueriesComplete(quint8 node);
+    void pvt_nodeQueriesComplete(quint8 node);
+    void pvt_driverReady(quint32 homeID);
+    void pvt_driverFailed(quint32 homeID);
+    void pvt_driverReset(quint32 homeID);
+    void pvt_driverRemoved(quint32 homeID);
     void pvt_driverAllNodesQueriedSomeDead();
     void pvt_driverAllNodesQueried();
     void pvt_driverAwakeNodesQueried();
-    void pvt_controllerCommand(uint8_t command);
+    void pvt_controllerCommand(quint8 command);
     void pvt_ozwNotification(OpenZWave::Notification::NotificationCode event);
     void pvt_ozwUserAlert(OpenZWave::Notification::UserAlertNotification event);
     void pvt_manufacturerSpecificDBReady();
@@ -112,9 +112,9 @@ private:
 private:
 
     bool checkHomeId();
-    bool checkNodeId(uint8_t _node);
-    bool checkValueKey(uint64_t _vidKey);
-    bool convertValueID(uint64_t vidKey);
+    bool checkNodeId(quint8 _node);
+    bool checkValueKey(quint64 _vidKey);
+    bool convertValueID(quint64 vidKey);
 
 
     OpenZWave::Options *m_options;
@@ -123,9 +123,9 @@ private:
     QTOZW_ValueIds_internal *m_valueModel;
     QTOZW_Associations_internal *m_associationsModel;
     pthread_mutex_t m_manager_mutex;
-    QVector<uint8_t> m_validNodes;
-    QVector<uint64_t> m_validValues;
-    QMap<uint8_t, QMap<uint8_t, bool > > m_associationDefaultsSet;
+    QVector<quint8> m_validNodes;
+    QVector<quint64> m_validValues;
+    QMap<quint8, QMap<quint8, bool > > m_associationDefaultsSet;
 
 };
 
@@ -154,70 +154,70 @@ public:
 
     /* OpenZWave::Manager methods */
     bool open(QString serialPort);
-    bool refreshNodeInfo(uint8_t _node);
-    bool requestNodeState(uint8_t _node);
-    bool requestNodeDynamic(uint8_t _node);
+    bool refreshNodeInfo(quint8 _node);
+    bool requestNodeState(quint8 _node);
+    bool requestNodeDynamic(quint8 _node);
 
-    bool setConfigParam(uint8_t _node, uint8_t _param, int32_t _value, uint8_t const _size);
-    void requestConfigParam(uint8_t _node, uint8_t _param);
-    void requestAllConfigParam(uint8_t _node);
+    bool setConfigParam(quint8 _node, quint8 _param, int32_t _value, quint8 const _size);
+    void requestConfigParam(quint8 _node, quint8 _param);
+    void requestAllConfigParam(quint8 _node);
 
     void softResetController();
     void hardResetController();
 
     bool cancelControllerCommand();
 
-    void testNetworkNode(uint8_t _node, uint32_t const _count);
-    void testNetwork(uint32_t const _count);
-    void healNetworkNode(uint8_t _node, bool _doRR);
+    void testNetworkNode(quint8 _node, quint32 const _count);
+    void testNetwork(quint32 const _count);
+    void healNetworkNode(quint8 _node, bool _doRR);
     void healNetwork(bool _doRR);
     bool addNode(bool _doSecure);
     bool removeNode();
-    bool removeFailedNode(uint8_t _node);
-    bool hasNodeFailed(uint8_t _node);
-    bool requestNodeNeighborUpdate(uint8_t _node);
-    bool assignReturnRoute(uint8_t _node);
-    bool deleteAllReturnRoute(uint8_t _node);
-    bool sendNodeInfomation(uint8_t _node);
-    bool replaceFailedNode(uint8_t _node);
-    bool requestNetworkUpdate(uint8_t _node);
+    bool removeFailedNode(quint8 _node);
+    bool hasNodeFailed(quint8 _node);
+    bool requestNodeNeighborUpdate(quint8 _node);
+    bool assignReturnRoute(quint8 _node);
+    bool deleteAllReturnRoute(quint8 _node);
+    bool sendNodeInfomation(quint8 _node);
+    bool replaceFailedNode(quint8 _node);
+    bool requestNetworkUpdate(quint8 _node);
 
-    bool checkLatestConfigFileRevision(uint8_t const _node);
+    bool checkLatestConfigFileRevision(quint8 const _node);
     bool checkLatestMFSRevision();
-    bool downloadLatestConfigFileRevision(uint8_t const _node);
+    bool downloadLatestConfigFileRevision(quint8 const _node);
     bool downloadLatestMFSRevision();
 
 
 Q_SIGNALS:
     void ready();
-    void valueAdded(uint64_t vidKey);
-    void valueRemoved(uint64_t vidKey);
-    void valueChanged(uint64_t vidKey);
-    void valueRefreshed(uint64_t vidKey);
-    void nodeNew(uint8_t node);
-    void nodeAdded(uint8_t node);
-    void nodeRemoved(uint8_t node);
-    void nodeReset(uint8_t node);
-    void nodeNaming(uint8_t node);
-    void nodeEvent(uint8_t node, uint8_t event);
-    void nodeProtocolInfo(uint8_t node);
-    void nodeEssentialNodeQueriesComplete(uint8_t node);
-    void nodeQueriesComplete(uint8_t node);
-    void driverReady(uint32_t homeID);
-    void driverFailed(uint32_t homeID);
-    void driverReset(uint32_t homeID);
-    void driverRemoved(uint32_t homeID);
+    void valueAdded(quint64 vidKey);
+    void valueRemoved(quint64 vidKey);
+    void valueChanged(quint64 vidKey);
+    void valueRefreshed(quint64 vidKey);
+    void nodeNew(quint8 node);
+    void nodeAdded(quint8 node);
+    void nodeRemoved(quint8 node);
+    void nodeReset(quint8 node);
+    void nodeNaming(quint8 node);
+    void nodeEvent(quint8 node, quint8 event);
+    void nodeProtocolInfo(quint8 node);
+    void nodeEssentialNodeQueriesComplete(quint8 node);
+    void nodeQueriesComplete(quint8 node);
+    void driverReady(quint32 homeID);
+    void driverFailed(quint32 homeID);
+    void driverReset(quint32 homeID);
+    void driverRemoved(quint32 homeID);
     void driverAllNodesQueriedSomeDead();
     void driverAllNodesQueried();
     void driverAwakeNodesQueried();
-    void controllerCommand(uint8_t command);
+    void controllerCommand(quint8 command);
 //    void ozwNotification(OpenZWave::Notification::NotificationCode event);
 // void ozwUserAlert(OpenZWave::Notification::UserAlertNotification event);
     void manufacturerSpecificDBReady();
 
     void starting();
-    void started(uint32_t homeID);
-    void stopped(uint32_t homeID);
+    void started(quint32 homeID);
+    void stopped(quint32 homeID);
 //    void error(QTOZWErrorCodes errorcode);
 
 

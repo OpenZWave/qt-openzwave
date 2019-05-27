@@ -159,7 +159,7 @@ bool QTOZW_ValueIds::setData(const QModelIndex &index, const QVariant &value, in
     return true;
 }
 
-QVariant QTOZW_ValueIds::getValueData(uint64_t _vidKey, ValueIdColumns _column) {
+QVariant QTOZW_ValueIds::getValueData(quint64 _vidKey, ValueIdColumns _column) {
     int32_t row = this->getValueRow(_vidKey);
     if (row >= 0)
         return this->m_valueData[row][_column];
@@ -167,7 +167,7 @@ QVariant QTOZW_ValueIds::getValueData(uint64_t _vidKey, ValueIdColumns _column) 
     return QVariant();
 }
 
-int32_t QTOZW_ValueIds::getValueRow(uint64_t _vidKey) {
+int32_t QTOZW_ValueIds::getValueRow(quint64 _vidKey) {
     if (this->m_valueData.count() == 0) {
         return -1;
     }
@@ -189,7 +189,7 @@ QTOZW_ValueIds_internal::QTOZW_ValueIds_internal(QObject *parent)
 
 }
 
-void QTOZW_ValueIds_internal::addValue(uint64_t _vidKey)
+void QTOZW_ValueIds_internal::addValue(quint64 _vidKey)
 {
     if (this->getValueRow(_vidKey) >= 0) {
         qWarning() << "ValueID " << _vidKey << " Already Exists";
@@ -205,7 +205,7 @@ void QTOZW_ValueIds_internal::addValue(uint64_t _vidKey)
     this->endInsertRows();
 }
 
-void QTOZW_ValueIds_internal::setValueData(uint64_t _vidKey, QTOZW_ValueIds::ValueIdColumns column, QVariant data)
+void QTOZW_ValueIds_internal::setValueData(quint64 _vidKey, QTOZW_ValueIds::ValueIdColumns column, QVariant data)
 {
     int row = this->getValueRow(_vidKey);
     if (row == -1) {
@@ -218,7 +218,7 @@ void QTOZW_ValueIds_internal::setValueData(uint64_t _vidKey, QTOZW_ValueIds::Val
     }
 }
 
-void QTOZW_ValueIds_internal::setValueFlags(uint64_t _vidKey, QTOZW_ValueIds::ValueIDFlags _flags, bool _value)
+void QTOZW_ValueIds_internal::setValueFlags(quint64 _vidKey, QTOZW_ValueIds::ValueIDFlags _flags, bool _value)
 {
     int row = this->getValueRow(_vidKey);
     if (row == -1) {
@@ -233,7 +233,7 @@ void QTOZW_ValueIds_internal::setValueFlags(uint64_t _vidKey, QTOZW_ValueIds::Va
     }
 }
 
-void QTOZW_ValueIds_internal::delValue(uint64_t _vidKey) {
+void QTOZW_ValueIds_internal::delValue(quint64 _vidKey) {
     QMap<int32_t, QMap<ValueIdColumns, QVariant> >::iterator it;
     QMap<int32_t, QMap<ValueIdColumns, QVariant> > newValueMap;
     int32_t newrow = 0;
@@ -252,10 +252,10 @@ void QTOZW_ValueIds_internal::delValue(uint64_t _vidKey) {
     this->m_valueData.swap(newValueMap);
 }
 
-void QTOZW_ValueIds_internal::delNodeValues(uint8_t _node) {
+void QTOZW_ValueIds_internal::delNodeValues(quint8 _node) {
     QMap<int32_t, QMap<ValueIdColumns, QVariant> >::iterator it;
     QMap<int32_t, QMap<ValueIdColumns, QVariant> > newValueMap;
-    int32_t newrow = 0;
+    qint32 newrow = 0;
     for (it = this->m_valueData.begin(); it != this->m_valueData.end(); ++it) {
         if (it.value()[QTOZW_ValueIds::ValueIdColumns::Node] == _node) {
             qDebug() << "Removing Value " << it.value()[QTOZW_ValueIds::ValueIdColumns::Label] << it.key();
@@ -293,10 +293,10 @@ QString BitSettoQString(QBitArray ba) {
 #endif
 }
 
-uint32_t BitSettoInteger(QBitArray ba) {
-    uint32_t value = 0;
+quint32 BitSettoInteger(QBitArray ba) {
+    quint32 value = 0;
     for (int i = 0; i <= ba.size()-1; ++i) {
-        value += (uint32_t)((ba.at(i) ? 1 : 0) << i);
+        value += (quint32)((ba.at(i) ? 1 : 0) << i);
     }
     return value;
 }

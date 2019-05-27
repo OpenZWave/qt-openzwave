@@ -160,57 +160,57 @@ void MainWindow::QTOZW_Ready() {
 
 }
 
-void MainWindow::valueAdded(uint64_t vidKey) {
+void MainWindow::valueAdded(quint64 vidKey) {
     Q_UNUSED(vidKey)
     this->ui->statusbar->showMessage("ValueAdded Notification", 2000);
 }
-void MainWindow::valueRemoved(uint64_t vidKey) {
+void MainWindow::valueRemoved(quint64 vidKey) {
     Q_UNUSED(vidKey)
     this->ui->statusbar->showMessage("ValueRemoved Notification", 2000);
 }
-void MainWindow::valueChanged(uint64_t vidKey) {
+void MainWindow::valueChanged(quint64 vidKey) {
     Q_UNUSED(vidKey)
     this->ui->statusbar->showMessage("ValueChanged Notification", 2000);
 }
-void MainWindow::valueRefreshed(uint64_t vidKey) {
+void MainWindow::valueRefreshed(quint64 vidKey) {
     Q_UNUSED(vidKey)
     this->ui->statusbar->showMessage("ValueRefreshed Notification", 2000);
 }
-void MainWindow::nodeNew(uint8_t node) {
+void MainWindow::nodeNew(quint8 node) {
     Q_UNUSED(node);
     this->ui->statusbar->showMessage("NodeNew Notification", 2000);
 }
-void MainWindow::nodeAdded(uint8_t node) {
+void MainWindow::nodeAdded(quint8 node) {
     Q_UNUSED(node);
     this->ui->statusbar->showMessage("NodeAdded Notification", 2000);
 }
-void MainWindow::nodeRemoved(uint8_t node) {
+void MainWindow::nodeRemoved(quint8 node) {
     Q_UNUSED(node);
     this->ui->statusbar->showMessage("NodeRemoved Notification", 2000);
 }
-void MainWindow::nodeReset(uint8_t node) {
+void MainWindow::nodeReset(quint8 node) {
     Q_UNUSED(node);
     this->ui->statusbar->showMessage("NodeReset Notification", 2000);
 }
-void MainWindow::nodeNaming(uint8_t node) {
+void MainWindow::nodeNaming(quint8 node) {
     Q_UNUSED(node);
     this->ui->statusbar->showMessage("NodeNaming Notification", 2000);
 }
-void MainWindow::nodeEvent(uint8_t node, uint8_t event) {
+void MainWindow::nodeEvent(quint8 node, quint8 event) {
     Q_UNUSED(node)
     Q_UNUSED(event)
     this->ui->statusbar->showMessage("NodeEvent Notification", 2000);
 }
-void MainWindow::nodeProtocolInfo(uint8_t node) {
+void MainWindow::nodeProtocolInfo(quint8 node) {
     Q_UNUSED(node)
     this->ui->statusbar->showMessage("NodeProtocolInfo Notification", 2000);
 }
-void MainWindow::nodeEssentialNodeQueriesComplete(uint8_t node) {
+void MainWindow::nodeEssentialNodeQueriesComplete(quint8 node) {
     Q_UNUSED(node)
     this->ui->statusbar->showMessage("NodeEssentialNodeQueriesComplete Notification", 2000);
 }
-void MainWindow::nodeQueriesComplete(uint8_t node) {
-    static QMap<uint8_t, bool> refreshdone;
+void MainWindow::nodeQueriesComplete(quint8 node) {
+    static QMap<quint8, bool> refreshdone;
     this->ui->statusbar->showMessage("nodeQueriesComplete Notification", 2000);
     if (!refreshdone[node]) {
         refreshdone[node] = true;
@@ -218,19 +218,19 @@ void MainWindow::nodeQueriesComplete(uint8_t node) {
             this->m_qtozwmanager->requestAllConfigParam(node);
     }
 }
-void MainWindow::driverReady(uint32_t homeID) {
+void MainWindow::driverReady(quint32 homeID) {
     Q_UNUSED(homeID)
     this->ui->statusbar->showMessage("DriverReady Notification", 2000);
 }
-void MainWindow::driverFailed(uint32_t homeID) {
+void MainWindow::driverFailed(quint32 homeID) {
     Q_UNUSED(homeID)
     this->ui->statusbar->showMessage("DriverFailed Notification", 2000);
 }
-void MainWindow::driverReset(uint32_t homeID) {
+void MainWindow::driverReset(quint32 homeID) {
     Q_UNUSED(homeID)
     this->ui->statusbar->showMessage("DriverReset Notification", 2000);
 }
-void MainWindow::driverRemoved(uint32_t homeID) {
+void MainWindow::driverRemoved(quint32 homeID) {
     Q_UNUSED(homeID)
     this->ui->statusbar->showMessage("DriverRemoved Notification", 2000);
 }
@@ -243,7 +243,7 @@ void MainWindow::driverAllNodesQueried() {
 void MainWindow::driverAwakeNodesQueried() {
     this->ui->statusbar->showMessage("DriverAwakeNodesQueried Notification", 2000);
 }
-void MainWindow::controllerCommand(uint8_t command) {
+void MainWindow::controllerCommand(quint8 command) {
     Q_UNUSED(command)
     this->ui->statusbar->showMessage("ControllerCommand Notification", 2000);
 }
@@ -256,11 +256,11 @@ void MainWindow::manufacturerSpecificDBReady() {
 void MainWindow::starting() {
     this->ui->statusbar->showMessage("Starting", 2000);
 }
-void MainWindow::started(uint32_t homeID) {
+void MainWindow::started(quint32 homeID) {
     Q_UNUSED(homeID)
     this->ui->statusbar->showMessage("Started", 2000);
 }
-void MainWindow::stopped(uint32_t homeID) {
+void MainWindow::stopped(quint32 homeID) {
     Q_UNUSED(homeID)
     this->ui->statusbar->showMessage("Stopped", 2000);
 }

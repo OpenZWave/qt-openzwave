@@ -24,7 +24,7 @@ void QTOZW_proxyValueModel::setSelectionModel(QItemSelectionModel *model) {
 
 void QTOZW_proxyValueModel::currentSelectedRowChanged(const QModelIndex &current, const QModelIndex &previous) {
     Q_UNUSED(previous);
-    this->m_nodeFilter = current.siblingAtColumn(QTOZW_Nodes::NodeColumns::NodeID).data().value<uint8_t>();
+    this->m_nodeFilter = current.siblingAtColumn(QTOZW_Nodes::NodeColumns::NodeID).data().value<quint8>();
     invalidateFilter();
 }
 void QTOZW_proxyValueModel::setFilterGenre(QTOZW_ValueIds::ValueIdGenres genre)
@@ -41,7 +41,7 @@ bool QTOZW_proxyValueModel::filterAcceptsRow(int sourceRow, const QModelIndex &s
     }
     if (this->m_nodeFilter > 0) {
         QModelIndex nodeIDIndex = sourceModel()->index(sourceRow, QTOZW_ValueIds::ValueIdColumns::Node, sourceParent);
-        if (nodeIDIndex.data().value<uint8_t>() != this->m_nodeFilter)
+        if (nodeIDIndex.data().value<quint8>() != this->m_nodeFilter)
             return false;
     }
     return true;
@@ -59,14 +59,15 @@ void QTOZW_proxyAssociationModel::setSelectionModel(QItemSelectionModel *model) 
 }
 
 void QTOZW_proxyAssociationModel::currentSelectedRowChanged(const QModelIndex &current, const QModelIndex &previous) {
-    this->m_nodeFilter = current.siblingAtColumn(QTOZW_Nodes::NodeColumns::NodeID).data().value<uint8_t>();
+    Q_UNUSED(previous);
+    this->m_nodeFilter = current.siblingAtColumn(QTOZW_Nodes::NodeColumns::NodeID).data().value<quint8>();
     invalidateFilter();
 }
 
 bool QTOZW_proxyAssociationModel::filterAcceptsRow(int sourceRow, const QModelIndex &sourceParent) const {
     if (this->m_nodeFilter > 0) {
         QModelIndex nodeIDIndex = sourceModel()->index(sourceRow, QTOZW_Associations::associationColumns::NodeID, sourceParent);
-        if (nodeIDIndex.data().value<uint8_t>() != this->m_nodeFilter)
+        if (nodeIDIndex.data().value<quint8>() != this->m_nodeFilter)
             return false;
     }
     return true;
