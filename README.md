@@ -1,2 +1,2 @@
 # qt-openzwave
-QT5 Wrapper for OpenZWave
+A QT5 Wrapper for OpenZWave. Exposes 

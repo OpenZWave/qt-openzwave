@@ -597,20 +597,28 @@ bool QTOZWManager_Internal::convertValueID(uint64_t vidKey) {
             this->m_manager->GetBitSetSize(vid, &bssize);
             this->m_manager->GetBitMask(vid, &bsmask);
             QTOZW_ValueIDBitSet vidbs;
-            vidbs.mask.resize(INT32_MAX);
-            for (int i = 0; i < 32; ++i) {
-                vidbs.mask[i] = bsmask & (1 << i);
+            vidbs.mask.resize(bssize * 8);
+            for (int i = 1; i < bssize * 8; ++i) {
+                vidbs.mask[i] = (bsmask & (1 << i));
             }
             vidbs.values.resize(bssize * 8);
-            qDebug() << vidbs.values.size();
-            for (uint8_t i = 0; i < bssize * 8; ++i) {
-                qDebug() << "doing " << i;
-                bool value;
-                this->m_manager->GetValueAsBitSet(vid, i, &value);
-                vidbs.values[i] = value;
-                vidbs.label[i] = QString::fromStdString(this->m_manager->GetValueLabel(vid, i));
-                vidbs.help[i] = QString::fromStdString(this->m_manager->GetValueHelp(vid, i));
+            for (uint8_t i = 1; i <= bssize * 8; ++i) {
+                /* OZW is 1 base - QT is 0 base. */
+                if (vidbs.mask.at(i-1)) {
+                    bool value;
+                    if (this->m_manager->GetValueAsBitSet(vid, i, &value)) {
+                        vidbs.values[i-1] = value;
+                        vidbs.label[i-1] = QString::fromStdString(this->m_manager->GetValueLabel(vid, i));
+                        vidbs.help[i-1] = QString::fromStdString(this->m_manager->GetValueHelp(vid, i));
+                    }
+                }
             }
+#if 0
+            qDebug() << (uint32_t)bsmask;
+            this->m_manager->GetBitMask(vid, &bsmask);
+            qDebug().noquote() << BitSettoQString(vidbs.mask);
+            qDebug().noquote() << BitSettoQString(vidbs.values);
+#endif
             this->m_valueModel->setValueData(vidKey, QTOZW_ValueIds::ValueIdColumns::Value, QVariant::fromValue(vidbs));
             this->m_valueModel->setValueData(vidKey, QTOZW_ValueIds::ValueIdColumns::Type, QTOZW_ValueIds::ValueIdTypes::BitSet);
             return true;
@@ -1250,7 +1258,21 @@ void QTOZWManager_Internal::pvt_valueModelDataChanged(const QModelIndex &topLeft
             }
             case OpenZWave::ValueID::ValueType_BitSet:
             {
-                qWarning() << "ValueType_BitSet TODO";
+                QTOZW_ValueIDBitSet bs = topLeft.data().value<QTOZW_ValueIDBitSet>();
+                for (int i = 0; i <= bs.values.size()-1; i++) {
+                    if (bs.mask.at(i)) {
+                        bool curval;
+                        this->m_manager->GetValueAsBitSet(vid, (uint8_t)i+1, &curval);
+                        if (curval != bs.values.at(i)) {
+                            /* we send this as a uint32_t so its a atomic change... and return.
+                             * as the chances of other Bits changing are probably high, and a
+                             * each call to SetValue generates traffis, so instead by sending a
+                             * uint32_t here, we only send one packet*/
+                            this->m_manager->SetValue(vid, (int32_t)BitSettoInteger(bs.values));
+                            return;
+                        }
+                    }
+                }
                 return;
             }
 
@@ -1299,7 +1321,7 @@ bool QTOZWManager::initilizeSource(bool enableServer) {
         this->m_sourceNode->setHeartbeatInterval(1000);
         this->m_sourceNode->enableRemoting<QTOZWManagerSourceAPI>(this->d_ptr_internal);
         QVector<int> roles;
-        roles << Qt::DisplayRole << Qt::BackgroundRole << Qt::EditRole;
+        roles << Qt::DisplayRole << Qt::BackgroundRole << Qt::EditRole << Qt::ToolTipRole;
         this->m_sourceNode->enableRemoting(this->d_ptr_internal->getNodeModel(), "QTOZW_nodeModel", roles);
         this->m_sourceNode->enableRemoting(this->d_ptr_internal->getValueModel(), "QTOZW_valueModel", roles);
         this->m_sourceNode->enableRemoting(this->d_ptr_internal->getAssociationModel(), "QTOZW_associationModel", roles);

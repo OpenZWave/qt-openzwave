@@ -4,6 +4,8 @@
 #include "qtozw_itemdelegate.h"
 #include <qtozwproxymodels.h>
 
+#define CONNECTSIGNALS(x) QObject::connect(this->m_qtozwmanager, &QTOZWManager::x, this, &MainWindow::x)
+
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
     ui(new Ui::MainWindow)
@@ -12,6 +14,32 @@ MainWindow::MainWindow(QWidget *parent) :
     this->m_openzwave = new QTOpenZwave(this);
     this->m_qtozwmanager = this->m_openzwave->GetManager();
     QObject::connect(this->m_qtozwmanager, &QTOZWManager::ready, this, &MainWindow::QTOZW_Ready);
+    CONNECTSIGNALS(valueAdded);
+    CONNECTSIGNALS(valueRemoved);
+    CONNECTSIGNALS(valueChanged);
+    CONNECTSIGNALS(valueRefreshed);
+    CONNECTSIGNALS(nodeNew);
+    CONNECTSIGNALS(nodeAdded);
+    CONNECTSIGNALS(nodeRemoved);
+    CONNECTSIGNALS(nodeReset);
+    CONNECTSIGNALS(nodeNaming);
+    CONNECTSIGNALS(nodeEvent);
+    CONNECTSIGNALS(nodeProtocolInfo);
+    CONNECTSIGNALS(nodeEssentialNodeQueriesComplete);
+    CONNECTSIGNALS(nodeQueriesComplete);
+    CONNECTSIGNALS(driverReady);
+    CONNECTSIGNALS(driverFailed);
+    CONNECTSIGNALS(driverReset);
+    CONNECTSIGNALS(driverRemoved);
+    CONNECTSIGNALS(driverAllNodesQueriedSomeDead);
+    CONNECTSIGNALS(driverAwakeNodesQueried);
+    CONNECTSIGNALS(driverAllNodesQueried);
+    CONNECTSIGNALS(controllerCommand);
+    CONNECTSIGNALS(manufacturerSpecificDBReady);
+    CONNECTSIGNALS(starting);
+    CONNECTSIGNALS(started);
+    CONNECTSIGNALS(stopped);
+
 }
 
 MainWindow::~MainWindow()
@@ -43,6 +71,7 @@ void MainWindow::startLocal(QString serialPort, bool startServer) {
 }
 
 void MainWindow::QTOZW_Ready() {
+    this->ui->statusbar->showMessage("OpenZWave Ready");
     qDebug() << "OZW Ready " << this->m_serialPort;
     if (this->m_qtozwmanager->isRunning() == false) {
         this->m_qtozwmanager->open(this->m_serialPort);
@@ -52,7 +81,9 @@ void MainWindow::QTOZW_Ready() {
     this->ui->nodeView->setModel(proxyNodeModel);
     this->ui->nodeView->setSortingEnabled(true);
     this->ui->nodeView->horizontalHeader()->setSectionsMovable(true);
+    this->ui->nodeView->horizontalHeader()->setSectionResizeMode(QHeaderView::ResizeToContents);
     this->ui->nodeView->verticalHeader()->hide();
+    this->ui->nodeView->verticalHeader()->setSectionResizeMode(QHeaderView::ResizeToContents);
     this->ui->nodeView->setSelectionBehavior(QAbstractItemView::SelectRows);
     this->ui->nodeView->setSelectionMode(QAbstractItemView::SingleSelection);
     QItemSelectionModel *selectNodeModel = this->ui->nodeView->selectionModel();
@@ -65,15 +96,18 @@ void MainWindow::QTOZW_Ready() {
 
     QTOZW_ItemDelegate *delegate = new QTOZW_ItemDelegate(this);
     this->ui->userView->setItemDelegateForColumn(QTOZW_ValueIds::ValueIdColumns::Value, delegate);
-
-
     this->ui->userView->setModel(proxyUserValueModel);
     this->ui->userView->setSortingEnabled(true);
     this->ui->userView->horizontalHeader()->setSectionsMovable(true);
+    this->ui->userView->horizontalHeader()->setSectionResizeMode(QHeaderView::ResizeToContents);
     this->ui->userView->verticalHeader()->hide();
+    this->ui->userView->verticalHeader()->setSectionResizeMode(QHeaderView::ResizeToContents);
     this->ui->userView->setSelectionBehavior(QAbstractItemView::SelectRows);
     this->ui->userView->setSelectionMode(QAbstractItemView::SingleSelection);
     this->ui->userView->setEditTriggers(QAbstractItemView::AllEditTriggers);
+    this->ui->userView->setFrameShape(QFrame::NoFrame);
+
+
 
     QTOZW_proxyValueModel *proxyConfigValueModel = new QTOZW_proxyValueModel(this);
     proxyConfigValueModel->setSourceModel(this->m_qtozwmanager->getValueModel());
@@ -82,11 +116,13 @@ void MainWindow::QTOZW_Ready() {
     this->ui->configView->setModel(proxyConfigValueModel);
     this->ui->configView->setSortingEnabled(true);
     this->ui->configView->horizontalHeader()->setSectionsMovable(true);
+    this->ui->configView->horizontalHeader()->setSectionResizeMode(QHeaderView::ResizeToContents);
     this->ui->configView->verticalHeader()->hide();
+    this->ui->configView->verticalHeader()->setSectionResizeMode(QHeaderView::ResizeToContents);
     this->ui->configView->setSelectionBehavior(QAbstractItemView::SelectRows);
     this->ui->configView->setSelectionMode(QAbstractItemView::SingleSelection);
     this->ui->configView->setEditTriggers(QAbstractItemView::AllEditTriggers);
-
+    this->ui->configView->setFrameShape(QFrame::NoFrame);
 
     this->ui->configView->setItemDelegateForColumn(QTOZW_ValueIds::ValueIdColumns::Value, delegate);
 
@@ -98,10 +134,13 @@ void MainWindow::QTOZW_Ready() {
     this->ui->systemView->setModel(proxySystemValueModel);
     this->ui->systemView->setSortingEnabled(true);
     this->ui->systemView->horizontalHeader()->setSectionsMovable(true);
+    this->ui->systemView->horizontalHeader()->setSectionResizeMode(QHeaderView::ResizeToContents);
     this->ui->systemView->verticalHeader()->hide();
+    this->ui->systemView->verticalHeader()->setSectionResizeMode(QHeaderView::ResizeToContents);
     this->ui->systemView->setSelectionBehavior(QAbstractItemView::SelectRows);
     this->ui->systemView->setSelectionMode(QAbstractItemView::SingleSelection);
     this->ui->systemView->setEditTriggers(QAbstractItemView::AllEditTriggers);
+    this->ui->systemView->setFrameShape(QFrame::NoFrame);
 
 
     this->ui->systemView->setItemDelegateForColumn(QTOZW_ValueIds::ValueIdColumns::Value, delegate);
@@ -113,9 +152,117 @@ void MainWindow::QTOZW_Ready() {
     this->ui->AssociationView->setModel(proxyAssociationModel);
     this->ui->AssociationView->setSortingEnabled(true);
     this->ui->AssociationView->horizontalHeader()->setSectionsMovable(true);
+    this->ui->AssociationView->horizontalHeader()->setSectionResizeMode(QHeaderView::ResizeToContents);
     this->ui->AssociationView->verticalHeader()->hide();
+    this->ui->AssociationView->verticalHeader()->setSectionResizeMode(QHeaderView::ResizeToContents);
     this->ui->AssociationView->setSelectionBehavior(QAbstractItemView::SelectRows);
     this->ui->AssociationView->setSelectionMode(QAbstractItemView::SingleSelection);
 
 }
+
+void MainWindow::valueAdded(uint64_t vidKey) {
+    Q_UNUSED(vidKey)
+    this->ui->statusbar->showMessage("ValueAdded Notification", 2000);
+}
+void MainWindow::valueRemoved(uint64_t vidKey) {
+    Q_UNUSED(vidKey)
+    this->ui->statusbar->showMessage("ValueRemoved Notification", 2000);
+}
+void MainWindow::valueChanged(uint64_t vidKey) {
+    Q_UNUSED(vidKey)
+    this->ui->statusbar->showMessage("ValueChanged Notification", 2000);
+}
+void MainWindow::valueRefreshed(uint64_t vidKey) {
+    Q_UNUSED(vidKey)
+    this->ui->statusbar->showMessage("ValueRefreshed Notification", 2000);
+}
+void MainWindow::nodeNew(uint8_t node) {
+    Q_UNUSED(node);
+    this->ui->statusbar->showMessage("NodeNew Notification", 2000);
+}
+void MainWindow::nodeAdded(uint8_t node) {
+    Q_UNUSED(node);
+    this->ui->statusbar->showMessage("NodeAdded Notification", 2000);
+}
+void MainWindow::nodeRemoved(uint8_t node) {
+    Q_UNUSED(node);
+    this->ui->statusbar->showMessage("NodeRemoved Notification", 2000);
+}
+void MainWindow::nodeReset(uint8_t node) {
+    Q_UNUSED(node);
+    this->ui->statusbar->showMessage("NodeReset Notification", 2000);
+}
+void MainWindow::nodeNaming(uint8_t node) {
+    Q_UNUSED(node);
+    this->ui->statusbar->showMessage("NodeNaming Notification", 2000);
+}
+void MainWindow::nodeEvent(uint8_t node, uint8_t event) {
+    Q_UNUSED(node)
+    Q_UNUSED(event)
+    this->ui->statusbar->showMessage("NodeEvent Notification", 2000);
+}
+void MainWindow::nodeProtocolInfo(uint8_t node) {
+    Q_UNUSED(node)
+    this->ui->statusbar->showMessage("NodeProtocolInfo Notification", 2000);
+}
+void MainWindow::nodeEssentialNodeQueriesComplete(uint8_t node) {
+    Q_UNUSED(node)
+    this->ui->statusbar->showMessage("NodeEssentialNodeQueriesComplete Notification", 2000);
+}
+void MainWindow::nodeQueriesComplete(uint8_t node) {
+    static QMap<uint8_t, bool> refreshdone;
+    this->ui->statusbar->showMessage("nodeQueriesComplete Notification", 2000);
+    if (!refreshdone[node]) {
+        refreshdone[node] = true;
+        if (node != 1)
+            this->m_qtozwmanager->requestAllConfigParam(node);
+    }
+}
+void MainWindow::driverReady(uint32_t homeID) {
+    Q_UNUSED(homeID)
+    this->ui->statusbar->showMessage("DriverReady Notification", 2000);
+}
+void MainWindow::driverFailed(uint32_t homeID) {
+    Q_UNUSED(homeID)
+    this->ui->statusbar->showMessage("DriverFailed Notification", 2000);
+}
+void MainWindow::driverReset(uint32_t homeID) {
+    Q_UNUSED(homeID)
+    this->ui->statusbar->showMessage("DriverReset Notification", 2000);
+}
+void MainWindow::driverRemoved(uint32_t homeID) {
+    Q_UNUSED(homeID)
+    this->ui->statusbar->showMessage("DriverRemoved Notification", 2000);
+}
+void MainWindow::driverAllNodesQueriedSomeDead() {
+    this->ui->statusbar->showMessage("DriverAllNodesQueriedSomeDead Notification", 2000);
+}
+void MainWindow::driverAllNodesQueried() {
+    this->ui->statusbar->showMessage("DriverAllNodesQueried Notification", 2000);
+}
+void MainWindow::driverAwakeNodesQueried() {
+    this->ui->statusbar->showMessage("DriverAwakeNodesQueried Notification", 2000);
+}
+void MainWindow::controllerCommand(uint8_t command) {
+    Q_UNUSED(command)
+    this->ui->statusbar->showMessage("ControllerCommand Notification", 2000);
+}
+//    void ozwNotification(OpenZWave::Notification::NotificationCode event);
+// void ozwUserAlert(OpenZWave::Notification::UserAlertNotification event);
+void MainWindow::manufacturerSpecificDBReady() {
+    this->ui->statusbar->showMessage("ManufacturerSpecificDBReady Notification", 2000);
+}
+
+void MainWindow::starting() {
+    this->ui->statusbar->showMessage("Starting", 2000);
+}
+void MainWindow::started(uint32_t homeID) {
+    Q_UNUSED(homeID)
+    this->ui->statusbar->showMessage("Started", 2000);
+}
+void MainWindow::stopped(uint32_t homeID) {
+    Q_UNUSED(homeID)
+    this->ui->statusbar->showMessage("Stopped", 2000);
+}
+
 

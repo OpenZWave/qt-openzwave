@@ -13,6 +13,7 @@
   <property name="windowTitle">
    <string>Frame</string>
   </property>
+  <layout class="QGridLayout" name="gridLayout_2"/>
  </widget>
  <resources/>
  <connections/>

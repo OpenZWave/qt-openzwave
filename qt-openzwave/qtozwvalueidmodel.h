@@ -109,6 +109,8 @@ public Q_SLOTS:
     void resetModel();
 };
 
+QString BitSettoQString(QBitArray ba);
+uint32_t BitSettoInteger(QBitArray ba);
 
 
 #endif // QTOZWVALUEIDMODEL_H

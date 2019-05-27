@@ -58,6 +58,14 @@ QVariant QTOZW_ValueIds::data(const QModelIndex &index, int role) const {
         }
         return value[static_cast<ValueIdColumns>(index.column())];
     }
+    if (role == Qt::ToolTipRole) {
+        QMap<ValueIdColumns, QVariant> value = this->m_valueData[index.row()];
+        if (value.size() == 0) {
+            qWarning() << "data: Cant find any Node on Row " << index.row();
+            return QVariant();
+        }
+        return value[static_cast<ValueIdColumns>(ValueIdColumns::Help)];
+    }
     return QVariant();
 
 }
@@ -267,4 +275,28 @@ void QTOZW_ValueIds_internal::resetModel() {
     this->beginRemoveRows(QModelIndex(), 0, this->m_valueData.count());
     this->m_valueData.clear();
     this->endRemoveRows();
+}
+
+
+QString BitSettoQString(QBitArray ba) {
+    QString result;
+    for (int i = ba.size()-1; i >= 0 ; --i) {
+        if (ba.testBit(i))
+            result[ba.size() - i] = '1';
+        else
+            result[ba.size() - i] = '0';
+    }
+    return result;
+#if 0
+    result.prepend("0b");
+    return result;
+#endif
+}
+
+uint32_t BitSettoInteger(QBitArray ba) {
+    uint32_t value = 0;
+    for (int i = 0; i <= ba.size()-1; ++i) {
+        value += (uint32_t)((ba.at(i) ? 1 : 0) << i);
+    }
+    return value;
 }

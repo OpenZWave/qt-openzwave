@@ -3,21 +3,10 @@
 #include <QApplication>
 #include "qtozw_itemdelegate.h"
 #include "qtozwvalueidmodel.h"
+#include "bitsetwidget.h"
 
 QTOZW_ItemDelegate::QTOZW_ItemDelegate(QObject *parent) : QStyledItemDelegate(parent)
 {
-}
-
-QString BitSettoQString(QBitArray ba) {
-    QString result;
-    for (int i = 0; i < ba.size(); ++i) {
-        if (ba.testBit(i))
-            result[i] = '1';
-        else
-            result[i] = '0';
-    }
-    result.prepend("0b");
-    return result;
 }
 
 void QTOZW_ItemDelegate::paint(QPainter *painter, const QStyleOptionViewItem &option, const QModelIndex &index) const
@@ -54,11 +43,13 @@ void QTOZW_ItemDelegate::paint(QPainter *painter, const QStyleOptionViewItem &op
             break;
         }
         case QTOZW_ValueIds::ValueIdTypes::BitSet: {
-            QStyleOptionViewItem itemOption(option);
-            initStyleOption(&itemOption, index);
-            itemOption.text = BitSettoQString(index.data().value<QTOZW_ValueIDBitSet>().values);
-            qDebug() << itemOption.text;
-            QApplication::style()->drawControl(QStyle::CE_ItemViewItem, &itemOption, painter);
+            BitSetWidget bs;
+            bs.setValue(index.data().value<QTOZW_ValueIDBitSet>());
+            bs.setGeometry(option.rect);
+            painter->save();
+            painter->translate(option.rect.topLeft());
+            bs.render(painter, QPoint(), QRegion(), QWidget::DrawChildren);
+            painter->restore();
         }
 #if 0
         case QTOZW_ValueIds::ValueIdTypes::Int:
@@ -109,7 +100,7 @@ QSize QTOZW_ItemDelegate::sizeHint(const QStyleOptionViewItem &option, const QMo
             comboBoxOption.rect = option.rect;
             comboBoxOption.state = option.state;
             comboBoxOption.currentText = val.selectedItem;
-            return QSize(QFontMetrics(option.font).width(val.selectedItem), comboBoxOption.rect.height());
+            return QSize(QFontMetrics(option.font).width(val.selectedItem), QStyledItemDelegate::sizeHint(option, index).height());
         }
         case QTOZW_ValueIds::ValueIdTypes::Bool: {
             QStyleOptionButton cbOption;
@@ -117,6 +108,11 @@ QSize QTOZW_ItemDelegate::sizeHint(const QStyleOptionViewItem &option, const QMo
             cbOption.state |= index.data().value<bool>() ? QStyle::State_On : QStyle::State_Off;
             cbOption.state |= QStyle::State_Enabled;
             return cbOption.rect.size();
+        }
+        case QTOZW_ValueIds::ValueIdTypes::BitSet: {
+            BitSetWidget bs;
+            bs.setValue(index.data().value<QTOZW_ValueIDBitSet>());
+            return bs.sizeHint();
         }
         default:
             return QStyledItemDelegate::sizeHint(option, index);
@@ -145,7 +141,11 @@ QWidget *QTOZW_ItemDelegate::createEditor(QWidget *parent, const QStyleOptionVie
             editor->setAutoFillBackground(true);
             return editor;
         }
-
+        case QTOZW_ValueIds::ValueIdTypes::BitSet: {
+            BitSetWidget *editor = new BitSetWidget(parent);
+            editor->setAutoFillBackground(true);
+            return editor;
+        }
         default:
             return QStyledItemDelegate::createEditor(parent, option, index);
     }
@@ -192,7 +192,11 @@ void QTOZW_ItemDelegate::setEditorData(QWidget *editor, const QModelIndex &index
             sb->setValue(index.data().toInt());
             break;
         }
-
+        case QTOZW_ValueIds::ValueIdTypes::BitSet: {
+            BitSetWidget *bs = qobject_cast<BitSetWidget *>(editor);
+            bs->setValue(index.data().value<QTOZW_ValueIDBitSet>());
+            break;
+        }
         default:
             QStyledItemDelegate::setEditorData(editor, index);
     }
@@ -241,7 +245,13 @@ void QTOZW_ItemDelegate::setModelData(QWidget* editor, QAbstractItemModel* model
             }
             break;
         }
-
+        case QTOZW_ValueIds::ValueIdTypes::BitSet: {
+            BitSetWidget *bs = qobject_cast<BitSetWidget *>(editor);
+            if (!bs)
+                throw std::logic_error("Editor is not a BitSetWidget");
+            model->setData(index, QVariant::fromValue<QTOZW_ValueIDBitSet>(bs->getValue()), Qt::EditRole);
+            break;
+        }
         default:
             break;
     }
