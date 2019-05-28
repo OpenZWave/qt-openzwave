@@ -2,7 +2,8 @@
 #include "ui_mainwindow.h"
 #include "startup.h"
 #include "qtozw_itemdelegate.h"
-#include <qtozwproxymodels.h>
+#include "qtozwproxymodels.h"
+#include <QAbstractItemModelTester>
 
 #define CONNECTSIGNALS(x) QObject::connect(this->m_qtozwmanager, &QTOZWManager::x, this, &MainWindow::x)
 
@@ -11,8 +12,10 @@ MainWindow::MainWindow(QWidget *parent) :
     ui(new Ui::MainWindow)
 {
     ui->setupUi(this);
+    qDebug() << "Starting MainWindow";
     this->m_openzwave = new QTOpenZwave(this);
     this->m_qtozwmanager = this->m_openzwave->GetManager();
+    qDebug() << "QTOpenZWave Managers Created";
     QObject::connect(this->m_qtozwmanager, &QTOZWManager::ready, this, &MainWindow::QTOZW_Ready);
     CONNECTSIGNALS(valueAdded);
     CONNECTSIGNALS(valueRemoved);
@@ -74,7 +77,10 @@ void MainWindow::QTOZW_Ready() {
     this->ui->statusbar->showMessage("OpenZWave Ready");
     qDebug() << "OZW Ready " << this->m_serialPort;
     if (this->m_qtozwmanager->isRunning() == false) {
+        qDebug() << "Opening Serial Port";
         this->m_qtozwmanager->open(this->m_serialPort);
+    } else {
+        qDebug() << "OpenZWave Is already Running!";
     }
     QTOZW_proxyNodeModel *proxyNodeModel = new QTOZW_proxyNodeModel(this);
     proxyNodeModel->setSourceModel(this->m_qtozwmanager->getNodeModel());
@@ -88,6 +94,7 @@ void MainWindow::QTOZW_Ready() {
     this->ui->nodeView->setSelectionMode(QAbstractItemView::SingleSelection);
     QItemSelectionModel *selectNodeModel = this->ui->nodeView->selectionModel();
 
+    QAbstractItemModelTester *nodeTester = new QAbstractItemModelTester(this->m_qtozwmanager->getNodeModel(), QAbstractItemModelTester::FailureReportingMode::Fatal, this);
 
     QTOZW_proxyValueModel *proxyUserValueModel = new QTOZW_proxyValueModel(this);
     proxyUserValueModel->setSourceModel(this->m_qtozwmanager->getValueModel());
@@ -107,6 +114,7 @@ void MainWindow::QTOZW_Ready() {
     this->ui->userView->setEditTriggers(QAbstractItemView::AllEditTriggers);
     this->ui->userView->setFrameShape(QFrame::NoFrame);
 
+    QAbstractItemModelTester *valueTester = new QAbstractItemModelTester(this->m_qtozwmanager->getValueModel(), QAbstractItemModelTester::FailureReportingMode::Fatal, this);
 
 
     QTOZW_proxyValueModel *proxyConfigValueModel = new QTOZW_proxyValueModel(this);
@@ -157,6 +165,9 @@ void MainWindow::QTOZW_Ready() {
     this->ui->AssociationView->verticalHeader()->setSectionResizeMode(QHeaderView::ResizeToContents);
     this->ui->AssociationView->setSelectionBehavior(QAbstractItemView::SelectRows);
     this->ui->AssociationView->setSelectionMode(QAbstractItemView::SingleSelection);
+
+
+    //QAbstractItemModelTester *associationTester = new QAbstractItemModelTester(this->m_qtozwmanager->getAssociationModel(), QAbstractItemModelTester::FailureReportingMode::Fatal, this);
 
 }
 

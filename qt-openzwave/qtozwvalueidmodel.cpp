@@ -2,7 +2,7 @@
 #include <QBitArray>
 #include <QDataStream>
 
-
+#include "qtozw_logging.h"
 #include "qtozwvalueidmodel.h"
 #include "qtozwmanager.h"
 
@@ -36,11 +36,13 @@ QTOZW_ValueIds::QTOZW_ValueIds(QObject *parent)
 }
 
 int QTOZW_ValueIds::rowCount(const QModelIndex &parent) const {
-    Q_UNUSED(parent);
+    if (parent.isValid())
+        return 0;
     return this->m_valueData.count();
 }
 int QTOZW_ValueIds::columnCount(const QModelIndex &parent) const {
-    Q_UNUSED(parent);
+    if (parent.isValid())
+        return 0;
     return ValueIdColumns::ValueIdCount;
 }
 QVariant QTOZW_ValueIds::data(const QModelIndex &index, int role) const {
@@ -53,7 +55,7 @@ QVariant QTOZW_ValueIds::data(const QModelIndex &index, int role) const {
     if (role == Qt::DisplayRole) {
         QMap<ValueIdColumns, QVariant> value = this->m_valueData[index.row()];
         if (value.size() == 0) {
-            qWarning() << "data: Cant find any Node on Row " << index.row();
+            qCWarning(valueModel) << "data: Cant find any Node on Row " << index.row();
             return QVariant();
         }
         return value[static_cast<ValueIdColumns>(index.column())];
@@ -61,7 +63,7 @@ QVariant QTOZW_ValueIds::data(const QModelIndex &index, int role) const {
     if (role == Qt::ToolTipRole) {
         QMap<ValueIdColumns, QVariant> value = this->m_valueData[index.row()];
         if (value.size() == 0) {
-            qWarning() << "data: Cant find any Node on Row " << index.row();
+            qCWarning(valueModel) << "data: Cant find any Node on Row " << index.row();
             return QVariant();
         }
         return value[static_cast<ValueIdColumns>(ValueIdColumns::Help)];
@@ -125,7 +127,7 @@ QVariant QTOZW_ValueIds::headerData(int section, Qt::Orientation orientation, in
 }
 Qt::ItemFlags QTOZW_ValueIds::flags(const QModelIndex &index) const {
     if (!index.isValid())
-        return Qt::ItemIsEnabled;
+        return Qt::NoItemFlags;
     switch (static_cast<ValueIdColumns>(index.column())) {
         case Value: {
             QBitArray flags = index.sibling(index.row(), ValueIdColumns::ValueFlags).data().value<QBitArray>();
@@ -163,7 +165,7 @@ QVariant QTOZW_ValueIds::getValueData(quint64 _vidKey, ValueIdColumns _column) {
     int32_t row = this->getValueRow(_vidKey);
     if (row >= 0)
         return this->m_valueData[row][_column];
-    qWarning() << "Can't find ValueData for ValueID " << _vidKey;
+    qCWarning(valueModel) << "Can't find ValueData for ValueID " << _vidKey;
     return QVariant();
 }
 
@@ -178,7 +180,7 @@ int32_t QTOZW_ValueIds::getValueRow(quint64 _vidKey) {
             return it.key();
         }
     }
-    qWarning() << "Can't Find ValueID " << _vidKey << " in valueData";
+    qCWarning(valueModel) << "Can't Find ValueID " << _vidKey << " in valueData";
     return -1;
 }
 
@@ -192,7 +194,7 @@ QTOZW_ValueIds_internal::QTOZW_ValueIds_internal(QObject *parent)
 void QTOZW_ValueIds_internal::addValue(quint64 _vidKey)
 {
     if (this->getValueRow(_vidKey) >= 0) {
-        qWarning() << "ValueID " << _vidKey << " Already Exists";
+        qCWarning(valueModel) << "ValueID " << _vidKey << " Already Exists";
         return;
     }
     QMap<ValueIdColumns, QVariant> newValue;
@@ -209,7 +211,7 @@ void QTOZW_ValueIds_internal::setValueData(quint64 _vidKey, QTOZW_ValueIds::Valu
 {
     int row = this->getValueRow(_vidKey);
     if (row == -1) {
-        qWarning() << "setValueData: Value " << _vidKey << " does not exist";
+        qCWarning(valueModel) << "setValueData: Value " << _vidKey << " does not exist";
         return;
     }
     if (this->m_valueData[row][column] != data) {
@@ -222,7 +224,7 @@ void QTOZW_ValueIds_internal::setValueFlags(quint64 _vidKey, QTOZW_ValueIds::Val
 {
     int row = this->getValueRow(_vidKey);
     if (row == -1) {
-        qWarning() << "setValueFlags: Value " << _vidKey << " does not exist";
+        qCWarning(valueModel) << "setValueFlags: Value " << _vidKey << " does not exist";
         return;
     }
     if (this->m_valueData[row][QTOZW_ValueIds::ValueFlags].toBitArray().at(_flags) != _value) {
@@ -239,7 +241,7 @@ void QTOZW_ValueIds_internal::delValue(quint64 _vidKey) {
     int32_t newrow = 0;
     for (it = this->m_valueData.begin(); it != this->m_valueData.end(); ++it) {
         if (it.value()[QTOZW_ValueIds::ValueIdColumns::ValueIDKey] == _vidKey) {
-            qDebug() << "Removing Value " << it.value()[QTOZW_ValueIds::ValueIdColumns::Label] << it.key();
+            qCDebug(valueModel) << "Removing Value " << it.value()[QTOZW_ValueIds::ValueIdColumns::Label] << it.key();
             this->beginRemoveRows(QModelIndex(), it.key(), it.key());
             this->m_valueData.erase(it);
             this->endRemoveRows();
@@ -258,7 +260,7 @@ void QTOZW_ValueIds_internal::delNodeValues(quint8 _node) {
     qint32 newrow = 0;
     for (it = this->m_valueData.begin(); it != this->m_valueData.end(); ++it) {
         if (it.value()[QTOZW_ValueIds::ValueIdColumns::Node] == _node) {
-            qDebug() << "Removing Value " << it.value()[QTOZW_ValueIds::ValueIdColumns::Label] << it.key();
+            qCDebug(valueModel) << "Removing Value " << it.value()[QTOZW_ValueIds::ValueIdColumns::Label] << it.key();
             this->beginRemoveRows(QModelIndex(), it.key(), it.key());
             this->m_valueData.erase(it);
             this->endRemoveRows();

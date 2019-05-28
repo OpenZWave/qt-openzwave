@@ -1,5 +1,6 @@
 #include <QDebug>
 #include <QBitArray>
+#include "qtozw_logging.h"
 #include "qtozwnodemodel.h"
 #include "qtopenzwave.h"
 
@@ -10,11 +11,13 @@ QTOZW_Nodes::QTOZW_Nodes(QObject *parent)
 }
 
 int QTOZW_Nodes::rowCount(const QModelIndex &parent) const {
-    Q_UNUSED(parent);
+    if (parent.isValid())
+        return 0;
     return this->m_nodeData.count();
 }
 int QTOZW_Nodes::columnCount(const QModelIndex &parent) const {
-    Q_UNUSED(parent);
+    if (parent.isValid())
+        return 0;
     return QTOZW_Nodes::NodeCount;
 }
 QVariant QTOZW_Nodes::data(const QModelIndex &index, int role) const {
@@ -27,7 +30,7 @@ QVariant QTOZW_Nodes::data(const QModelIndex &index, int role) const {
     if (role == Qt::DisplayRole) {
         QMap<NodeColumns, QVariant> node = this->m_nodeData[index.row()];
         if (node.size() == 0) {
-            qWarning() << "data: Cant find any Node on Row " << index.row();
+            qCWarning(nodeModel) << "data: Cant find any Node on Row " << index.row();
             return QVariant();
         }
         return node[static_cast<NodeColumns>(index.column())];
@@ -124,7 +127,7 @@ QVariant QTOZW_Nodes::headerData(int section, Qt::Orientation orientation, int r
 }
 Qt::ItemFlags QTOZW_Nodes::flags(const QModelIndex &index) const {
     if (!index.isValid())
-        return Qt::ItemIsEnabled;
+        return Qt::NoItemFlags;
     switch (static_cast<NodeColumns>(index.column())) {
         case NodeName:
         case NodeLocation:
@@ -157,7 +160,7 @@ QVariant QTOZW_Nodes::getNodeData(quint8 _node, QTOZW_Nodes::NodeColumns _column
     int32_t row = this->getNodeRow(_node);
     if (row >= 0)
         return this->m_nodeData[row][_column];
-    qWarning() << "Can't find NodeData for Node " << _node;
+    qCWarning(nodeModel) << "Can't find NodeData for Node " << _node;
     return QVariant();
 }
 
@@ -172,7 +175,7 @@ int32_t QTOZW_Nodes::getNodeRow(quint8 _node) {
             return it.key();
         }
     }
-    qWarning() << "Can't Find NodeID " << _node << " in NodeData";
+    qCWarning(nodeModel) << "Can't Find NodeID " << _node << " in NodeData";
     return -1;
 }
 
@@ -188,7 +191,7 @@ QTOZW_Nodes_internal::QTOZW_Nodes_internal(QObject *parent)
 void QTOZW_Nodes_internal::addNode(quint8 _nodeID)
 {
     if (this->getNodeRow(_nodeID) >= 0) {
-        qWarning() << "Node " << _nodeID << " Already Exists";
+        qCWarning(nodeModel) << "Node " << _nodeID << " Already Exists";
         return;
     }
     QMap<QTOZW_Nodes::NodeColumns, QVariant> newNode;
@@ -205,7 +208,7 @@ void QTOZW_Nodes_internal::setNodeData(quint8 _nodeID, QTOZW_Nodes::NodeColumns 
 {
     int row = this->getNodeRow(_nodeID);
     if (row == -1) {
-        qWarning() << "setNodeData: Node " << _nodeID << " does not exist";
+        qCWarning(nodeModel) << "setNodeData: Node " << _nodeID << " does not exist";
         return;
     }
     if (this->m_nodeData[row][column] != data) {
@@ -220,7 +223,7 @@ void QTOZW_Nodes_internal::setNodeFlags(quint8 _nodeID, QTOZW_Nodes::nodeFlags _
 {
     int row = this->getNodeRow(_nodeID);
     if (row == -1) {
-        qWarning() << "setNodeData: Node " << _nodeID << " does not exist";
+        qCWarning(nodeModel) << "setNodeData: Node " << _nodeID << " does not exist";
         return;
     }
     QBitArray flag = this->m_nodeData[row][QTOZW_Nodes::NodeFlags].toBitArray();
@@ -238,7 +241,7 @@ void QTOZW_Nodes_internal::delNode(quint8 _nodeID) {
     int32_t newrow = 0;
     for (it = this->m_nodeData.begin(); it != this->m_nodeData.end(); ++it) {
         if (it.value()[QTOZW_Nodes::NodeColumns::NodeID] == _nodeID) {
-            qDebug() << "Removing Node " << it.value()[QTOZW_Nodes::NodeColumns::NodeID] << it.key();
+            qCDebug(nodeModel) << "Removing Node " << it.value()[QTOZW_Nodes::NodeColumns::NodeID] << it.key();
             this->beginRemoveRows(QModelIndex(), it.key(), it.key());
             this->m_nodeData.erase(it);
             this->endRemoveRows();

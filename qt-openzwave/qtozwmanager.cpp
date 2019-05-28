@@ -2,6 +2,7 @@
 #include <QDebug>
 #include <QAbstractItemModel>
 #include <QAbstractItemModelReplica>
+#include "qtozw_logging.h"
 #include "qtozwmanager.h"
 #include "qtozwnodemodel.h"
 #include "qtozwassociations.h"
@@ -21,32 +22,30 @@ QTOZWManager_Internal::QTOZWManager_Internal(QObject *parent)
     : QTOZWManagerSimpleSource (parent)
 {
     this->setObjectName("QTOZW_Manager");
-    pthread_mutexattr_t mutexattr;
-
-    pthread_mutexattr_init ( &mutexattr );
-    pthread_mutexattr_settype( &mutexattr, PTHREAD_MUTEX_RECURSIVE );
-    pthread_mutex_init( &m_manager_mutex, &mutexattr );
-    pthread_mutexattr_destroy( &mutexattr );
-
     try {
         this->m_options = OpenZWave::Options::Create( "", "", "" );
     } catch (OpenZWave::OZWException &e) {
-        qDebug() << "Failed to Load Options Class" << QString(e.GetMsg().c_str());
+        qCWarning(manager) << "Failed to Load Options Class" << QString(e.GetMsg().c_str());
         return;
     }
+    qCDebug(manager) << "OpenZWave Options Class Created";
     this->m_options->AddOptionInt( "SaveLogLevel", OpenZWave::LogLevel_Detail );
     this->m_options->AddOptionInt( "QueueLogLevel", OpenZWave::LogLevel_Debug );
     this->m_options->AddOptionInt( "DumpTrigger", OpenZWave::LogLevel_Error );
-    this->m_options->AddOptionBool("ConsoleOutput", true);
+    this->m_options->AddOptionBool("ConsoleOutput", false);
     this->m_options->AddOptionInt( "PollInterval", 500 );
     this->m_options->AddOptionBool( "IntervalBetweenPolls", true );
     this->m_options->AddOptionBool( "ValidateValueChanges", true);
+    qCDebug(manager) << "OpenZWave Options Set";
+
 
     this->m_nodeModel = new QTOZW_Nodes_internal(this);
     QObject::connect(this->m_nodeModel, &QTOZW_Nodes_internal::dataChanged, this, &QTOZWManager_Internal::pvt_nodeModelDataChanged);
     this->m_valueModel = new QTOZW_ValueIds_internal(this);
     QObject::connect(this->m_valueModel, &QTOZW_ValueIds_internal::dataChanged, this, &QTOZWManager_Internal::pvt_valueModelDataChanged);
     this->m_associationsModel = new QTOZW_Associations_internal(this);
+
+    qCDebug(manager) << "Models Created";
 
 }
 
@@ -59,22 +58,25 @@ bool QTOZWManager_Internal::open(QString SerialPort)
     } catch (OpenZWave::OZWException &e) {
         emit this->error(QTOZWErrorCodes::OZWException);
         this->setErrorString(e.GetMsg().c_str());
-        qWarning() << "Failed to Load Manager Class" << QString(e.GetMsg().c_str());
+        qCWarning(manager) << "Failed to Load Manager Class" << QString(e.GetMsg().c_str());
         return false;
     }
+    qCDebug(manager) << "OpenZWave Manager Instance Created";
     try {
         if (this->m_manager->AddWatcher( OZWNotification::processNotification, this ) != true) {
             emit this->error(QTOZWErrorCodes::setupFailed);
             this->setErrorString("Failed to Add Notification Callback");
-            qWarning() << "Failed to Add Notification Callback";
+            qCWarning(manager) << "Failed to Add Notification Callback";
             return false;
         }
     } catch (OpenZWave::OZWException &e) {
         emit this->error(QTOZWErrorCodes::OZWException);
         this->setErrorString(e.GetMsg().c_str());
-        qWarning() << "Failed to Add Notification Callback " << QString(e.GetMsg().c_str());
+        qCWarning(manager) << "Failed to Add Notification Callback " << QString(e.GetMsg().c_str());
         return false;
     }
+    qCDebug(manager) << "OpenZWave Watcher Registered";
+
     /* setup all our Connections to the Notifications
     ** these are set as QueuedConnections as the Notifications can happen on a different thread
     ** to our main QT thread thats running this manager
@@ -107,20 +109,23 @@ bool QTOZWManager_Internal::open(QString SerialPort)
     QObject::connect(OZWNotification::Get(), &OZWNotification::ozwUserAlert, this, &QTOZWManager_Internal::pvt_ozwUserAlert, Qt::QueuedConnection);
     QObject::connect(OZWNotification::Get(), &OZWNotification::manufacturerSpecificDBReady, this, &QTOZWManager_Internal::pvt_manufacturerSpecificDBReady, Qt::QueuedConnection);
 
+    qCDebug(manager) << "Notification Signals Setup";
 
     try {
         if (this->m_manager->AddDriver( SerialPort.toStdString()) != true) {
             emit this->error(QTOZWErrorCodes::setupFailed);
             this->setErrorString("Failed to Add Serial Port");
-            qWarning() << "Failed to Add Serial Port";
+            qCWarning(manager) << "Failed to Add Serial Port";
             return false;
         }
     } catch (OpenZWave::OZWException &e) {
         emit this->error(QTOZWErrorCodes::OZWException);
         this->setErrorString(e.GetMsg().c_str());
-        qWarning() << "Failed to Add Serial Port: " << QString(e.GetMsg().c_str());
+        qCWarning(manager) << "Failed to Add Serial Port: " << QString(e.GetMsg().c_str());
         return false;
     }
+    qCDebug(manager) << "AddDriver Completed";
+
     return true;
 }
 
@@ -437,24 +442,6 @@ bool QTOZWManager_Internal::downloadLatestMFSRevision() {
     return false;
 }
 
-bool QTOZWManager_Internal::Lock() {
-    if (pthread_mutex_lock( &this->m_manager_mutex ) == 0) {
-        return true;
-    }
-    qDebug() << "Failed to Lock Manager Mutex";
-    return false;
-}
-
-bool QTOZWManager_Internal::Unlock()
-{
-    if (pthread_mutex_unlock( &this->m_manager_mutex ) == 0) {
-        return true;
-    }
-    qDebug() << "Failed to Unlock Manager Mutex";
-    return false;
-
-};
-
 QTOZW_Nodes *QTOZWManager_Internal::getNodeModel() {
     return static_cast<QTOZW_Nodes *>(this->m_nodeModel);
 }
@@ -541,7 +528,7 @@ bool QTOZWManager_Internal::convertValueID(quint64 vidKey) {
             this->m_manager->GetValueListItems(vid, &items);
             this->m_manager->GetValueListValues(vid, &values);
             if (items.size() != values.size()) {
-                qWarning() << "ValueList Item Size Does not equal Value Size";
+                qCWarning(manager) << "ValueList Item Size Does not equal Value Size";
             } else {
                 std::vector<std::string>::iterator it;
                 size_t i = 0;
@@ -613,12 +600,6 @@ bool QTOZWManager_Internal::convertValueID(quint64 vidKey) {
                     }
                 }
             }
-#if 0
-            qDebug() << (quint32)bsmask;
-            this->m_manager->GetBitMask(vid, &bsmask);
-            qDebug().noquote() << BitSettoQString(vidbs.mask);
-            qDebug().noquote() << BitSettoQString(vidbs.values);
-#endif
             this->m_valueModel->setValueData(vidKey, QTOZW_ValueIds::ValueIdColumns::Value, QVariant::fromValue(vidbs));
             this->m_valueModel->setValueData(vidKey, QTOZW_ValueIds::ValueIdColumns::Type, QTOZW_ValueIds::ValueIdTypes::BitSet);
             return true;
@@ -630,7 +611,7 @@ bool QTOZWManager_Internal::convertValueID(quint64 vidKey) {
 
 void QTOZWManager_Internal::pvt_valueAdded(quint64 vidKey)
 {
-    qDebug() << "Notification pvt_valueAdded";
+    qCDebug(notifications) << "Notification pvt_valueAdded:" << vidKey;
     if (!this->m_validValues.contains(vidKey))
         this->m_validValues.push_back(vidKey);
 
@@ -656,7 +637,7 @@ void QTOZWManager_Internal::pvt_valueAdded(quint64 vidKey)
 
         this->convertValueID(vidKey);
     } catch (OpenZWave::OZWException &e) {
-        qWarning() << "OZW Exception: " << e.GetMsg().c_str() << " at " << e.GetFile().c_str() <<":" << e.GetLine();
+        qCWarning(notifications) << "OZW Exception: " << e.GetMsg().c_str() << " at " << e.GetFile().c_str() <<":" << e.GetLine();
         emit this->error(QTOZWErrorCodes::OZWException);
         this->setErrorString(e.GetMsg().c_str());
     }
@@ -664,82 +645,78 @@ void QTOZWManager_Internal::pvt_valueAdded(quint64 vidKey)
 }
 void QTOZWManager_Internal::pvt_valueRemoved(quint64 vidKey)
 {
-    qDebug() << "Notification pvt_valueRemoved";
+    qCDebug(notifications) << "Notification pvt_valueRemoved: " << vidKey;
     if (this->m_validValues.contains(vidKey))
         this->m_validValues.removeAll(vidKey);
     this->m_valueModel->delValue(vidKey);
     emit this->valueRemoved(vidKey);
-    Q_UNUSED(vidKey);
 }
 void QTOZWManager_Internal::pvt_valueChanged(quint64 vidKey)
 {
-    qDebug() << "Notification pvt_valueChanged";
+    qCDebug(notifications) << "Notification pvt_valueChanged: " << vidKey;
     this->convertValueID(vidKey);
     emit this->valueChanged(vidKey);
 }
 void QTOZWManager_Internal::pvt_valueRefreshed(quint64 vidKey)
 {
-    qDebug() << "Notification pvt_valueRefreshed";
+    qCDebug(notifications) << "Notification pvt_valueRefreshed: " << vidKey;
 
     this->convertValueID(vidKey);
     emit this->valueRefreshed(vidKey);
 }
 void QTOZWManager_Internal::pvt_valuePollingEnabled(quint64 vidKey)
 {
-    qDebug() << "Notification pvt_valuePollingEnabled";
+    qCDebug(notifications) << "Notification pvt_valuePollingEnabled " << vidKey;
     this->m_valueModel->setValueFlags(vidKey, QTOZW_ValueIds::ValueIDFlags::ValuePolled, true);
 
 }
 void QTOZWManager_Internal::pvt_valuePollingDisabled(quint64 vidKey)
 {
-    qDebug() << "Notification pvt_valuePollingDisabled";
+    qCDebug(notifications) << "Notification pvt_valuePollingDisabled " << vidKey;
     this->m_valueModel->setValueFlags(vidKey, QTOZW_ValueIds::ValueIDFlags::ValuePolled, false);
 
 }
 void QTOZWManager_Internal::pvt_nodeGroupChanged(quint8 node, quint8 group)
 {
-    qDebug() << "Notification pvt_nodeGroupChanged";
+    qCDebug(notifications) << "Notification pvt_nodeGroupChanged " << node << " Group: " << group;
 
-    if (this->m_associationDefaultsSet[node][group] == false) {
-        for (int i = 0; i < this->m_manager->GetNumGroups(this->homeId(), node); i++) {
-            this->m_associationsModel->setDefaultGroupData(node, group, QTOZW_Associations::associationColumns::MaxAssocations, this->m_manager->GetMaxAssociations(this->homeId(), node, group));
-            this->m_associationsModel->setDefaultGroupFlags(node, group, QTOZW_Associations::associationFlags::isMultiInstance, this->m_manager->IsMultiInstance(this->homeId(), node, group));
-            this->m_associationsModel->setDefaultGroupData(node, group, QTOZW_Associations::associationColumns::GroupName, this->m_manager->GetGroupLabel(this->homeId(), node, group).c_str());
-        }
-        this->m_associationDefaultsSet[node][group] = true;
+    if (this->m_associationsModel->getassocationRow(node, group) == -1) {
+        this->m_associationsModel->addGroup(node, group);
+        this->m_associationsModel->setGroupData(node, group, QTOZW_Associations::associationColumns::MaxAssocations, this->m_manager->GetMaxAssociations(this->homeId(), node, group));
+        this->m_associationsModel->setGroupFlags(node, group, QTOZW_Associations::associationFlags::isMultiInstance, this->m_manager->IsMultiInstance(this->homeId(), node, group));
+        this->m_associationsModel->setGroupData(node, group, QTOZW_Associations::associationColumns::GroupName, this->m_manager->GetGroupLabel(this->homeId(), node, group).c_str());
     }
+
     OpenZWave::InstanceAssociation *ia;
     quint32 count = this->m_manager->GetAssociations(this->homeId(), node, group, &ia);
     for (quint32 i = 0;  i < count; i++) {
-        if (!this->m_associationsModel->isAssociationExists(node, group, ia[i].m_nodeId, ia[i].m_instance)) {
+        if (!this->m_associationsModel->findAssociation(node, group, ia[i].m_nodeId, ia[i].m_instance)) {
             this->m_associationsModel->addAssociation(node, group, ia[i].m_nodeId, ia[i].m_instance);
         }
     }
-    /* now see if we need to delete any entries for this node/group */
-    for (int row = 0; row < this->m_associationsModel->rowCount(QModelIndex()); ++row) {
-        QMap<QTOZW_Associations::associationColumns, QVariant> data = this->m_associationsModel->m_associationData[row];
+
+    QStringList list = this->m_associationsModel->getassocationData(node, group, QTOZW_Associations::associationColumns::Members).toStringList();
+    QStringList removeitems;
+    for (int i = 0; i < list.size(); ++i) {
+        QString member = list.at(i);
+        int targetnode = member.split(":")[0].toInt();
+        int targetinstance = member.split(":")[1].toInt();
         bool found = false;
-        for (quint32 i = 0; i < count; i++) {
-            if (data[QTOZW_Associations::associationColumns::NodeID] == node) {
-                if (data[QTOZW_Associations::associationColumns::GroupID] == group) {
-                    if (data[QTOZW_Associations::associationColumns::MemberNodeID] == ia[i].m_nodeId) {
-                        if (data[QTOZW_Associations::associationColumns::MemberNodeInstance] == ia[i].m_instance) {
-                            found = true;
-                        }
-                    }
-                }
-            }
+        for (quint32 j = 0; j < count; j++) {
+            if (targetnode == ia[i].m_nodeId && targetinstance == ia[i].m_instance)
+                found = true;
         }
         if (found == false) {
-            this->m_associationsModel->delAssociation(node, group, data[QTOZW_Associations::associationColumns::MemberNodeID].value<quint8>(), data[QTOZW_Associations::associationColumns::MemberNodeInstance].value<quint8>());
+            this->m_associationsModel->delAssociation(node, group, static_cast<quint8>(targetnode), static_cast<quint8>(targetinstance));
         }
     }
+
     if (ia != nullptr)
         delete [] ia;
 }
 void QTOZWManager_Internal::pvt_nodeNew(quint8 node)
 {
-    qDebug() << "Notification pvt_nodeNew";
+    qCDebug(notifications) << "Notification pvt_nodeNew " << node;
     if (!this->m_validNodes.contains(node))
         this->m_validNodes.push_back(node);
     this->m_nodeModel->addNode(node);
@@ -753,7 +730,7 @@ void QTOZWManager_Internal::pvt_nodeNew(quint8 node)
 
         this->m_nodeModel->setNodeFlags(node, QTOZW_Nodes::isFailed, this->m_manager->IsNodeFailed(this->homeId(), node));
     } catch (OpenZWave::OZWException &e) {
-        qWarning() << "OZW Exception: " << e.GetMsg().c_str() << " at " << e.GetFile().c_str() <<":" << e.GetLine();
+        qCWarning(notifications) << "OZW Exception: " << e.GetMsg().c_str() << " at " << e.GetFile().c_str() <<":" << e.GetLine();
         emit this->error(QTOZWErrorCodes::OZWException);
         this->setErrorString(e.GetMsg().c_str());
     }
@@ -762,7 +739,7 @@ void QTOZWManager_Internal::pvt_nodeNew(quint8 node)
 }
 void QTOZWManager_Internal::pvt_nodeAdded(quint8 node)
 {
-    qDebug() << "Notification pvt_nodeAdded";
+    qCDebug(notifications) << "Notification pvt_nodeAdded " << node;
     if (!this->m_validNodes.contains(node))
         this->m_validNodes.push_back(node);
 
@@ -777,7 +754,7 @@ void QTOZWManager_Internal::pvt_nodeAdded(quint8 node)
 
         this->m_nodeModel->setNodeFlags(node, QTOZW_Nodes::isFailed, this->m_manager->IsNodeFailed(this->homeId(), node));
     } catch (OpenZWave::OZWException &e) {
-        qWarning() << "OZW Exception: " << e.GetMsg().c_str() << " at " << e.GetFile().c_str() <<":" << e.GetLine();
+        qCWarning(notifications) << "OZW Exception: " << e.GetMsg().c_str() << " at " << e.GetFile().c_str() <<":" << e.GetLine();
         emit this->error(QTOZWErrorCodes::OZWException);
         this->setErrorString(e.GetMsg().c_str());
     }
@@ -786,7 +763,7 @@ void QTOZWManager_Internal::pvt_nodeAdded(quint8 node)
 }
 void QTOZWManager_Internal::pvt_nodeRemoved(quint8 node)
 {
-    qDebug() << "Notification pvt_nodeRemoved";
+    qCDebug(notifications) << "Notification pvt_nodeRemoved " << node;
     if (this->m_validNodes.contains(node))
         this->m_validNodes.removeAll(node);
     this->m_associationsModel->delNode(node);
@@ -798,7 +775,7 @@ void QTOZWManager_Internal::pvt_nodeRemoved(quint8 node)
 }
 void QTOZWManager_Internal::pvt_nodeReset(quint8 node)
 {
-    qDebug() << "Notification pvt_nodeReset";
+    qCDebug(notifications) << "Notification pvt_nodeReset " << node;
     if (this->m_validNodes.contains(node))
         this->m_validNodes.removeAll(node);
 
@@ -811,7 +788,7 @@ void QTOZWManager_Internal::pvt_nodeReset(quint8 node)
 }
 void QTOZWManager_Internal::pvt_nodeNaming(quint8 node)
 {
-    qDebug() << "Notification pvt_nodeNaming";
+    qCDebug(notifications) << "Notification pvt_nodeNaming " << node;
     try {
         QString data = this->m_manager->GetNodeName(this->homeId(), node).c_str();
         this->m_nodeModel->setNodeData(node, QTOZW_Nodes::NodeName, data);
@@ -827,7 +804,7 @@ void QTOZWManager_Internal::pvt_nodeNaming(quint8 node)
 
         this->m_nodeModel->setNodeFlags(node, QTOZW_Nodes::isFailed, this->m_manager->IsNodeFailed(this->homeId(), node));
     } catch (OpenZWave::OZWException &e) {
-        qWarning() << "OZW Exception: " << e.GetMsg().c_str() << " at " << e.GetFile().c_str() <<":" << e.GetLine();
+        qCWarning(notifications) << "OZW Exception: " << e.GetMsg().c_str() << " at " << e.GetFile().c_str() <<":" << e.GetLine();
         emit this->error(QTOZWErrorCodes::OZWException);
         this->setErrorString(e.GetMsg().c_str());
     }
@@ -835,7 +812,7 @@ void QTOZWManager_Internal::pvt_nodeNaming(quint8 node)
 }
 void QTOZWManager_Internal::pvt_nodeEvent(quint8 node, quint8 event)
 {
-    qDebug() << "Notification pvt_nodeEvent";
+    qCDebug(notifications) << "Notification pvt_nodeEvent " << node << " Event: " << event;
     try {
         QVariant data = this->m_manager->GetNodeQueryStage(this->homeId(), node).c_str();
         this->m_nodeModel->setNodeData(node, QTOZW_Nodes::NodeQueryStage, data);
@@ -844,7 +821,7 @@ void QTOZWManager_Internal::pvt_nodeEvent(quint8 node, quint8 event)
 
         this->m_nodeModel->setNodeFlags(node, QTOZW_Nodes::isFailed, this->m_manager->IsNodeFailed(this->homeId(), node));
     } catch (OpenZWave::OZWException &e) {
-        qWarning() << "OZW Exception: " << e.GetMsg().c_str() << " at " << e.GetFile().c_str() <<":" << e.GetLine();
+        qCWarning(notifications) << "OZW Exception: " << e.GetMsg().c_str() << " at " << e.GetFile().c_str() <<":" << e.GetLine();
         emit this->error(QTOZWErrorCodes::OZWException);
         this->setErrorString(e.GetMsg().c_str());
     }
@@ -852,7 +829,7 @@ void QTOZWManager_Internal::pvt_nodeEvent(quint8 node, quint8 event)
 }
 void QTOZWManager_Internal::pvt_nodeProtocolInfo(quint8 node)
 {
-    qDebug() << "Notification pvt_nodeProtocolInfo";
+    qCDebug(notifications) << "Notification pvt_nodeProtocolInfo " << node;
     try {
         QVariant data = this->m_manager->GetNodeProductName(this->homeId(), node).c_str();
         this->m_nodeModel->setNodeData(node, QTOZW_Nodes::NodeProductName, data);
@@ -918,7 +895,7 @@ void QTOZWManager_Internal::pvt_nodeProtocolInfo(quint8 node)
 
         this->m_nodeModel->setNodeFlags(node, QTOZW_Nodes::isFailed, this->m_manager->IsNodeFailed(this->homeId(), node));
     } catch (OpenZWave::OZWException &e) {
-        qWarning() << "OZW Exception: " << e.GetMsg().c_str() << " at " << e.GetFile().c_str() <<":" << e.GetLine();
+        qCWarning(notifications) << "OZW Exception: " << e.GetMsg().c_str() << " at " << e.GetFile().c_str() <<":" << e.GetLine();
         emit this->error(QTOZWErrorCodes::OZWException);
         this->setErrorString(e.GetMsg().c_str());
     }
@@ -926,7 +903,7 @@ void QTOZWManager_Internal::pvt_nodeProtocolInfo(quint8 node)
 }
 void QTOZWManager_Internal::pvt_nodeEssentialNodeQueriesComplete(quint8 node)
 {
-    qDebug() << "Notification pvt_nodeEssentialNodeQueriesComplete";
+    qCDebug(notifications) << "Notification pvt_nodeEssentialNodeQueriesComplete " << node;
     try {
         QVariant data = this->m_manager->GetNodeQueryStage(this->homeId(), node).c_str();
         this->m_nodeModel->setNodeData(node, QTOZW_Nodes::NodeQueryStage, data);
@@ -995,7 +972,7 @@ void QTOZWManager_Internal::pvt_nodeEssentialNodeQueriesComplete(quint8 node)
         this->m_nodeModel->setNodeData(node, QTOZW_Nodes::NodeGroups, this->m_manager->GetNumGroups(this->homeId(), node));
 
     } catch (OpenZWave::OZWException &e) {
-        qWarning() << "OZW Exception: " << e.GetMsg().c_str() << " at " << e.GetFile().c_str() <<":" << e.GetLine();
+        qCWarning(notifications) << "OZW Exception: " << e.GetMsg().c_str() << " at " << e.GetFile().c_str() <<":" << e.GetLine();
         emit this->error(QTOZWErrorCodes::OZWException);
         this->setErrorString(e.GetMsg().c_str());
     }
@@ -1003,7 +980,7 @@ void QTOZWManager_Internal::pvt_nodeEssentialNodeQueriesComplete(quint8 node)
 }
 void QTOZWManager_Internal::pvt_nodeQueriesComplete(quint8 node)
 {
-    qDebug() << "Notification pvt_nodeQueriesComplete";
+    qCDebug(notifications) << "Notification pvt_nodeQueriesComplete " << node;
     /* Plus Type Info here */
     try {
         QVariant data = this->m_manager->GetNodeDeviceType(this->homeId(), node);
@@ -1084,7 +1061,7 @@ void QTOZWManager_Internal::pvt_nodeQueriesComplete(quint8 node)
         this->m_nodeModel->setNodeFlags(node, QTOZW_Nodes::isFailed, this->m_manager->IsNodeFailed(this->homeId(), node));
 
     } catch (OpenZWave::OZWException &e) {
-        qWarning() << "OZW Exception: " << e.GetMsg().c_str() << " at " << e.GetFile().c_str() <<":" << e.GetLine();
+        qCWarning(notifications) << "OZW Exception: " << e.GetMsg().c_str() << " at " << e.GetFile().c_str() <<":" << e.GetLine();
         emit this->error(QTOZWErrorCodes::OZWException);
         this->setErrorString(e.GetMsg().c_str());
     }
@@ -1092,14 +1069,14 @@ void QTOZWManager_Internal::pvt_nodeQueriesComplete(quint8 node)
 }
 void QTOZWManager_Internal::pvt_driverReady(quint32 _homeID)
 {
-    qDebug() << "Notification pvt_driverRead";
+    qCDebug(notifications) << "Notification pvt_driverRead " << _homeID;
     this->setHomeId(_homeID);
     emit this->started(_homeID);
     emit this->driverReady(_homeID);
 }
 void QTOZWManager_Internal::pvt_driverFailed(quint32 _homeID)
 {
-    qDebug() << "Notification pvt_driverFailed";
+    qCDebug(notifications) << "Notification pvt_driverFailed " << _homeID;
     this->m_associationsModel->resetModel();
     this->m_valueModel->resetModel();
     this->m_nodeModel->resetModel();
@@ -1109,7 +1086,7 @@ void QTOZWManager_Internal::pvt_driverFailed(quint32 _homeID)
 }
 void QTOZWManager_Internal::pvt_driverReset(quint32 _homeID)
 {
-    qDebug() << "Notification pvt_driverReset";
+    qCDebug(notifications) << "Notification pvt_driverReset " << _homeID;
     this->m_associationsModel->resetModel();
     this->m_valueModel->resetModel();
     this->m_nodeModel->resetModel();
@@ -1119,7 +1096,7 @@ void QTOZWManager_Internal::pvt_driverReset(quint32 _homeID)
 }
 void QTOZWManager_Internal::pvt_driverRemoved(quint32 _homeID)
 {
-    qDebug() << "Notification pvt_driverRemoved";
+    qCDebug(notifications) << "Notification pvt_driverRemoved " << _homeID;
     this->m_associationsModel->resetModel();
     this->m_valueModel->resetModel();
     this->m_nodeModel->resetModel();
@@ -1129,39 +1106,37 @@ void QTOZWManager_Internal::pvt_driverRemoved(quint32 _homeID)
 }
 void QTOZWManager_Internal::pvt_driverAllNodesQueriedSomeDead()
 {
-    qDebug() << "Notification pvt_driverAllNodesQueriedSomeDead";
+    qCDebug(notifications) << "Notification pvt_driverAllNodesQueriedSomeDead";
     emit this->driverAllNodesQueriedSomeDead();
 }
 void QTOZWManager_Internal::pvt_driverAllNodesQueried()
 {
-    qDebug() << "Notification pvt_driverAllNodesQueried";
+    qCDebug(notifications) << "Notification pvt_driverAllNodesQueried";
     emit this->driverAllNodesQueried();
 }
 void QTOZWManager_Internal::pvt_driverAwakeNodesQueried()
 {
-    qDebug() << "Notification pvt_driverAwakeNodesQueried";
+    qCDebug(notifications) << "Notification pvt_driverAwakeNodesQueried";
     emit this->driverAllNodesQueried();
 }
 void QTOZWManager_Internal::pvt_controllerCommand(quint8 command)
 {
-    qDebug() << "Notification pvt_controllerCommand";
+    qCDebug(notifications) << "Notification pvt_controllerCommand " << command;
     emit this->controllerCommand(command);
 }
 void QTOZWManager_Internal::pvt_ozwNotification(OpenZWave::Notification::NotificationCode event)
 {
-    qDebug() << "Notification pvt_ozwNotification";
-    Q_UNUSED(event);
+    qCDebug(notifications) << "Notification pvt_ozwNotification" << event;
 
 }
 void QTOZWManager_Internal::pvt_ozwUserAlert(OpenZWave::Notification::UserAlertNotification event)
 {
-    qDebug() << "Notification pvt_ozwUserAlert";
-    Q_UNUSED(event);
+    qCDebug(notifications) << "Notification pvt_ozwUserAlert"  << event;
 
 }
 void QTOZWManager_Internal::pvt_manufacturerSpecificDBReady()
 {
-    qDebug() << "Notification pvt_manufacturerSpecificDBReady";
+    qCDebug(notifications) << "Notification pvt_manufacturerSpecificDBReady";
     emit this->manufacturerSpecificDBReady();
 }
 
@@ -1171,7 +1146,7 @@ void QTOZWManager_Internal::pvt_nodeModelDataChanged(const QModelIndex &topLeft,
     if (!roles.contains(QTOZW_UserRoles::ModelDataChanged)) {
         return;
     }
-    qDebug() << "nodeModel Changed!" << static_cast<QTOZW_Nodes::NodeColumns>(topLeft.column()) << ": "<< topLeft.data();
+    qCDebug(nodeModel) << "nodeModel Changed!" << static_cast<QTOZW_Nodes::NodeColumns>(topLeft.column()) << ": "<< topLeft.data();
     /* get the Node Number */
     QModelIndex nodeIdIndex = topLeft.siblingAtColumn(QTOZW_Nodes::NodeColumns::NodeID);
     quint8 nodeId = this->m_nodeModel->data(nodeIdIndex, Qt::DisplayRole).value<quint8>();
@@ -1184,11 +1159,11 @@ void QTOZWManager_Internal::pvt_nodeModelDataChanged(const QModelIndex &topLeft,
                 this->m_manager->SetNodeLocation(this->homeId(), nodeId, topLeft.data().toString().toStdString());
                 break;
             default:
-                qWarning() << "Got a nodeModelDataChanged Singal but not a Column we handle: " << static_cast<QTOZW_Nodes::NodeColumns>(topLeft.column()) ;
+                qCWarning(nodeModel) << "Got a nodeModelDataChanged Singal but not a Column we handle: " << static_cast<QTOZW_Nodes::NodeColumns>(topLeft.column()) ;
                 return;
         }
     } catch (OpenZWave::OZWException &e) {
-        qWarning() << "OZW Exception: " << e.GetMsg().c_str() << " at " << e.GetFile().c_str() <<":" << e.GetLine();
+        qCWarning(nodeModel) << "OZW Exception: " << e.GetMsg().c_str() << " at " << e.GetFile().c_str() <<":" << e.GetLine();
         emit this->error(QTOZWErrorCodes::OZWException);
         this->setErrorString(e.GetMsg().c_str());
     }
@@ -1200,7 +1175,7 @@ void QTOZWManager_Internal::pvt_valueModelDataChanged(const QModelIndex &topLeft
     if (!roles.contains(QTOZW_UserRoles::ModelDataChanged)) {
         return;
     }
-    qDebug() << "valueModel Changed!" << static_cast<QTOZW_ValueIds::ValueIdColumns>(topLeft.column()) << ": "<< topLeft.data();
+    qCDebug(valueModel) << "valueModel Changed!" << static_cast<QTOZW_ValueIds::ValueIdColumns>(topLeft.column()) << ": "<< topLeft.data();
     /* get the Node Number */
     quint64 vidKey = this->m_valueModel->data(topLeft.siblingAtColumn(QTOZW_ValueIds::ValueIdColumns::ValueIDKey), Qt::DisplayRole).value<quint64>();
     try {
@@ -1228,12 +1203,12 @@ void QTOZWManager_Internal::pvt_valueModelDataChanged(const QModelIndex &topLeft
             }
             case OpenZWave::ValueID::ValueType_List:
             {
-                qWarning() << "ValueType List TODO";
+                qCWarning(valueModel) << "ValueType List TODO";
                 return;
             }
             case OpenZWave::ValueID::ValueType_Schedule:
             {
-                qWarning() << "ValueType_Schedule TODO";
+                qCWarning(valueModel) << "ValueType_Schedule TODO";
                 return;
             }
             case OpenZWave::ValueID::ValueType_Short:
@@ -1248,12 +1223,12 @@ void QTOZWManager_Internal::pvt_valueModelDataChanged(const QModelIndex &topLeft
             }
             case OpenZWave::ValueID::ValueType_Button:
             {
-                qWarning() << "ValueType_Button TODO";
+                qCWarning(valueModel) << "ValueType_Button TODO";
                 return;
             }
             case OpenZWave::ValueID::ValueType_Raw:
             {
-                qWarning() << "ValueType_Raw TODO";
+                qCWarning(valueModel) << "ValueType_Raw TODO";
                 return;
             }
             case OpenZWave::ValueID::ValueType_BitSet:
@@ -1278,7 +1253,7 @@ void QTOZWManager_Internal::pvt_valueModelDataChanged(const QModelIndex &topLeft
 
         }
     } catch (OpenZWave::OZWException &e) {
-        qWarning() << "OZW Exception: " << e.GetMsg().c_str() << " at " << e.GetFile().c_str() <<":" << e.GetLine();
+        qCWarning(valueModel) << "OZW Exception: " << e.GetMsg().c_str() << " at " << e.GetFile().c_str() <<":" << e.GetLine();
         emit this->error(QTOZWErrorCodes::OZWException);
         this->setErrorString(e.GetMsg().c_str());
     }
@@ -1303,7 +1278,9 @@ QString nodeBasicStr (uint8 basic)
 }
 
 QTOZWManager::QTOZWManager(QObject *parent)
-    : QObject(parent)
+    : QObject(parent),
+    m_running(false)
+
 {
 
 }
@@ -1318,10 +1295,10 @@ bool QTOZWManager::initilizeSource(bool enableServer) {
     if (enableServer) {
         this->m_sourceNode = new QRemoteObjectHost(QUrl(QStringLiteral("tcp://0.0.0.0:1983")), this);
         QObject::connect(this->m_sourceNode, &QRemoteObjectHost::error, this, &QTOZWManager::onSourceError);
-        this->m_sourceNode->setHeartbeatInterval(1000);
+        //this->m_sourceNode->setHeartbeatInterval(1000);
         this->m_sourceNode->enableRemoting<QTOZWManagerSourceAPI>(this->d_ptr_internal);
         QVector<int> roles;
-        roles << Qt::DisplayRole << Qt::BackgroundRole << Qt::EditRole << Qt::ToolTipRole;
+        roles << Qt::DisplayRole << Qt::EditRole << Qt::ToolTipRole;
         this->m_sourceNode->enableRemoting(this->d_ptr_internal->getNodeModel(), "QTOZW_nodeModel", roles);
         this->m_sourceNode->enableRemoting(this->d_ptr_internal->getValueModel(), "QTOZW_valueModel", roles);
         this->m_sourceNode->enableRemoting(this->d_ptr_internal->getAssociationModel(), "QTOZW_associationModel", roles);
@@ -1350,12 +1327,12 @@ bool QTOZWManager::initilizeReplica(QUrl remote) {
 }
 
 void QTOZWManager::onReplicaError(QRemoteObjectNode::ErrorCode error) {
-    qDebug() << "Replica Error: " << error;
+    qCWarning(manager) << "Replica Error: " << error;
     /* raise this upto the application */
 }
 
 void QTOZWManager::onSourceError(QRemoteObjectHost::ErrorCode error) {
-    qDebug() << "Host Error: " << error;
+    qCWarning(manager) << "Host Error: " << error;
     /* raise this upto the application */
 }
 
@@ -1392,7 +1369,7 @@ bool QTOZWManager::isRunning() {
 }
 
 void QTOZWManager::setStarted() {
-    qDebug() << "setStarted";
+    qCDebug(manager) << "setStarted";
     this->m_running = true;
 }
 

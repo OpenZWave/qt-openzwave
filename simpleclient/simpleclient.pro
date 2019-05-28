@@ -1,5 +1,5 @@
 
-QT += widgets remoteobjects
+QT += widgets remoteobjects testlib
 
 CONFIG += silent
 DEFINES  += remote

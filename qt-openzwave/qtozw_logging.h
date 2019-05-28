@@ -1,0 +1,12 @@
+#include <QLoggingCategory>
+
+#ifndef QTOZW_LOGGING_H
+#define QTOZW_LOGGING_H
+
+Q_DECLARE_LOGGING_CATEGORY(manager);
+Q_DECLARE_LOGGING_CATEGORY(valueModel);
+Q_DECLARE_LOGGING_CATEGORY(nodeModel);
+Q_DECLARE_LOGGING_CATEGORY(associationModel);
+Q_DECLARE_LOGGING_CATEGORY(notifications);
+
+#endif // QTOZW_LOGGING_H

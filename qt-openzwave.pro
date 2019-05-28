@@ -8,4 +8,5 @@ TEMPLATE = subdirs
 
 CONFIG += ordered silent
 
-SUBDIRS = qt-openzwave simpleclient
+SUBDIRS = qt-openzwave simpleclient \
+    qt-ozwdaemon

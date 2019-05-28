@@ -106,10 +106,6 @@ public Q_SLOTS:
     void pvt_valueModelDataChanged(const QModelIndex &topLeft, const QModelIndex &bottomRight, const QVector<int> &roles);
 
 private:
-    bool Lock();
-    bool Unlock();
-
-private:
 
     bool checkHomeId();
     bool checkNodeId(quint8 _node);
@@ -122,7 +118,6 @@ private:
     QTOZW_Nodes_internal *m_nodeModel;
     QTOZW_ValueIds_internal *m_valueModel;
     QTOZW_Associations_internal *m_associationsModel;
-    pthread_mutex_t m_manager_mutex;
     QVector<quint8> m_validNodes;
     QVector<quint64> m_validValues;
     QMap<quint8, QMap<quint8, bool > > m_associationDefaultsSet;

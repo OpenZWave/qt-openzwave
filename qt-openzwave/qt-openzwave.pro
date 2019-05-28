@@ -52,6 +52,7 @@ SOURCES += \
 HEADERS += \
         qtopenzwave.h \
         qt-openzwave_global.h \  \
+        qtozw_logging.h \
         qtozwassociations.h \
         qtozwproxymodels.h \
         qtozwmanager.h \

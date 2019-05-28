@@ -50,15 +50,15 @@ public:
         flagCount
     };
 
-    Q_ENUM(nodeFlags);
+    Q_ENUM(nodeFlags)
 
     QTOZW_Nodes(QObject *parent=nullptr);
-    int rowCount(const QModelIndex &parent) const;
-    int columnCount(const QModelIndex &parent) const;
-    QVariant data(const QModelIndex &index, int role) const;
-    QVariant headerData(int section, Qt::Orientation orientation, int role) const;
-    Qt::ItemFlags flags(const QModelIndex &index) const;
-    bool setData(const QModelIndex &index, const QVariant &value, int role=Qt::EditRole);
+    int rowCount(const QModelIndex &parent) const override;
+    int columnCount(const QModelIndex &parent) const override;
+    QVariant data(const QModelIndex &index, int role) const override;
+    QVariant headerData(int section, Qt::Orientation orientation, int role) const override;
+    Qt::ItemFlags flags(const QModelIndex &index) const override;
+    bool setData(const QModelIndex &index, const QVariant &value, int role=Qt::EditRole) override;
 
 protected:
     QVariant getNodeData(quint8, NodeColumns);

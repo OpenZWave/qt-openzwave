@@ -62,7 +62,7 @@
 int main(int argc, char **argv)
 {
 
-#if 0
+#if 1
     QLoggingCategory::setFilterRules("qt.remoteobjects.debug=true\n"
                                      "qt.remoteobjects.warning=true\n"
                                      "qt.remoteobjects.models.debug=true\n"
@@ -70,7 +70,8 @@ int main(int argc, char **argv)
                                      "qt.remoteobjects.io.debug=true\n"
                                      "default.debug=true");
 #else
-    QLoggingCategory::setFilterRules("default.debug=true");
+    QLoggingCategory::setFilterRules("default.debug=true\n"
+                                     "qt.modeltest.*=true");
 #endif
     QApplication app(argc, argv);
     QIcon icon(":res/ozw_SF2_notext.png");
