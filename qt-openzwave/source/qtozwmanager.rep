@@ -13,19 +13,20 @@ class QTOZWManager {
     };
 
     ENUM QTOZWMetaDataField {
-        OZWInfoURL,
-        ZWAProductURL,
-        ProductPic,
-        Description,
-        ProductManualURL,
-        InclusionHelp,
-        ExclusionHelp,
-        ResetHelp,
-        WakeupHelp,
-        ProductSupportURL,
-        Frequency,
-        Name,
-        Identifier
+        OZWInfoURL = 0,
+        ZWAProductURL = 1,
+        ProductPic = 2,
+        Description = 3,
+        ProductManualURL = 4,
+        ProductPageURL = 5,
+        InclusionHelp = 6,
+        ExclusionHelp = 7,
+        ResetHelp = 8,
+        WakeupHelp = 9,
+        ProductSupportURL = 10,
+        Frequency = 11,
+        Name = 12,
+        Identifier = 13
     }
 
     PROP(bool running SOURCEONLYSETTER)
