@@ -5,6 +5,7 @@
 #include <QUrl>
 #include <QtRemoteObjects>
 
+#include "rep_qtozwmanager_source.h"
 #include "qtozwnodemodel.h"
 #include "qtozwvalueidmodel.h"
 #include "qtozwassociationmodel.h"
@@ -15,7 +16,6 @@ enum QTOZW_UserRoles {
 
 class QTOZWManager_Internal;
 class QTOZWManagerReplica;
-
 
 class QTOZWManager : public QObject {
     Q_OBJECT
@@ -67,7 +67,8 @@ public:
     bool sendNodeInfomation(quint8 _node);
     bool replaceFailedNode(quint8 _node);
     bool requestNetworkUpdate(quint8 _node);
-
+    QString GetMetaData(quint8 _node, QTOZWManagerSource::QTOZWMetaDataField _field);
+    QByteArray GetMetaDataProductPic(quint8 _node);
     bool checkLatestConfigFileRevision(quint8 const _node);
     bool checkLatestMFSRevision();
     bool downloadLatestConfigFileRevision(quint8 const _node);

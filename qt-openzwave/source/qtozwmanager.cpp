@@ -264,6 +264,20 @@ bool QTOZWManager::replaceFailedNode(quint8 _node) {
 bool QTOZWManager::requestNetworkUpdate(quint8 _node) {
     CALL_DPTR_RTN(requestNetworkUpdate(_node), bool);
 }
+QString QTOZWManager::GetMetaData(quint8 _node, QTOZWManagerSource::QTOZWMetaDataField _field) {
+    if (this->m_connectionType == QTOZWManager::connectionType::Local) {
+        return this->d_ptr_internal->GetMetaData(_node, _field); \
+    } else {
+        QRemoteObjectPendingReply<QString> res = this->d_ptr_replica->GetMetaData(_node, static_cast<QTOZWManagerReplica::QTOZWMetaDataField>(_field));
+        res.waitForFinished();
+        return res.returnValue();
+    }
+}
+
+QByteArray QTOZWManager::GetMetaDataProductPic(quint8 _node) {
+    CALL_DPTR_RTN(GetMetaDataProductPic(_node), QByteArray);
+}
+
 bool QTOZWManager::checkLatestConfigFileRevision(quint8 const _node) {
     CALL_DPTR_RTN(checkLatestConfigFileRevision(_node), bool);
 }

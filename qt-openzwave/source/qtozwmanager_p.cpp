@@ -394,6 +394,39 @@ bool QTOZWManager_Internal::requestNetworkUpdate(quint8 _node) {
     return false;
 }
 
+QString QTOZWManager_Internal::GetMetaData(quint8 _node, QTOZWMetaDataField _field) {
+    if (!this->checkHomeId() || !this->checkNodeId(_node))
+        return QString();
+    try {
+        return QString::fromStdString(this->m_manager->GetMetaData(this->homeId(), _node, static_cast<OpenZWave::Node::MetaDataFields>(_field)));
+    } catch (OpenZWave::OZWException &e) {
+        emit this->error(QTOZWErrorCodes::OZWException);
+        this->setErrorString(e.GetMsg().c_str());
+    }
+    return QString();
+}
+
+QByteArray QTOZWManager_Internal::GetMetaDataProductPic(quint8 _node) {
+    if (!this->checkHomeId() || !this->checkNodeId(_node))
+        return QByteArray();
+    try {
+        QString path("config/");
+        path.append(QString::fromStdString(this->m_manager->GetMetaData(this->homeId(), _node, OpenZWave::Node::MetaDataFields::MetaData_ProductPic)));
+        if (path == "config/")
+            return QByteArray();
+        QFile file(path);
+        if (!file.open(QIODevice::ReadOnly)) return QByteArray();
+        return file.readAll();
+    } catch (OpenZWave::OZWException &e) {
+        emit this->error(QTOZWErrorCodes::OZWException);
+        this->setErrorString(e.GetMsg().c_str());
+    }
+    return QByteArray();
+
+
+}
+
+
 bool QTOZWManager_Internal::checkLatestConfigFileRevision(quint8 const _node) {
     if (!this->checkHomeId() || !this->checkNodeId(_node))
         return false;
@@ -535,7 +568,7 @@ bool QTOZWManager_Internal::convertValueID(quint64 vidKey) {
                 QTOZW_ValueIDList vidlist;
                 for(it = items.begin(); it != items.end(); it++) {
                     vidlist.labels.push_back(QString::fromStdString(*it));
-                    vidlist.values.push_back(values.at(i));
+                    vidlist.values.push_back(static_cast<unsigned int>(values.at(i)));
                     i++;
                 }
                 std::string selectedItem;
@@ -1203,7 +1236,8 @@ void QTOZWManager_Internal::pvt_valueModelDataChanged(const QModelIndex &topLeft
             }
             case OpenZWave::ValueID::ValueType_List:
             {
-                qCWarning(valueModel) << "ValueType List TODO";
+                QTOZW_ValueIDList list = topLeft.data().value<QTOZW_ValueIDList>();
+                this->m_manager->SetValueListSelection(vid, list.selectedItem.toStdString().c_str());
                 return;
             }
             case OpenZWave::ValueID::ValueType_Schedule:

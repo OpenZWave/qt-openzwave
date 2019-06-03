@@ -7,6 +7,7 @@
 #include "rep_qtozwmanager_source.h"
 #include "rep_qtozwmanager_replica.h"
 #include "qtozwnotification.h"
+#include "qt-openzwave/qtozwmanager.h"
 #include "qtozwnodemodel_p.h"
 #include "qtozwvalueidmodel_p.h"
 #include "qtozwassociationmodel_p.h"
@@ -59,6 +60,8 @@ public Q_SLOTS:
     bool sendNodeInfomation(quint8 _node);
     bool replaceFailedNode(quint8 _node);
     bool requestNetworkUpdate(quint8 _node);
+    QString GetMetaData(quint8 _node, QTOZWManagerSource::QTOZWMetaDataField _field);
+    QByteArray GetMetaDataProductPic(quint8 _node);
 
     bool checkLatestConfigFileRevision(quint8 const _node);
     bool checkLatestMFSRevision();

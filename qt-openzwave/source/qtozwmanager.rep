@@ -1,4 +1,5 @@
 #include <QtCore>
+#include <QByteArray>
 
 class QTOZWManager {
     ENUM QTOZWErrorCodes {
@@ -11,6 +12,21 @@ class QTOZWManager {
         NoError
     };
 
+    ENUM QTOZWMetaDataField {
+        OZWInfoURL,
+        ZWAProductURL,
+        ProductPic,
+        Description,
+        ProductManualURL,
+        InclusionHelp,
+        ExclusionHelp,
+        ResetHelp,
+        WakeupHelp,
+        ProductSupportURL,
+        Frequency,
+        Name,
+        Identifier
+    }
 
     PROP(bool running SOURCEONLYSETTER)
     PROP(quint32 homeId SOURCEONLYSETTER)
@@ -72,6 +88,9 @@ class QTOZWManager {
     SLOT(bool sendNodeInfomation(quint8 _node))
     SLOT(bool replaceFailedNode(quint8 _node))
     SLOT(bool requestNetworkUpdate(quint8 _node))
+
+    SLOT(QString GetMetaData(quint8 _node, QTOZWMetaDataField _field))
+    SLOT(QByteArray GetMetaDataProductPic(quint8 _node))
 
     SLOT(bool checkLatestConfigFileRevision(quint8 const _node))
     SLOT(bool checkLatestMFSRevision())
