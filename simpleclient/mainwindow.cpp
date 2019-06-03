@@ -1,9 +1,10 @@
+#include <QAbstractItemModelTester>
+
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
 #include "startup.h"
 #include "qtozw_itemdelegate.h"
-#include "qtozwproxymodels.h"
-#include <QAbstractItemModelTester>
+#include <qt-openzwave/qtozwproxymodels.h>
 
 #define CONNECTSIGNALS(x) QObject::connect(this->m_qtozwmanager, &QTOZWManager::x, this, &MainWindow::x)
 

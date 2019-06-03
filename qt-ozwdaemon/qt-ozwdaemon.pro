@@ -2,11 +2,11 @@ QT -= gui
 
 QT += remoteobjects
 
-CONFIG += c++11 console
+CONFIG += c++11 console silent
 CONFIG -= app_bundle
 
 LIBS += -L../qt-openzwave/ -lqt-openzwave -lresolv
-INCLUDEPATH += ../qt-openzwave
+INCLUDEPATH += ../qt-openzwave/include
 
 include(../qt-openzwave.pri)
 

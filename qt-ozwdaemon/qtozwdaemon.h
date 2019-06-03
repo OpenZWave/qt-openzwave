@@ -3,8 +3,9 @@
 
 #include <QObject>
 #include <QString>
-#include "qtopenzwave.h"
-#include "qtozwmanager.h"
+
+#include <qt-openzwave/qtopenzwave.h>
+#include <qt-openzwave/qtozwmanager.h>
 
 class qtozwdaemon : public QObject
 {

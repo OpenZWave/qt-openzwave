@@ -1,8 +1,10 @@
 #include <QPainter>
 #include <QDebug>
 #include <QApplication>
+
+#include <qt-openzwave/qtozwvalueidmodel.h>
+
 #include "qtozw_itemdelegate.h"
-#include "qtozwvalueidmodel.h"
 #include "bitsetwidget.h"
 
 QTOZW_ItemDelegate::QTOZW_ItemDelegate(QObject *parent) : QStyledItemDelegate(parent)

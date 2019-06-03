@@ -1,8 +1,8 @@
 #include <QDebug>
-#include "qtozwproxymodels.h"
-#include "qtozwvalueidmodel.h"
-#include "qtozwnodemodel.h"
-#include "qtozwassociations.h"
+#include "qt-openzwave/qtozwproxymodels.h"
+#include "qt-openzwave/qtozwvalueidmodel.h"
+#include "qt-openzwave/qtozwnodemodel.h"
+#include "qt-openzwave/qtozwassociationmodel.h"
 
 
 QTOZW_proxyNodeModel::QTOZW_proxyNodeModel(QObject *parent) : QSortFilterProxyModel(parent)

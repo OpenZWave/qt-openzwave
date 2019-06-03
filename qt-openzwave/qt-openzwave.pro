@@ -24,8 +24,6 @@ qtConfig(static) {
  # this is a static build
 }
 
-#INCLUDEPATH += $$absolute_path($$top_srcdir/../open-zwave/cpp/src/)/
-
 DEFINES += QTOPENZWAVE_LIBRARY
 
 
@@ -40,29 +38,36 @@ DEFINES += QT_DEPRECATED_WARNINGS
 # You can also select to disable deprecated APIs only up to a certain version of Qt.
 #DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0x060000    # disables all the APIs deprecated before Qt 6.0.0
 
-SOURCES += \
-        qtopenzwave.cpp \
-    qtozwassociations.cpp \
-    qtozwmanager.cpp \
-    qtozwnotification.cpp \
-    qtozwproxymodels.cpp \
-    qtozwnodemodel.cpp \
-    qtozwvalueidmodel.cpp
+SOURCES += source/qtopenzwave.cpp \
+    source/qtozwassociationmodel.cpp \
+    source/qtozwassociationmodel_p.cpp \
+    source/qtozwmanager.cpp \
+    source/qtozwmanager_p.cpp \
+    source/qtozwnodemodel_p.cpp \
+    source/qtozwnotification.cpp \
+    source/qtozwproxymodels.cpp \
+    source/qtozwnodemodel.cpp \
+    source/qtozwvalueidmodel.cpp \
+    source/qtozwvalueidmodel_p.cpp
 
-HEADERS += \
-        qtopenzwave.h \
-        qt-openzwave_global.h \  \
-        qtozw_logging.h \
-        qtozwassociations.h \
-        qtozwproxymodels.h \
-        qtozwmanager.h \
-        qtozwnotification.h \
-        qtozwnodemodel.h \
-        qtozwvalueidmodel.h
+HEADERS += include/qt-openzwave/qtopenzwave.h \
+        include/qt-openzwave_global.h \  \
+        include/qtozw_logging.h \
+        include/qt-openzwave/qtozwassociationmodel.h \
+        include/qtozwassociationmodel_p.h \
+        include/qtozwmanager_p.h \
+        include/qtozwnodemodel_p.h \
+        include/qt-openzwave/qtozwproxymodels.h \
+        include/qt-openzwave/qtozwmanager.h \
+        include/qtozwnotification.h \
+        include/qt-openzwave/qtozwnodemodel.h \
+        include/qt-openzwave/qtozwvalueidmodel.h \
+        include/qtozwvalueidmodel_p.h
 
+INCLUDEPATH += include/
 
-REPC_SOURCE =  qtozwmanager.rep
-REPC_REPLICA =  qtozwmanager.rep
+REPC_SOURCE =  source/qtozwmanager.rep
+REPC_REPLICA =  source/qtozwmanager.rep
 
 unix {
     target.path = /usr/local/lib

@@ -2,7 +2,7 @@
 #define BITSETWIDGET_H
 
 #include <QFrame>
-#include <qtozwvalueidmodel.h>
+#include <qt-openzwave/qtozwvalueidmodel.h>
 
 namespace Ui {
 class BitSetWidget;

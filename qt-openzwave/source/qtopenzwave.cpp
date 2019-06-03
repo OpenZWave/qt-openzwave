@@ -1,4 +1,4 @@
-#include "qtopenzwave.h"
+#include "qt-openzwave/qtopenzwave.h"
 #include "qtozw_logging.h"
 
 

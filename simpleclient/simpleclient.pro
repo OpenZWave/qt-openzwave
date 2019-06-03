@@ -5,7 +5,7 @@ CONFIG += silent
 DEFINES  += remote
 
 LIBS += -L../qt-openzwave/ -lqt-openzwave -lresolv
-INCLUDEPATH += ../qt-openzwave
+INCLUDEPATH += ../qt-openzwave/include/
 
 include(../qt-openzwave.pri)
 

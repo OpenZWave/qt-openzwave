@@ -2,7 +2,7 @@
 #define MAINWINDOW_H
 
 #include <QMainWindow>
-#include "qtopenzwave.h"
+#include <qt-openzwave/qtopenzwave.h>
 
 namespace Ui {
 class MainWindow;

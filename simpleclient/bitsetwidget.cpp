@@ -1,7 +1,8 @@
-#include "bitsetwidget.h"
-#include "ui_bitsetwidget.h"
 #include <QCheckBox>
 #include <QDebug>
+
+#include "bitsetwidget.h"
+#include "ui_bitsetwidget.h"
 
 BitSetWidget::BitSetWidget(QWidget *parent) :
     QFrame(parent),

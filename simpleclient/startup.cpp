@@ -1,6 +1,7 @@
+#include <QMessageBox>
+
 #include "startup.h"
 #include "ui_startup.h"
-#include <QMessageBox>
 
 
 Startup::Startup(QWidget *parent) :

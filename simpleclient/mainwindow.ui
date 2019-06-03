@@ -152,31 +152,13 @@
     </property>
     <addaction name="separator"/>
     <addaction name="actionE_xit"/>
-    <addaction name="actionlahlah"/>
-   </widget>
-   <widget class="QMenu" name="menuTest">
-    <property name="title">
-     <string>Test</string>
-    </property>
-    <addaction name="actionTest_This"/>
    </widget>
    <addaction name="menu_File"/>
-   <addaction name="menuTest"/>
   </widget>
   <widget class="QStatusBar" name="statusbar"/>
   <action name="actionE_xit">
    <property name="text">
     <string>E&amp;xit</string>
-   </property>
-  </action>
-  <action name="actionTest_This">
-   <property name="text">
-    <string>Test This</string>
-   </property>
-  </action>
-  <action name="actionlahlah">
-   <property name="text">
-    <string>lahlah</string>
    </property>
   </action>
  </widget>
