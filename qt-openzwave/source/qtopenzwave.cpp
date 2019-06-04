@@ -1,4 +1,5 @@
 #include "qt-openzwave/qtopenzwave.h"
+#include "qt-openzwave/qtozw_pods.h"
 #include "qtozw_logging.h"
 
 
@@ -22,6 +23,8 @@ QTOpenZwave::QTOpenZwave
     qRegisterMetaType<QTOZW_ValueIDBitSet>("QTOZW_ValueIDBitSet");
     qRegisterMetaTypeStreamOperators<QTOZW_ValueIDBitSet>("QTOZW_ValueIDBitSet");
 
+    qRegisterMetaType<NodeStatistics>("NodeStatistics");
+    qRegisterMetaTypeStreamOperators<NodeStatistics>("NodeStatistics");
     qSetMessagePattern("%{category} %{message}");
 }
 

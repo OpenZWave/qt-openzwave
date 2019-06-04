@@ -1,5 +1,6 @@
 #include <QtCore>
 #include <QByteArray>
+#include "qt-openzwave/qtozw_pods.h"
 
 class QTOZWManager {
     ENUM QTOZWErrorCodes {
@@ -92,6 +93,9 @@ class QTOZWManager {
 
     SLOT(QString GetMetaData(quint8 _node, QTOZWMetaDataField _field))
     SLOT(QByteArray GetMetaDataProductPic(quint8 _node))
+
+    SLOT(QString GetNodeQueryStage(quint8 _node))
+    SLOT(NodeStatistics GetNodeStatistics(quint8 _node))
 
     SLOT(bool checkLatestConfigFileRevision(quint8 const _node))
     SLOT(bool checkLatestMFSRevision())

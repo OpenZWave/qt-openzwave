@@ -63,6 +63,9 @@ public Q_SLOTS:
     QString GetMetaData(quint8 _node, QTOZWManagerSource::QTOZWMetaDataField _field);
     QByteArray GetMetaDataProductPic(quint8 _node);
 
+    QString GetNodeQueryStage(quint8 const node);
+    NodeStatistics GetNodeStatistics(quint8 const node);
+
     bool checkLatestConfigFileRevision(quint8 const _node);
     bool checkLatestMFSRevision();
     bool downloadLatestConfigFileRevision(quint8 const _node);

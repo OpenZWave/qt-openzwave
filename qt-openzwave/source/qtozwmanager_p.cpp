@@ -426,6 +426,65 @@ QByteArray QTOZWManager_Internal::GetMetaDataProductPic(quint8 _node) {
 
 }
 
+QString QTOZWManager_Internal::GetNodeQueryStage(quint8 const _node) {
+    if (!this->checkHomeId() || !this->checkNodeId(_node))
+        return QString();
+    try {
+        return this->m_manager->GetNodeQueryStage(this->homeId(), _node).c_str();
+    } catch (OpenZWave::OZWException &e) {
+        emit this->error(QTOZWErrorCodes::OZWException);
+        this->setErrorString(e.GetMsg().c_str());
+    }
+    return QString();
+}
+
+
+NodeStatistics QTOZWManager_Internal::GetNodeStatistics(quint8 const _node) {
+    if (!this->checkHomeId() || !this->checkNodeId(_node))
+        return NodeStatistics();
+    try {
+        OpenZWave::Node::NodeData nd;
+        NodeStatistics ns;
+        this->m_manager->GetNodeStatistics(this->homeId(), _node, &nd);
+        /* copy */
+        ns.hops = nd.m_hops;
+        ns.rssi_1 = nd.m_rssi_1;
+        ns.rssi_2 = nd.m_rssi_2;
+        ns.rssi_3 = nd.m_rssi_3;
+        ns.rssi_4 = nd.m_rssi_4;
+        ns.rssi_5 = nd.m_rssi_5;
+        ns.txTime = nd.m_txTime;
+        ns.quality = nd.m_quality;
+        ns.retries = nd.m_retries;
+        ns.routeUsed = nd.m_routeUsed;
+        ns.sentCount = nd.m_sentCnt;
+        ns.ackChannel = nd.m_ackChannel;
+        ns.routeSpeed = this->m_manager->GetNodeRouteSpeed(&nd).c_str();
+        ns.routeTries = nd.m_routeTries;
+        ns.sentFailed = nd.m_sentFailed;
+        ns.routeScheme = this->m_manager->GetNodeRouteScheme(&nd).c_str();
+        ns.lastTXChannel = nd.m_lastTxChannel;
+        ns.lastRequestRTT = nd.m_lastRequestRTT;
+        ns.lastResponseRTT = nd.m_lastResponseRTT;
+        ns.recievedPackets = nd.m_receivedCnt;
+        ns.lastFailedLinkTo = nd.m_lastFailedLinkTo;
+        ns.averageRequestRTT = nd.m_averageRequestRTT;
+        ns.lastSentTimeStamp = nd.m_sentTS.c_str();
+        ns.averageResponseRTT = nd.m_averageResponseRTT;
+        ns.lastFailedLinkFrom = nd.m_lastFailedLinkFrom;
+        ns.recievedDupPackets = nd.m_receivedDups;
+        ns.extendedTXSupported = nd.m_txStatusReportSupported;
+        ns.recievedUnsolicited = nd.m_receivedUnsolicited;
+        ns.lastReceivedTimeStamp = nd.m_receivedTS.c_str();
+        return ns;
+    } catch (OpenZWave::OZWException &e) {
+        emit this->error(QTOZWErrorCodes::OZWException);
+        this->setErrorString(e.GetMsg().c_str());
+    }
+    return NodeStatistics();
+
+}
+
 
 bool QTOZWManager_Internal::checkLatestConfigFileRevision(quint8 const _node) {
     if (!this->checkHomeId() || !this->checkNodeId(_node))
