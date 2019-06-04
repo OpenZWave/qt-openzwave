@@ -453,6 +453,10 @@ NodeStatistics QTOZWManager_Internal::GetNodeStatistics(quint8 const _node) {
         ns.rssi_3 = nd.m_rssi_3;
         ns.rssi_4 = nd.m_rssi_4;
         ns.rssi_5 = nd.m_rssi_5;
+        ns.route_1 = static_cast<quint8>(nd.m_routeUsed[0]);
+        ns.route_2 = static_cast<quint8>(nd.m_routeUsed[1]);
+        ns.route_3 = static_cast<quint8>(nd.m_routeUsed[2]);
+        ns.route_4 = static_cast<quint8>(nd.m_routeUsed[3]);
         ns.txTime = nd.m_txTime;
         ns.quality = nd.m_quality;
         ns.retries = nd.m_retries;
@@ -483,6 +487,18 @@ NodeStatistics QTOZWManager_Internal::GetNodeStatistics(quint8 const _node) {
     }
     return NodeStatistics();
 
+}
+
+bool QTOZWManager_Internal::IsNodeFailed(quint8 const _node) {
+    if (!this->checkHomeId() || !this->checkNodeId(_node))
+        return false;
+    try {
+        return this->m_manager->IsNodeFailed(this->homeId(), _node);
+    } catch (OpenZWave::OZWException &e) {
+        emit this->error(QTOZWErrorCodes::OZWException);
+        this->setErrorString(e.GetMsg().c_str());
+    }
+    return false;
 }
 
 

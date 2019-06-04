@@ -96,7 +96,7 @@ class QTOZWManager {
 
     SLOT(QString GetNodeQueryStage(quint8 _node))
     SLOT(NodeStatistics GetNodeStatistics(quint8 _node))
-
+    SLOT(bool IsNodeFailed(quint8 _node))
     SLOT(bool checkLatestConfigFileRevision(quint8 const _node))
     SLOT(bool checkLatestMFSRevision())
     SLOT(bool downloadLatestConfigFileRevision(quint8 const _node))

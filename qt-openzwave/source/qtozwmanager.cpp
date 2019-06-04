@@ -281,9 +281,11 @@ QByteArray QTOZWManager::GetMetaDataProductPic(quint8 _node) {
 QString QTOZWManager::GetNodeQueryStage(const quint8 _node) {
     CALL_DPTR_RTN(GetNodeQueryStage(_node), QString);
 }
-
 NodeStatistics QTOZWManager::GetNodeStatistics(const quint8 _node) {
     CALL_DPTR_RTN(GetNodeStatistics(_node), NodeStatistics);
+}
+bool QTOZWManager::IsNodeFailed(const quint8 _node) {
+    CALL_DPTR_RTN(IsNodeFailed(_node), bool);
 }
 bool QTOZWManager::checkLatestConfigFileRevision(quint8 const _node) {
     CALL_DPTR_RTN(checkLatestConfigFileRevision(_node), bool);

@@ -1,6 +1,8 @@
 #ifndef QTOZW_PODS_H
 #define QTOZW_PODS_H
 #include <QObject>
+#include <QtGlobal>
+#include <QDataStream>
 
 struct NodeStatistics {
         quint32 sentCount;
@@ -24,6 +26,10 @@ struct NodeStatistics {
         QString rssi_3;
         QString rssi_4;
         QString rssi_5;
+        quint8 route_1;
+        quint8 route_2;
+        quint8 route_3;
+        quint8 route_4;
         quint8 ackChannel;
         quint8 lastTXChannel;
         QString routeScheme;
@@ -37,28 +43,94 @@ struct NodeStatistics {
 Q_DECLARE_METATYPE(NodeStatistics)
 
 inline QDataStream &operator<<(QDataStream &ds, const NodeStatistics &obj) {
-    ds << obj.hops << obj.rssi_1 << obj.rssi_2 << obj.rssi_3 << obj.rssi_4 << obj.rssi_5;
-    ds << obj.txTime << obj.quality << obj.retries << obj.routeUsed << obj.sentCount;
-    ds << obj.ackChannel << obj.routeSpeed << obj.routeTries << obj.sentFailed;
-    ds << obj.routeScheme << obj.lastTXChannel << obj.lastRequestRTT << obj.lastResponseRTT;
-    ds << obj.recievedPackets << obj.lastFailedLinkTo << obj.averageRequestRTT;
-    ds << obj.lastSentTimeStamp << obj.averageResponseRTT << obj.lastFailedLinkFrom;
-    ds << obj.recievedDupPackets << obj.extendedTXSupported << obj.recievedUnsolicited;
+    ds << static_cast<quint8>(obj.hops);
+    ds << static_cast<quint8>(obj.quality);
+    ds << static_cast<quint8>(obj.ackChannel);
+    ds << static_cast<quint8>(obj.routeTries);
+    ds << static_cast<quint8>(obj.lastTXChannel);
+    ds << static_cast<quint8>(obj.lastFailedLinkTo);
+    ds << static_cast<quint8>(obj.lastFailedLinkFrom);
+
+    ds << static_cast<quint16>(obj.txTime);
+
+    ds << static_cast<quint32>(obj.retries);
+    ds << static_cast<quint32>(obj.sentCount);
+    ds << static_cast<quint32>(obj.sentFailed);
+    ds << static_cast<quint32>(obj.lastRequestRTT);
+    ds << static_cast<quint32>(obj.lastResponseRTT);
+    ds << static_cast<quint32>(obj.recievedPackets);
+    ds << static_cast<quint32>(obj.averageRequestRTT);
+    ds << static_cast<quint32>(obj.averageResponseRTT);
+    ds << static_cast<quint32>(obj.recievedDupPackets);
+    ds << static_cast<quint32>(obj.recievedUnsolicited);
+
+    ds << obj.extendedTXSupported;
+
+    ds << obj.rssi_1;
+    ds << obj.rssi_2;
+    ds << obj.rssi_3;
+    ds << obj.rssi_4;
+    ds << obj.rssi_5;
+    ds << obj.routeUsed;
+    ds << obj.routeSpeed;
+    ds << obj.routeScheme;
+    ds << obj.lastSentTimeStamp;
     ds << obj.lastReceivedTimeStamp;
+    ds << obj.route_1;
+    ds << obj.route_2;
+    ds << obj.route_3;
+    ds << obj.route_4;
     return ds;
 }
 
+/* because compilers don't know that a quint8 == unsigned char so we have this stupid marshalling */
 inline QDataStream &operator>>(QDataStream &ds, NodeStatistics &obj) {
-#if 0
-    ds >> (quint8)obj.hops >> obj.rssi_1 >> obj.rssi_2 >> obj.rssi_3 >> obj.rssi_4 >> obj.rssi_5;
-    ds >> obj.txTime << obj.quality << obj.retries << obj.routeUsed << obj.sentCount;
-    ds >> obj.ackChannel << obj.routeSpeed << obj.routeTries << obj.sentFailed;
-    ds >> obj.routeScheme << obj.lastTXChannel << obj.lastRequestRTT << obj.lastResponseRTT;
-    ds >> obj.recievedPackets << obj.lastFailedLinkTo << obj.averageRequestRTT;
-    ds >> obj.lastSentTimeStamp << obj.averageResponseRTT << obj.lastFailedLinkFrom;
-    ds >> obj.recievedDupPackets << obj.extendedTXSupported << obj.recievedUnsolicited;
+    quint8 val;
+    ds >> val;
+    obj.hops = val;
+    ds >> val;
+    obj.quality = val;
+    ds >> val;
+    obj.ackChannel = val;
+    ds >> val;
+    obj.routeTries = val;
+    ds >> val;
+    obj.lastTXChannel = val;
+    ds >> val;
+    obj.lastFailedLinkTo = val;
+    ds >> val;
+    obj.lastFailedLinkFrom = val;
+
+    ds >> obj.txTime;
+
+    ds >> obj.retries;
+    ds >> obj.sentCount;
+    ds >> obj.sentFailed;
+    ds >> obj.lastRequestRTT;
+    ds >> obj.lastResponseRTT;
+    ds >> obj.recievedPackets;
+    ds >> obj.averageRequestRTT;
+    ds >> obj.averageResponseRTT;
+    ds >> obj.recievedDupPackets;
+    ds >> obj.recievedUnsolicited;
+
+    ds >> obj.extendedTXSupported;
+
+    ds >> obj.rssi_1;
+    ds >> obj.rssi_2;
+    ds >> obj.rssi_3;
+    ds >> obj.rssi_4;
+    ds >> obj.rssi_5;
+    ds >> obj.routeUsed;
+    ds >> obj.routeSpeed;
+    ds >> obj.routeScheme;
+    ds >> obj.lastSentTimeStamp;
     ds >> obj.lastReceivedTimeStamp;
-#endif
+    ds >> obj.route_1;
+    ds >> obj.route_2;
+    ds >> obj.route_3;
+    ds >> obj.route_4;
+
     return ds;
 }
 

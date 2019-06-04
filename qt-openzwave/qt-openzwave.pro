@@ -13,7 +13,7 @@ TEMPLATE = lib
 
 VERSION = 1.0.0
 
-CONFIG += silent
+CONFIG += silent file_copies
 
 !versionAtLeast(QT_VERSION, 5.11.2):error("Use at least Qt version 5.11.2")
 
@@ -68,9 +68,14 @@ HEADERS += include/qt-openzwave/qtopenzwave.h \
 
 INCLUDEPATH += include/
 
-REPC_SOURCE =  source/qtozwmanager.rep
-REPC_REPLICA = source/qtozwmanager.rep
+REPC_SOURCE =  include/qt-openzwave/qtozwmanager.rep
+REPC_REPLICA = include/qt-openzwave/qtozwmanager.rep
 
+copyrepheaders.path = include/qt-openzwave/
+copyrepheaders.files = rep_qtozwmanager_replica.h rep_qtozwmanager_source.h
+copyrepheaders.depends = rep_qtozwmanager_replica.h rep_qtozwmanager_source.h
+
+COPIES += copyrepheaders
 unix {
     target.path = /usr/local/lib
     INSTALLS += target

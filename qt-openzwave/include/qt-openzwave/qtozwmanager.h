@@ -72,7 +72,7 @@ public:
 
     QString GetNodeQueryStage(quint8 const _node);
     NodeStatistics GetNodeStatistics(quint8 const node);
-
+    bool IsNodeFailed(const quint8 _node);
 
     bool checkLatestConfigFileRevision(quint8 const _node);
     bool checkLatestMFSRevision();
