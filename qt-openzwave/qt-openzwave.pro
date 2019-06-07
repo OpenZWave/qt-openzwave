@@ -95,7 +95,9 @@ macx {
 
     QMAKE_LFLAGS_SONAME = -Wl,-install_name,@rpath/
     CONFIG +=lib_bundle
-}
+} else {
+    LIBS += -L../../open-zwave -lopenzwave
+} 
 
 message(" ")
 message("Summary:")

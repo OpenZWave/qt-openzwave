@@ -53,7 +53,7 @@
 #include <QRemoteObjectNode>
 #include <QAbstractItemModelReplica>
 
-#include <qt-openzwave/qtozwmanager.h>
+#include "qt-openzwave/qtozwmanager.h"
 
 #include "mainwindow.h"
 
