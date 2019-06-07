@@ -5,9 +5,6 @@ QT += remoteobjects
 CONFIG += c++11 console silent
 CONFIG -= app_bundle
 
-LIBS += -L../qt-openzwave/ -lqt-openzwave -lresolv
-INCLUDEPATH += ../qt-openzwave/include
-
 include(../qt-openzwave.pri)
 
 # The following define makes your compiler emit warnings if you use
@@ -32,3 +29,13 @@ else: unix:!android: target.path = /opt/$${TARGET}/bin
 
 HEADERS += \
     qtozwdaemon.h
+
+LIBS += -lresolv
+macx {
+    QMAKE_CXXFLAGS += -F../qt-openzwave/
+    LIBS += -F../qt-openzwave/ -framework qt-openzwave
+    ICON = res/ozw_logo.icns
+} else {
+    LIBS += -L../qt-openzwave/ -lqt-openzwave
+    INCLUDEPATH += ../qt-openzwave/qt-openzwave/include/
+}

@@ -1,19 +1,13 @@
 
 QT += widgets remoteobjects testlib
 
-CONFIG += silent
+#CONFIG += silent
 DEFINES  += remote
 
-LIBS += -L../qt-openzwave/ -lqt-openzwave -lresolv
-INCLUDEPATH += ../qt-openzwave/include/
 
 include(../qt-openzwave.pri)
 
 
-macx {
-    QMAKE_MACOSX_DEPLOYMENT_TARGET = 10.14
-    ICON = res/ozw_logo.icns
-}
 
 unix {
     QMAKE_POST_LINK += "if [ ! -e config ]; then ln -s $$OZW_LIB_PATH/config config; fi"
@@ -43,3 +37,13 @@ DISTFILES +=
 
 RESOURCES += \
     simpleclient.qrc
+
+LIBS += -lresolv
+macx {
+    QMAKE_CXXFLAGS += -F../qt-openzwave/
+    LIBS += -F../qt-openzwave/ -framework qt-openzwave
+    ICON = res/ozw_logo.icns
+} else {
+    LIBS += -L../qt-openzwave/ -lqt-openzwave
+    INCLUDEPATH += ../qt-openzwave/qt-openzwave/include/
+}

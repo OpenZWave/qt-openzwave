@@ -96,6 +96,7 @@ void MainWindow::QTOZW_Ready() {
     QItemSelectionModel *selectNodeModel = this->ui->nodeView->selectionModel();
 
     QAbstractItemModelTester *nodeTester = new QAbstractItemModelTester(this->m_qtozwmanager->getNodeModel(), QAbstractItemModelTester::FailureReportingMode::Fatal, this);
+    Q_UNUSED(nodeTester)
 
     QTOZW_proxyValueModel *proxyUserValueModel = new QTOZW_proxyValueModel(this);
     proxyUserValueModel->setSourceModel(this->m_qtozwmanager->getValueModel());
@@ -116,7 +117,7 @@ void MainWindow::QTOZW_Ready() {
     this->ui->userView->setFrameShape(QFrame::NoFrame);
 
     QAbstractItemModelTester *valueTester = new QAbstractItemModelTester(this->m_qtozwmanager->getValueModel(), QAbstractItemModelTester::FailureReportingMode::Fatal, this);
-
+    Q_UNUSED(valueTester)
 
     QTOZW_proxyValueModel *proxyConfigValueModel = new QTOZW_proxyValueModel(this);
     proxyConfigValueModel->setSourceModel(this->m_qtozwmanager->getValueModel());
@@ -169,7 +170,7 @@ void MainWindow::QTOZW_Ready() {
 
 
     //QAbstractItemModelTester *associationTester = new QAbstractItemModelTester(this->m_qtozwmanager->getAssociationModel(), QAbstractItemModelTester::FailureReportingMode::Fatal, this);
-
+    //Q_UNSED(associationTester)
 }
 
 void MainWindow::valueAdded(quint64 vidKey) {

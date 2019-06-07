@@ -5,7 +5,6 @@
 #include <QtRemoteObjects>
 #include "qt-openzwave_global.h"
 #include "qtozwmanager.h"
-#include "websocketiodevice.h"
 
 class QTOPENZWAVESHARED_EXPORT QTOpenZwave : public QObject
 {
