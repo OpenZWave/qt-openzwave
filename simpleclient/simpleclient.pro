@@ -4,11 +4,6 @@ QT += widgets remoteobjects testlib
 CONFIG += silent
 DEFINES  += remote
 
-
-include(../qt-openzwave.pri)
-
-
-
 unix {
     QMAKE_POST_LINK += "if [ ! -e config ]; then ln -s $$OZW_LIB_PATH/config config; fi"
 }
@@ -48,6 +43,7 @@ macx {
     QMAKE_BUNDLE_DATA += BUNDLE LIBOZW
     INCLUDEPATH += ../qt-openzwave/qt-openzwave/include/
 } else {
-    LIBS += -L../qt-openzwave/ -lqt-openzwave
-    INCLUDEPATH += ../qt-openzwave/qt-openzwave/include/
+    LIBS += -L../qt-openzwave/ -lqt-openzwave -L../../open-zwave -lopenzwave
+    INCLUDEPATH += ../qt-openzwave/include/
 }
+include(../qt-openzwave.pri)

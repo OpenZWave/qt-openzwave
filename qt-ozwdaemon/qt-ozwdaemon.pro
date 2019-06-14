@@ -4,8 +4,7 @@ QT += remoteobjects
 
 CONFIG += c++11 console silent
 CONFIG -= app_bundle
-
-include(../qt-openzwave.pri)
+CONFIG -= silent
 
 # The following define makes your compiler emit warnings if you use
 # any Qt feature that has been marked deprecated (the exact warnings
@@ -37,5 +36,7 @@ macx {
     ICON = res/ozw_logo.icns
 } else {
     LIBS += -L../qt-openzwave/ -lqt-openzwave
-    INCLUDEPATH += ../qt-openzwave/qt-openzwave/include/
+    INCLUDEPATH += ../qt-openzwave/include/
 }
+
+include(../qt-openzwave.pri)
