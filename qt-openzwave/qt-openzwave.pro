@@ -6,7 +6,7 @@
 
 
 QT       -= gui
-QT       += remoteobjects
+QT       += remoteobjects testlib
 #QT       += websockets
 
 TEMPLATE = lib
@@ -39,6 +39,8 @@ DEFINES += QT_DEPRECATED_WARNINGS
 #DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0x060000    # disables all the APIs deprecated before Qt 6.0.0
 
 SOURCES += source/qtopenzwave.cpp \
+    source/qtozwoptions.cpp \
+    source/qtozwoptions_p.cpp \
     source/qt_pods.cpp \
     source/qtozwassociationmodel.cpp \
     source/qtozwassociationmodel_p.cpp \
@@ -53,6 +55,8 @@ SOURCES += source/qtopenzwave.cpp \
 
 HEADERS += include/qt-openzwave/qtopenzwave.h \
         include/qt-openzwave/qtozw_pods.h \
+        include/qt-openzwave/qtozwoptions.h \
+        include/qtozwoptions_p.h \
         include/qt-openzwave_global.h \  \
         include/qtozw_logging.h \
         include/qt-openzwave/qtozwassociationmodel.h \
@@ -68,12 +72,13 @@ HEADERS += include/qt-openzwave/qtopenzwave.h \
 
 INCLUDEPATH += include/
 
-REPC_SOURCE =  include/qt-openzwave/qtozwmanager.rep
-REPC_REPLICA = include/qt-openzwave/qtozwmanager.rep
+REPC_SOURCE =  include/qt-openzwave/qtozwmanager.rep include/qt-openzwave/qtozwoptions.rep
+
+REPC_REPLICA = include/qt-openzwave/qtozwmanager.rep include/qt-openzwave/qtozwoptions.rep
 
 copyrepheaders.path = include/qt-openzwave/
-copyrepheaders.files = rep_qtozwmanager_replica.h rep_qtozwmanager_source.h
-copyrepheaders.depends = rep_qtozwmanager_replica.h rep_qtozwmanager_source.h
+copyrepheaders.files = rep_qtozwmanager_replica.h rep_qtozwmanager_source.h rep_qtozwoptions_replica.h rep_qtozwoptions_source.h
+copyrepheaders.depends = rep_qtozwmanager_replica.h rep_qtozwmanager_source.h rep_qtozwoptions_replica.h rep_qtozwoptions_source.h
 
 COPIES += copyrepheaders
 unix {
@@ -92,7 +97,6 @@ macx {
     FRAMEWORK_HEADERS.path = Headers
 
     QMAKE_BUNDLE_DATA += FRAMEWORK_HEADERS
-
     QMAKE_LFLAGS_SONAME = -Wl,-install_name,@rpath/
     CONFIG +=lib_bundle
 }

@@ -1,0 +1,54 @@
+#include <QtCore>
+#include <QByteArray>
+#include "qt-openzwave/qtozw_pods.h"
+
+class QTOZWOptions {
+    ENUM QTOZWOptionsErrorCodes {
+        InvalidOption,
+        NoOptionClass,
+        NoError
+    };
+
+    PROP(QString ConfigPath READWRITE)
+    PROP(QString UserPath READWRITE)
+    PROP(bool Logging READWRITE)
+    PROP(QString LogFileName READWRITE)
+    PROP(bool AppendLogFile READWRITE)
+    PROP(bool ConsoleOutput READWRITE)
+    PROP(qint32 SaveLogLevel READWRITE)
+    PROP(qint32 QueueLogLevel READWRITE)
+    PROP(qint32 DumpTriggerLevel READWRITE)
+    PROP(bool Associate READWRITE)
+    PROP(QString Exclude READWRITE)
+    PROP(QString Include READWRITE)
+    PROP(bool NotifyTransactions READWRITE)
+    PROP(QString Interface READWRITE)
+    PROP(bool SaveConfiguration READWRITE)
+    PROP(qint32 DriverMaxAttempts READWRITE)
+    PROP(qint32 PollInterval READWRITE)
+    PROP(bool IntervalBetweenPolls READWRITE)
+    PROP(bool SuppressValueRefresh READWRITE)
+    PROP(bool PerformReturnRoutes READWRITE)
+    PROP(QString NetworkKey READWRITE)
+    PROP(bool RefreshAllUserCodes READWRITE)
+    PROP(qint32 RetryTimeout READWRITE)
+    PROP(bool EnableSIS READWRITE)
+    PROP(bool AssumeAwake READWRITE)
+    PROP(bool NotifyOnDriverUnload READWRITE)
+    PROP(QString SecurityStrategy READWRITE)
+    PROP(QString CustomSecuredCC READWRITE)
+    PROP(bool EnforceSecureReception READWRITE)
+    PROP(bool AutoUpdateConfigFile READWRITE)
+    PROP(QString ReloadAfterUpdate READWRITE)
+    PROP(QString Language READWRITE)
+    PROP(bool IncludeInstanceLabels READWRITE)
+
+    SIGNAL(error(QTOZWOptionsErrorCodes errorcode))
+
+    SLOT(bool AddOptionBool(QString option, bool value))
+    SLOT(bool AddOptionInt(QString option, qint32 value))
+    SLOT(bool AddOptionString(QString option, QString value))
+    SLOT(bool GetOptionAsBool(QString option))
+    SLOT(qint32 GetOptionAsInt(QString option))
+    SLOT(QString GetOptionAsString(QString option))
+}

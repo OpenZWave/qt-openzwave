@@ -8,13 +8,13 @@
 #include "rep_qtozwmanager_replica.h"
 #include "qtozwnotification.h"
 #include "qt-openzwave/qtozwmanager.h"
+#include "qtozwoptions_p.h"
 #include "qtozwnodemodel_p.h"
 #include "qtozwvalueidmodel_p.h"
 #include "qtozwassociationmodel_p.h"
 
 /* OZW Includes */
 #include "Manager.h"
-#include "Options.h"
 #include "Notification.h"
 #include "platform/Log.h"
 #include "OZWException.h"
@@ -30,6 +30,7 @@ public:
     QTOZW_Nodes *getNodeModel();
     QTOZW_ValueIds *getValueModel();
     QTOZW_Associations *getAssociationModel();
+    QTOZWOptions_Internal *getOptions();
 
 public Q_SLOTS:
     bool open(QString serialPort);
@@ -114,7 +115,7 @@ private:
     bool convertValueID(quint64 vidKey);
 
 
-    OpenZWave::Options *m_options;
+    QTOZWOptions_Internal *m_options;
     OpenZWave::Manager *m_manager;
     QTOZW_Nodes_internal *m_nodeModel;
     QTOZW_ValueIds_internal *m_valueModel;

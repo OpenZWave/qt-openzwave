@@ -33,8 +33,6 @@ HEADERS += \
     qtozw_itemdelegate.h \
     startup.h
 
-DISTFILES +=
-
 RESOURCES += \
     simpleclient.qrc
 
@@ -43,6 +41,12 @@ macx {
     QMAKE_CXXFLAGS += -F../qt-openzwave/
     LIBS += -F../qt-openzwave/ -framework qt-openzwave
     ICON = res/ozw_logo.icns
+    BUNDLE.files = ../qt-openzwave/qt-openzwave.framework/
+    BUNDLE.path = Contents/Frameworks/qt-openzwave.framework/
+    LIBOZW.files = ../../open-zwave/libopenzwave-1.6.dylib
+    LIBOZW.path = Contents/Frameworks/
+    QMAKE_BUNDLE_DATA += BUNDLE LIBOZW
+
 } else {
     LIBS += -L../qt-openzwave/ -lqt-openzwave
     INCLUDEPATH += ../qt-openzwave/qt-openzwave/include/

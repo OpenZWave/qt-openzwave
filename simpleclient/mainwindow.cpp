@@ -14,7 +14,7 @@ MainWindow::MainWindow(QWidget *parent) :
 {
     ui->setupUi(this);
     qDebug() << "Starting MainWindow";
-    this->m_openzwave = new QTOpenZwave(this);
+    this->m_openzwave = new QTOpenZwave(this, QDir("./config/"));
     this->m_qtozwmanager = this->m_openzwave->GetManager();
     qDebug() << "QTOpenZWave Managers Created";
     QObject::connect(this->m_qtozwmanager, &QTOZWManager::ready, this, &MainWindow::QTOZW_Ready);

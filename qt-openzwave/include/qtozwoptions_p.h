@@ -1,0 +1,67 @@
+#ifndef QTOZWOPTIONS_P_H
+#define QTOZWOPTIONS_P_H
+
+#include <QObject>
+#include <QUrl>
+#include <Options.h>
+#include "qtozw_logging.h"
+#include "rep_qtozwoptions_source.h"
+#include "rep_qtozwoptions_replica.h"
+
+
+class QTOZWOptions_Internal : public QTOZWOptionsSimpleSource
+{
+    Q_OBJECT
+public:
+    QTOZWOptions_Internal(QObject *parent = nullptr);
+
+public Q_SLOTS:
+    bool AddOptionBool(QString option, bool value);
+    bool AddOptionInt(QString option, qint32 value);
+    bool AddOptionString(QString option, QString value);
+    bool GetOptionAsBool(QString option);
+    qint32 GetOptionAsInt(QString option);
+    QString GetOptionAsString(QString option);
+
+private Q_SLOTS:
+    void pvt_ConfigPathChanged(QString value);
+    void pvt_UserPathChanged(QString value);
+    void pvt_LoggingChanged(bool value);
+    void pvt_LogFileNameChanged(QString value);
+    void pvt_AppendLogFileChanged(bool value);
+    void pvt_ConsoleOutputChanged(bool value);
+    void pvt_SaveLogLevelChanged(qint32 value);
+    void pvt_QueueLogLevelChanged(qint32 value);
+    void pvt_DumpTriggerLevelChanged(qint32 value);
+    void pvt_AssociateChanged(bool value);
+    void pvt_ExcludeChanged(QString value);
+    void pvt_IncludeChanged(QString value);
+    void pvt_NotifyTransactionChanged(bool value);
+    void pvt_InterfaceChanged(QString value);
+    void pvt_SaveConfigurationChanged(bool value);
+    void pvt_DriverMaxAttemptsChanged(qint32 value);
+    void pvt_PollIntervalChanged(qint32 value);
+    void pvt_IntervalBetweenPollsChanged(bool value);
+    void pvt_SuppressValueRefreshChanged(bool value);
+    void pvt_PerformReturnRoutesChanged(bool value);
+    void pvt_NetworkKeyChanged(QString value);
+    void pvt_RefreshAllUserCodesChanged(bool value);
+    void pvt_RetryTimeoutChanged(qint32 value);
+    void pvt_EnableSISChanged(bool value);
+    void pvt_AssumeAwakeChanged(bool value);
+    void pvt_NotifyOnDriverUnloadChanged(bool value);
+    void pvt_SecurityStrategyChanged(QString value);
+    void pvt_CustomSecuredCCChanged(QString value);
+    void pvt_EnforceSecureReceptionChanged(bool value);
+    void pvt_AutoUpdateConfigFileChanged(bool value);
+    void pvt_ReloadAfterUpdateChanged(QString value);
+    void pvt_LanguageChanged(QString value);
+    void pvt_IncludeInstanceLabelsChanged(bool value);
+
+private:
+    bool populateProperties();
+    bool m_updating;
+    OpenZWave::Options *m_options;
+};
+
+#endif // QTOZWOPTIONS_P_H

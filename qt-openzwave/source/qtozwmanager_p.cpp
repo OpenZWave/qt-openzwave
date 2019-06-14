@@ -23,22 +23,13 @@ QTOZWManager_Internal::QTOZWManager_Internal(QObject *parent)
 {
     this->setObjectName("QTOZW_Manager");
     try {
-        this->m_options = OpenZWave::Options::Create( "", "", "" );
+        qCDebug(manager) << "OpenZWave Options Class Creating";
+        this->m_options = new QTOZWOptions_Internal(this);
+        qCDebug(manager) << "OpenZWave Options Class Set";
     } catch (OpenZWave::OZWException &e) {
         qCWarning(manager) << "Failed to Load Options Class" << QString(e.GetMsg().c_str());
         return;
     }
-    qCDebug(manager) << "OpenZWave Options Class Created";
-    this->m_options->AddOptionInt( "SaveLogLevel", OpenZWave::LogLevel_Detail );
-    this->m_options->AddOptionInt( "QueueLogLevel", OpenZWave::LogLevel_Debug );
-    this->m_options->AddOptionInt( "DumpTrigger", OpenZWave::LogLevel_Error );
-    this->m_options->AddOptionBool("ConsoleOutput", false);
-    this->m_options->AddOptionInt( "PollInterval", 500 );
-    this->m_options->AddOptionBool( "IntervalBetweenPolls", true );
-    this->m_options->AddOptionBool( "ValidateValueChanges", true);
-    qCDebug(manager) << "OpenZWave Options Set";
-
-
     this->m_nodeModel = new QTOZW_Nodes_internal(this);
     QObject::connect(this->m_nodeModel, &QTOZW_Nodes_internal::dataChanged, this, &QTOZWManager_Internal::pvt_nodeModelDataChanged);
     this->m_valueModel = new QTOZW_ValueIds_internal(this);
@@ -56,7 +47,7 @@ bool QTOZWManager_Internal::open(QString SerialPort)
     try {
         this->m_manager = OpenZWave::Manager::Create();
     } catch (OpenZWave::OZWException &e) {
-        emit this->error(QTOZWErrorCodes::OZWException);
+        emit this->error(QTOZWManagerErrorCodes::OZWException);
         this->setErrorString(e.GetMsg().c_str());
         qCWarning(manager) << "Failed to Load Manager Class" << QString(e.GetMsg().c_str());
         return false;
@@ -64,13 +55,13 @@ bool QTOZWManager_Internal::open(QString SerialPort)
     qCDebug(manager) << "OpenZWave Manager Instance Created";
     try {
         if (this->m_manager->AddWatcher( OZWNotification::processNotification, this ) != true) {
-            emit this->error(QTOZWErrorCodes::setupFailed);
+            emit this->error(QTOZWManagerErrorCodes::setupFailed);
             this->setErrorString("Failed to Add Notification Callback");
             qCWarning(manager) << "Failed to Add Notification Callback";
             return false;
         }
     } catch (OpenZWave::OZWException &e) {
-        emit this->error(QTOZWErrorCodes::OZWException);
+        emit this->error(QTOZWManagerErrorCodes::OZWException);
         this->setErrorString(e.GetMsg().c_str());
         qCWarning(manager) << "Failed to Add Notification Callback " << QString(e.GetMsg().c_str());
         return false;
@@ -113,13 +104,13 @@ bool QTOZWManager_Internal::open(QString SerialPort)
 
     try {
         if (this->m_manager->AddDriver( SerialPort.toStdString()) != true) {
-            emit this->error(QTOZWErrorCodes::setupFailed);
+            emit this->error(QTOZWManagerErrorCodes::setupFailed);
             this->setErrorString("Failed to Add Serial Port");
             qCWarning(manager) << "Failed to Add Serial Port";
             return false;
         }
     } catch (OpenZWave::OZWException &e) {
-        emit this->error(QTOZWErrorCodes::OZWException);
+        emit this->error(QTOZWManagerErrorCodes::OZWException);
         this->setErrorString(e.GetMsg().c_str());
         qCWarning(manager) << "Failed to Add Serial Port: " << QString(e.GetMsg().c_str());
         return false;
@@ -135,7 +126,7 @@ bool QTOZWManager_Internal::refreshNodeInfo(quint8 _node) {
     try {
         return this->m_manager->RefreshNodeInfo(this->homeId(), _node);
     } catch (OpenZWave::OZWException &e) {
-        emit this->error(QTOZWErrorCodes::OZWException);
+        emit this->error(QTOZWManagerErrorCodes::OZWException);
         this->setErrorString(e.GetMsg().c_str());
     }
     return false;
@@ -147,7 +138,7 @@ bool QTOZWManager_Internal::requestNodeState(quint8 _node) {
     try {
         return this->m_manager->RequestNodeState(this->homeId(), _node);
     } catch (OpenZWave::OZWException &e) {
-        emit this->error(QTOZWErrorCodes::OZWException);
+        emit this->error(QTOZWManagerErrorCodes::OZWException);
         this->setErrorString(e.GetMsg().c_str());
     }
     return false;
@@ -159,7 +150,7 @@ bool QTOZWManager_Internal::requestNodeDynamic(quint8 _node) {
     try {
         return this->m_manager->RequestNodeDynamic(this->homeId(), _node);
     } catch (OpenZWave::OZWException &e) {
-        emit this->error(QTOZWErrorCodes::OZWException);
+        emit this->error(QTOZWManagerErrorCodes::OZWException);
         this->setErrorString(e.GetMsg().c_str());
     }
     return false;
@@ -171,7 +162,7 @@ bool QTOZWManager_Internal::setConfigParam(quint8 _node, quint8 _param, qint32 _
     try {
         return this->m_manager->SetConfigParam(this->homeId(), _node, _param, _value, _size);
     } catch (OpenZWave::OZWException &e) {
-        emit this->error(QTOZWErrorCodes::OZWException);
+        emit this->error(QTOZWManagerErrorCodes::OZWException);
         this->setErrorString(e.GetMsg().c_str());
     }
     return false;
@@ -183,7 +174,7 @@ void QTOZWManager_Internal::requestConfigParam(quint8 _node, quint8 _param) {
     try {
         this->m_manager->RequestConfigParam(this->homeId(), _node, _param);
     } catch (OpenZWave::OZWException &e) {
-        emit this->error(QTOZWErrorCodes::OZWException);
+        emit this->error(QTOZWManagerErrorCodes::OZWException);
         this->setErrorString(e.GetMsg().c_str());
     }
     return;
@@ -195,7 +186,7 @@ void QTOZWManager_Internal::requestAllConfigParam(quint8 _node) {
     try {
         this->m_manager->RequestAllConfigParams(this->homeId(), _node);
     } catch (OpenZWave::OZWException &e) {
-        emit this->error(QTOZWErrorCodes::OZWException);
+        emit this->error(QTOZWManagerErrorCodes::OZWException);
         this->setErrorString(e.GetMsg().c_str());
     }
     return;
@@ -207,7 +198,7 @@ void QTOZWManager_Internal::softResetController() {
     try {
         this->m_manager->SoftReset(this->homeId());
     } catch (OpenZWave::OZWException &e) {
-        emit this->error(QTOZWErrorCodes::OZWException);
+        emit this->error(QTOZWManagerErrorCodes::OZWException);
         this->setErrorString(e.GetMsg().c_str());
     }
     return;
@@ -220,7 +211,7 @@ void QTOZWManager_Internal::hardResetController() {
     try {
         this->m_manager->ResetController(this->homeId());
     } catch (OpenZWave::OZWException &e) {
-        emit this->error(QTOZWErrorCodes::OZWException);
+        emit this->error(QTOZWManagerErrorCodes::OZWException);
         this->setErrorString(e.GetMsg().c_str());
     }
     return;
@@ -233,7 +224,7 @@ bool QTOZWManager_Internal::cancelControllerCommand() {
     try {
         return this->m_manager->CancelControllerCommand(this->homeId());
     } catch (OpenZWave::OZWException &e) {
-        emit this->error(QTOZWErrorCodes::OZWException);
+        emit this->error(QTOZWManagerErrorCodes::OZWException);
         this->setErrorString(e.GetMsg().c_str());
     }
     return false;
@@ -245,7 +236,7 @@ void QTOZWManager_Internal::testNetworkNode(quint8 _node, quint32 const _count) 
     try {
         this->m_manager->TestNetworkNode(this->homeId(), _node, _count);
     } catch (OpenZWave::OZWException &e) {
-        emit this->error(QTOZWErrorCodes::OZWException);
+        emit this->error(QTOZWManagerErrorCodes::OZWException);
         this->setErrorString(e.GetMsg().c_str());
     }
     return;
@@ -256,7 +247,7 @@ void QTOZWManager_Internal::testNetwork(quint32 const _count) {
     try {
         this->m_manager->TestNetwork(this->homeId(), _count);
     } catch (OpenZWave::OZWException &e) {
-        emit this->error(QTOZWErrorCodes::OZWException);
+        emit this->error(QTOZWManagerErrorCodes::OZWException);
         this->setErrorString(e.GetMsg().c_str());
     }
     return;
@@ -267,7 +258,7 @@ void QTOZWManager_Internal::healNetworkNode(quint8 _node, bool _doRR) {
     try {
         this->m_manager->HealNetworkNode(this->homeId(), _node, _doRR);
     } catch (OpenZWave::OZWException &e) {
-        emit this->error(QTOZWErrorCodes::OZWException);
+        emit this->error(QTOZWManagerErrorCodes::OZWException);
         this->setErrorString(e.GetMsg().c_str());
     }
     return;
@@ -278,7 +269,7 @@ void QTOZWManager_Internal::healNetwork(bool _doRR) {
     try {
         this->m_manager->HealNetwork(this->homeId(), _doRR);
     } catch (OpenZWave::OZWException &e) {
-        emit this->error(QTOZWErrorCodes::OZWException);
+        emit this->error(QTOZWManagerErrorCodes::OZWException);
         this->setErrorString(e.GetMsg().c_str());
     }
     return;
@@ -289,7 +280,7 @@ bool QTOZWManager_Internal::addNode(bool _doSecure) {
     try {
         return this->m_manager->AddNode(this->homeId(), _doSecure);
     } catch (OpenZWave::OZWException &e) {
-        emit this->error(QTOZWErrorCodes::OZWException);
+        emit this->error(QTOZWManagerErrorCodes::OZWException);
         this->setErrorString(e.GetMsg().c_str());
     }
     return false;
@@ -300,7 +291,7 @@ bool QTOZWManager_Internal::removeNode() {
     try {
         return this->m_manager->RemoveNode(this->homeId());
     } catch (OpenZWave::OZWException &e) {
-        emit this->error(QTOZWErrorCodes::OZWException);
+        emit this->error(QTOZWManagerErrorCodes::OZWException);
         this->setErrorString(e.GetMsg().c_str());
     }
     return false;
@@ -311,7 +302,7 @@ bool QTOZWManager_Internal::removeFailedNode(quint8 _node) {
     try {
         return this->m_manager->RemoveFailedNode(this->homeId(), _node);
     } catch (OpenZWave::OZWException &e) {
-        emit this->error(QTOZWErrorCodes::OZWException);
+        emit this->error(QTOZWManagerErrorCodes::OZWException);
         this->setErrorString(e.GetMsg().c_str());
     }
     return false;
@@ -322,7 +313,7 @@ bool QTOZWManager_Internal::hasNodeFailed(quint8 _node) {
     try {
         return this->m_manager->HasNodeFailed(this->homeId(), _node);
     } catch (OpenZWave::OZWException &e) {
-        emit this->error(QTOZWErrorCodes::OZWException);
+        emit this->error(QTOZWManagerErrorCodes::OZWException);
         this->setErrorString(e.GetMsg().c_str());
     }
     return false;
@@ -333,7 +324,7 @@ bool QTOZWManager_Internal::requestNodeNeighborUpdate(quint8 _node) {
     try {
         return this->m_manager->RequestNodeNeighborUpdate(this->homeId(), _node);
     } catch (OpenZWave::OZWException &e) {
-        emit this->error(QTOZWErrorCodes::OZWException);
+        emit this->error(QTOZWManagerErrorCodes::OZWException);
         this->setErrorString(e.GetMsg().c_str());
     }
     return false;
@@ -344,7 +335,7 @@ bool QTOZWManager_Internal::assignReturnRoute(quint8 _node) {
     try {
         return this->m_manager->AssignReturnRoute(this->homeId(), _node);
     } catch (OpenZWave::OZWException &e) {
-        emit this->error(QTOZWErrorCodes::OZWException);
+        emit this->error(QTOZWManagerErrorCodes::OZWException);
         this->setErrorString(e.GetMsg().c_str());
     }
     return false;
@@ -355,7 +346,7 @@ bool QTOZWManager_Internal::deleteAllReturnRoute(quint8 _node) {
     try {
         return this->m_manager->DeleteAllReturnRoutes(this->homeId(), _node);
     } catch (OpenZWave::OZWException &e) {
-        emit this->error(QTOZWErrorCodes::OZWException);
+        emit this->error(QTOZWManagerErrorCodes::OZWException);
         this->setErrorString(e.GetMsg().c_str());
     }
     return false;
@@ -366,7 +357,7 @@ bool QTOZWManager_Internal::sendNodeInfomation(quint8 _node) {
     try {
         return this->m_manager->SendNodeInformation(this->homeId(), _node);
     } catch (OpenZWave::OZWException &e) {
-        emit this->error(QTOZWErrorCodes::OZWException);
+        emit this->error(QTOZWManagerErrorCodes::OZWException);
         this->setErrorString(e.GetMsg().c_str());
     }
     return false;
@@ -377,7 +368,7 @@ bool QTOZWManager_Internal::replaceFailedNode(quint8 _node) {
     try {
         return this->m_manager->ReplaceFailedNode(this->homeId(), _node);
     } catch (OpenZWave::OZWException &e) {
-        emit this->error(QTOZWErrorCodes::OZWException);
+        emit this->error(QTOZWManagerErrorCodes::OZWException);
         this->setErrorString(e.GetMsg().c_str());
     }
     return false;
@@ -388,7 +379,7 @@ bool QTOZWManager_Internal::requestNetworkUpdate(quint8 _node) {
     try {
         return this->m_manager->RequestNetworkUpdate(this->homeId(), _node);
     } catch (OpenZWave::OZWException &e) {
-        emit this->error(QTOZWErrorCodes::OZWException);
+        emit this->error(QTOZWManagerErrorCodes::OZWException);
         this->setErrorString(e.GetMsg().c_str());
     }
     return false;
@@ -400,7 +391,7 @@ QString QTOZWManager_Internal::GetMetaData(quint8 _node, QTOZWMetaDataField _fie
     try {
         return QString::fromStdString(this->m_manager->GetMetaData(this->homeId(), _node, static_cast<OpenZWave::Node::MetaDataFields>(_field)));
     } catch (OpenZWave::OZWException &e) {
-        emit this->error(QTOZWErrorCodes::OZWException);
+        emit this->error(QTOZWManagerErrorCodes::OZWException);
         this->setErrorString(e.GetMsg().c_str());
     }
     return QString();
@@ -418,7 +409,7 @@ QByteArray QTOZWManager_Internal::GetMetaDataProductPic(quint8 _node) {
         if (!file.open(QIODevice::ReadOnly)) return QByteArray();
         return file.readAll();
     } catch (OpenZWave::OZWException &e) {
-        emit this->error(QTOZWErrorCodes::OZWException);
+        emit this->error(QTOZWManagerErrorCodes::OZWException);
         this->setErrorString(e.GetMsg().c_str());
     }
     return QByteArray();
@@ -432,7 +423,7 @@ QString QTOZWManager_Internal::GetNodeQueryStage(quint8 const _node) {
     try {
         return this->m_manager->GetNodeQueryStage(this->homeId(), _node).c_str();
     } catch (OpenZWave::OZWException &e) {
-        emit this->error(QTOZWErrorCodes::OZWException);
+        emit this->error(QTOZWManagerErrorCodes::OZWException);
         this->setErrorString(e.GetMsg().c_str());
     }
     return QString();
@@ -482,7 +473,7 @@ NodeStatistics QTOZWManager_Internal::GetNodeStatistics(quint8 const _node) {
         ns.lastReceivedTimeStamp = nd.m_receivedTS.c_str();
         return ns;
     } catch (OpenZWave::OZWException &e) {
-        emit this->error(QTOZWErrorCodes::OZWException);
+        emit this->error(QTOZWManagerErrorCodes::OZWException);
         this->setErrorString(e.GetMsg().c_str());
     }
     return NodeStatistics();
@@ -495,7 +486,7 @@ bool QTOZWManager_Internal::IsNodeFailed(quint8 const _node) {
     try {
         return this->m_manager->IsNodeFailed(this->homeId(), _node);
     } catch (OpenZWave::OZWException &e) {
-        emit this->error(QTOZWErrorCodes::OZWException);
+        emit this->error(QTOZWManagerErrorCodes::OZWException);
         this->setErrorString(e.GetMsg().c_str());
     }
     return false;
@@ -508,7 +499,7 @@ bool QTOZWManager_Internal::checkLatestConfigFileRevision(quint8 const _node) {
     try {
         return this->m_manager->checkLatestConfigFileRevision(this->homeId(), _node);
     } catch (OpenZWave::OZWException &e) {
-        emit this->error(QTOZWErrorCodes::OZWException);
+        emit this->error(QTOZWManagerErrorCodes::OZWException);
         this->setErrorString(e.GetMsg().c_str());
     }
     return false;
@@ -520,7 +511,7 @@ bool QTOZWManager_Internal::checkLatestMFSRevision() {
     try {
         return this->m_manager->checkLatestMFSRevision(this->homeId());
     } catch (OpenZWave::OZWException &e) {
-        emit this->error(QTOZWErrorCodes::OZWException);
+        emit this->error(QTOZWManagerErrorCodes::OZWException);
         this->setErrorString(e.GetMsg().c_str());
     }
     return false;
@@ -532,7 +523,7 @@ bool QTOZWManager_Internal::downloadLatestConfigFileRevision(quint8 const _node)
     try {
         return this->m_manager->downloadLatestConfigFileRevision(this->homeId(), _node);
     } catch (OpenZWave::OZWException &e) {
-        emit this->error(QTOZWErrorCodes::OZWException);
+        emit this->error(QTOZWManagerErrorCodes::OZWException);
         this->setErrorString(e.GetMsg().c_str());
     }
     return false;
@@ -544,7 +535,7 @@ bool QTOZWManager_Internal::downloadLatestMFSRevision() {
     try {
         return this->m_manager->downloadLatestMFSRevision(this->homeId());
     } catch (OpenZWave::OZWException &e) {
-        emit this->error(QTOZWErrorCodes::OZWException);
+        emit this->error(QTOZWManagerErrorCodes::OZWException);
         this->setErrorString(e.GetMsg().c_str());
     }
     return false;
@@ -562,14 +553,20 @@ QTOZW_Associations *QTOZWManager_Internal::getAssociationModel() {
     return static_cast<QTOZW_Associations *>(this->m_associationsModel);
 }
 
+QTOZWOptions_Internal *QTOZWManager_Internal::getOptions() {
+    return this->m_options;
+}
+
+
+
 bool QTOZWManager_Internal::checkHomeId() {
     if (this->m_manager == nullptr) {
-        emit this->error(QTOZWErrorCodes::Manager_Not_Started);
+        emit this->error(QTOZWManagerErrorCodes::Manager_Not_Started);
         this->setErrorString("Manager Not Started");
         return false;
     }
     if (this->homeId() == 0) {
-        emit this->error(QTOZWErrorCodes::homeId_Invalid);
+        emit this->error(QTOZWManagerErrorCodes::homeId_Invalid);
         this->setErrorString("Invalid homeID");
         return false;
     }
@@ -577,7 +574,7 @@ bool QTOZWManager_Internal::checkHomeId() {
 }
 bool QTOZWManager_Internal::checkNodeId(quint8 _node) {
     if (!this->m_validNodes.contains(_node)) {
-        emit this->error(QTOZWErrorCodes::nodeId_Invalid);
+        emit this->error(QTOZWManagerErrorCodes::nodeId_Invalid);
         this->setErrorString("Invalid nodeID");
         return false;
     }
@@ -586,7 +583,7 @@ bool QTOZWManager_Internal::checkNodeId(quint8 _node) {
 
 bool QTOZWManager_Internal::checkValueKey(quint64 _vidKey) {
     if (!this->m_validValues.contains(_vidKey)) {
-        emit this->error(QTOZWErrorCodes::valueIDKey_Invalid);
+        emit this->error(QTOZWManagerErrorCodes::valueIDKey_Invalid);
         this->setErrorString("Invalid ValueID Key");
         return false;
     }
@@ -746,7 +743,7 @@ void QTOZWManager_Internal::pvt_valueAdded(quint64 vidKey)
         this->convertValueID(vidKey);
     } catch (OpenZWave::OZWException &e) {
         qCWarning(notifications) << "OZW Exception: " << e.GetMsg().c_str() << " at " << e.GetFile().c_str() <<":" << e.GetLine();
-        emit this->error(QTOZWErrorCodes::OZWException);
+        emit this->error(QTOZWManagerErrorCodes::OZWException);
         this->setErrorString(e.GetMsg().c_str());
     }
     emit this->valueAdded(vidKey);
@@ -839,7 +836,7 @@ void QTOZWManager_Internal::pvt_nodeNew(quint8 node)
         this->m_nodeModel->setNodeFlags(node, QTOZW_Nodes::isFailed, this->m_manager->IsNodeFailed(this->homeId(), node));
     } catch (OpenZWave::OZWException &e) {
         qCWarning(notifications) << "OZW Exception: " << e.GetMsg().c_str() << " at " << e.GetFile().c_str() <<":" << e.GetLine();
-        emit this->error(QTOZWErrorCodes::OZWException);
+        emit this->error(QTOZWManagerErrorCodes::OZWException);
         this->setErrorString(e.GetMsg().c_str());
     }
 
@@ -863,7 +860,7 @@ void QTOZWManager_Internal::pvt_nodeAdded(quint8 node)
         this->m_nodeModel->setNodeFlags(node, QTOZW_Nodes::isFailed, this->m_manager->IsNodeFailed(this->homeId(), node));
     } catch (OpenZWave::OZWException &e) {
         qCWarning(notifications) << "OZW Exception: " << e.GetMsg().c_str() << " at " << e.GetFile().c_str() <<":" << e.GetLine();
-        emit this->error(QTOZWErrorCodes::OZWException);
+        emit this->error(QTOZWManagerErrorCodes::OZWException);
         this->setErrorString(e.GetMsg().c_str());
     }
     emit this->nodeAdded(node);
@@ -913,7 +910,7 @@ void QTOZWManager_Internal::pvt_nodeNaming(quint8 node)
         this->m_nodeModel->setNodeFlags(node, QTOZW_Nodes::isFailed, this->m_manager->IsNodeFailed(this->homeId(), node));
     } catch (OpenZWave::OZWException &e) {
         qCWarning(notifications) << "OZW Exception: " << e.GetMsg().c_str() << " at " << e.GetFile().c_str() <<":" << e.GetLine();
-        emit this->error(QTOZWErrorCodes::OZWException);
+        emit this->error(QTOZWManagerErrorCodes::OZWException);
         this->setErrorString(e.GetMsg().c_str());
     }
     emit this->nodeNaming(node);
@@ -930,7 +927,7 @@ void QTOZWManager_Internal::pvt_nodeEvent(quint8 node, quint8 event)
         this->m_nodeModel->setNodeFlags(node, QTOZW_Nodes::isFailed, this->m_manager->IsNodeFailed(this->homeId(), node));
     } catch (OpenZWave::OZWException &e) {
         qCWarning(notifications) << "OZW Exception: " << e.GetMsg().c_str() << " at " << e.GetFile().c_str() <<":" << e.GetLine();
-        emit this->error(QTOZWErrorCodes::OZWException);
+        emit this->error(QTOZWManagerErrorCodes::OZWException);
         this->setErrorString(e.GetMsg().c_str());
     }
     emit this->nodeEvent(node, event);
@@ -1004,7 +1001,7 @@ void QTOZWManager_Internal::pvt_nodeProtocolInfo(quint8 node)
         this->m_nodeModel->setNodeFlags(node, QTOZW_Nodes::isFailed, this->m_manager->IsNodeFailed(this->homeId(), node));
     } catch (OpenZWave::OZWException &e) {
         qCWarning(notifications) << "OZW Exception: " << e.GetMsg().c_str() << " at " << e.GetFile().c_str() <<":" << e.GetLine();
-        emit this->error(QTOZWErrorCodes::OZWException);
+        emit this->error(QTOZWManagerErrorCodes::OZWException);
         this->setErrorString(e.GetMsg().c_str());
     }
     emit this->nodeProtocolInfo(node);
@@ -1081,7 +1078,7 @@ void QTOZWManager_Internal::pvt_nodeEssentialNodeQueriesComplete(quint8 node)
 
     } catch (OpenZWave::OZWException &e) {
         qCWarning(notifications) << "OZW Exception: " << e.GetMsg().c_str() << " at " << e.GetFile().c_str() <<":" << e.GetLine();
-        emit this->error(QTOZWErrorCodes::OZWException);
+        emit this->error(QTOZWManagerErrorCodes::OZWException);
         this->setErrorString(e.GetMsg().c_str());
     }
     emit this->nodeEssentialNodeQueriesComplete(node);
@@ -1170,7 +1167,7 @@ void QTOZWManager_Internal::pvt_nodeQueriesComplete(quint8 node)
 
     } catch (OpenZWave::OZWException &e) {
         qCWarning(notifications) << "OZW Exception: " << e.GetMsg().c_str() << " at " << e.GetFile().c_str() <<":" << e.GetLine();
-        emit this->error(QTOZWErrorCodes::OZWException);
+        emit this->error(QTOZWManagerErrorCodes::OZWException);
         this->setErrorString(e.GetMsg().c_str());
     }
     emit this->nodeQueriesComplete(node);
@@ -1272,7 +1269,7 @@ void QTOZWManager_Internal::pvt_nodeModelDataChanged(const QModelIndex &topLeft,
         }
     } catch (OpenZWave::OZWException &e) {
         qCWarning(nodeModel) << "OZW Exception: " << e.GetMsg().c_str() << " at " << e.GetFile().c_str() <<":" << e.GetLine();
-        emit this->error(QTOZWErrorCodes::OZWException);
+        emit this->error(QTOZWManagerErrorCodes::OZWException);
         this->setErrorString(e.GetMsg().c_str());
     }
 
@@ -1363,7 +1360,7 @@ void QTOZWManager_Internal::pvt_valueModelDataChanged(const QModelIndex &topLeft
         }
     } catch (OpenZWave::OZWException &e) {
         qCWarning(valueModel) << "OZW Exception: " << e.GetMsg().c_str() << " at " << e.GetFile().c_str() <<":" << e.GetLine();
-        emit this->error(QTOZWErrorCodes::OZWException);
+        emit this->error(QTOZWManagerErrorCodes::OZWException);
         this->setErrorString(e.GetMsg().c_str());
     }
 }

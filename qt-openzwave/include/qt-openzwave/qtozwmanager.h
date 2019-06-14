@@ -16,6 +16,7 @@ enum QTOZW_UserRoles {
 
 class QTOZWManager_Internal;
 class QTOZWManagerReplica;
+class QTOZWOptionsReplica;
 
 class QTOZWManager : public QObject {
     Q_OBJECT
@@ -26,6 +27,9 @@ public:
         Invalid
     };
     Q_ENUM(connectionType)
+    Q_PROPERTY(QDir OZWDatabasePath READ OZWDatabasePath WRITE setOZWDatabasePath)
+    Q_PROPERTY(QDir OZWUserPath READ OZWUserPath WRITE setOZWUserPath)
+
 
     QTOZWManager(QObject *parent = nullptr);
     bool initilizeBase();
@@ -79,6 +83,12 @@ public:
     bool downloadLatestConfigFileRevision(quint8 const _node);
     bool downloadLatestMFSRevision();
 
+/* Property Methods */
+    QDir OZWDatabasePath() { return this->m_ozwdatabasepath; }
+    QDir OZWUserPath() { return this->m_ozwuserpath; }
+    void setOZWDatabasePath(QDir path);
+    void setOZWUserPath(QDir path);
+
 
 Q_SIGNALS:
     void ready();
@@ -117,6 +127,8 @@ private Q_SLOTS:
     void onReplicaError(QRemoteObjectNode::ErrorCode);
     void onSourceError(QRemoteObjectHost::ErrorCode);
     void onManagerStateChange(QRemoteObjectReplica::State);
+    void onOptionsStateChange(QRemoteObjectReplica::State);
+
     void onNodeInitialized();
     void onValueInitialized();
     void onAssociationInitialized();
@@ -131,7 +143,9 @@ private:
     QRemoteObjectHost *m_sourceNode;
     QTOZWManager_Internal *d_ptr_internal;
     QTOZWManagerReplica *d_ptr_replica;
+    QTOZWOptionsReplica *d_options_replica;
     QRemoteObjectReplica::State m_managerState;
+    QRemoteObjectReplica::State m_optionsState;
     bool m_nodeState;
     bool m_valuesState;
     bool m_associationsState;
@@ -141,6 +155,8 @@ private:
     QAbstractItemModel *m_associationModel;
 
     bool m_running;
+    QDir m_ozwdatabasepath;
+    QDir m_ozwuserpath;
 };
 
 

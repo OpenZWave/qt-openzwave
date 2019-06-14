@@ -9,8 +9,9 @@
 
 QTOZWManager::QTOZWManager(QObject *parent)
     : QObject(parent),
-    m_running(false)
-
+    m_running(false),
+    m_ozwdatabasepath(""),
+    m_ozwuserpath("")
 {
 
 }
@@ -21,12 +22,22 @@ bool QTOZWManager::initilizeBase() {
 bool QTOZWManager::initilizeSource(bool enableServer) {
     initilizeBase();
     this->m_connectionType = connectionType::Local;
+    if (!this->m_ozwdatabasepath.exists()) {
+        qCWarning(manager) << "Database Path Does Not Exist: " << this->m_ozwdatabasepath;
+        return false;
+    }
+    if (!this->m_ozwuserpath.exists()) {
+        qCWarning(manager) << "User Path Does Not Exist: " << this->m_ozwuserpath;
+        return false;
+    }
+    OpenZWave::Options::Create(this->m_ozwdatabasepath.path().toStdString(), this->m_ozwuserpath.path().toStdString(), "");
     this->d_ptr_internal = new QTOZWManager_Internal(this);
     if (enableServer) {
         this->m_sourceNode = new QRemoteObjectHost(QUrl(QStringLiteral("tcp://0.0.0.0:1983")), this);
         QObject::connect(this->m_sourceNode, &QRemoteObjectHost::error, this, &QTOZWManager::onSourceError);
         //this->m_sourceNode->setHeartbeatInterval(1000);
         this->m_sourceNode->enableRemoting<QTOZWManagerSourceAPI>(this->d_ptr_internal);
+        this->m_sourceNode->enableRemoting<QTOZWOptionsSourceAPI>(this->d_ptr_internal->getOptions());
         QVector<int> roles;
         roles << Qt::DisplayRole << Qt::EditRole << Qt::ToolTipRole;
         this->m_sourceNode->enableRemoting(this->d_ptr_internal->getNodeModel(), "QTOZW_nodeModel", roles);
@@ -46,6 +57,8 @@ bool QTOZWManager::initilizeReplica(QUrl remote) {
     if (this->m_replicaNode->connectToNode(remote)) {
         this->d_ptr_replica = this->m_replicaNode->acquire<QTOZWManagerReplica>("QTOZWManager");
         QObject::connect(this->d_ptr_replica, &QTOZWManagerReplica::stateChanged, this, &QTOZWManager::onManagerStateChange);
+        this->d_options_replica = this->m_replicaNode->acquire<QTOZWOptionsReplica>("QTOZWOptions");
+        QObject::connect(this->d_options_replica, &QTOZWOptionsReplica::stateChanged, this, &QTOZWManager::onOptionsStateChange);
         this->m_nodeModel = this->m_replicaNode->acquireModel("QTOZW_nodeModel", QtRemoteObjects::InitialAction::PrefetchData);
         QObject::connect(qobject_cast<QAbstractItemModelReplica*>(this->m_nodeModel), &QAbstractItemModelReplica::initialized, this, &QTOZWManager::onNodeInitialized);
         this->m_valueModel= this->m_replicaNode->acquireModel("QTOZW_valueModel", QtRemoteObjects::InitialAction::PrefetchData);
@@ -70,6 +83,12 @@ void QTOZWManager::onManagerStateChange(QRemoteObjectReplica::State state) {
     this->m_managerState = state;
     this->checkReplicaReady();
 }
+
+void QTOZWManager::onOptionsStateChange(QRemoteObjectReplica::State state) {
+    this->m_optionsState = state;
+    this->checkReplicaReady();
+}
+
 void QTOZWManager::onNodeInitialized() {
     this->m_nodeState = true;
     this->checkReplicaReady();
@@ -85,9 +104,10 @@ void QTOZWManager::onAssociationInitialized() {
 
 void QTOZWManager::checkReplicaReady() {
     if ((this->m_managerState == QRemoteObjectReplica::State::Valid) &&
-            (this->m_nodeState == true) &&
-                (this->m_valuesState == true) &&
-                    (this->m_associationsState == true)) {
+            (this->m_optionsState == QRemoteObjectReplica::State::Valid) &&
+                (this->m_nodeState == true) &&
+                    (this->m_valuesState == true) &&
+                        (this->m_associationsState == true)) {
         /* have to connect all the d_ptr SIGNALS to our SIGNALS now */
         connectSignals();
         emit this->ready();
@@ -299,3 +319,18 @@ bool QTOZWManager::downloadLatestConfigFileRevision(quint8 const _node) {
 bool QTOZWManager::downloadLatestMFSRevision() {
     CALL_DPTR_RTN(downloadLatestMFSRevision(), bool);
 }
+
+void QTOZWManager::setOZWDatabasePath(QDir path) {
+    if (path.exists())
+        this->m_ozwdatabasepath = path;
+    else
+        qCWarning(manager) << "Database Path " << path << " doesn't exist";
+
+}
+void QTOZWManager::setOZWUserPath(QDir path) {
+    if (path.exists())
+        this->m_ozwuserpath = path;
+    else
+        qCWarning(manager) << "User Path " << path << " doesn't exist";
+}
+

@@ -3,7 +3,7 @@
 #include "qt-openzwave/qtozw_pods.h"
 
 class QTOZWManager {
-    ENUM QTOZWErrorCodes {
+    ENUM QTOZWManagerErrorCodes {
         homeId_Invalid,
         nodeId_Invalid,
         valueIDKey_Invalid,
@@ -62,7 +62,7 @@ class QTOZWManager {
     SIGNAL(starting());
     SIGNAL(started(quint32 homeID))
     SIGNAL(stopped(quint32 homeID))
-    SIGNAL(error(QTOZWErrorCodes errorcode))
+    SIGNAL(error(QTOZWManagerErrorCodes errorcode))
 
     SLOT(bool open(QString serialPort))
     SLOT(bool refreshNodeInfo(quint8 _node))
