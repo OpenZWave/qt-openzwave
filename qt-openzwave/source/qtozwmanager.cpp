@@ -32,12 +32,13 @@ bool QTOZWManager::initilizeSource(bool enableServer) {
     }
     OpenZWave::Options::Create(this->m_ozwdatabasepath.path().toStdString(), this->m_ozwuserpath.path().toStdString(), "");
     this->d_ptr_internal = new QTOZWManager_Internal(this);
+    this->m_ozwoptions = new QTOZWOptions(QTOZWOptions::connectionType::Local, this);
     if (enableServer) {
         this->m_sourceNode = new QRemoteObjectHost(QUrl(QStringLiteral("tcp://0.0.0.0:1983")), this);
         QObject::connect(this->m_sourceNode, &QRemoteObjectHost::error, this, &QTOZWManager::onSourceError);
         //this->m_sourceNode->setHeartbeatInterval(1000);
         this->m_sourceNode->enableRemoting<QTOZWManagerSourceAPI>(this->d_ptr_internal);
-        this->m_sourceNode->enableRemoting<QTOZWOptionsSourceAPI>(this->d_ptr_internal->getOptions());
+        this->m_ozwoptions->initilizeSource(this->m_sourceNode);
         QVector<int> roles;
         roles << Qt::DisplayRole << Qt::EditRole << Qt::ToolTipRole;
         this->m_sourceNode->enableRemoting(this->d_ptr_internal->getNodeModel(), "QTOZW_nodeModel", roles);
@@ -53,12 +54,13 @@ bool QTOZWManager::initilizeReplica(QUrl remote) {
     initilizeBase();
     this->m_connectionType = connectionType::Remote;
     this->m_replicaNode = new QRemoteObjectNode(this);
+    this->m_ozwoptions = new QTOZWOptions(QTOZWOptions::connectionType::Remote, this);
     QObject::connect(this->m_replicaNode, &QRemoteObjectNode::error, this, &QTOZWManager::onReplicaError);
     if (this->m_replicaNode->connectToNode(remote)) {
         this->d_ptr_replica = this->m_replicaNode->acquire<QTOZWManagerReplica>("QTOZWManager");
         QObject::connect(this->d_ptr_replica, &QTOZWManagerReplica::stateChanged, this, &QTOZWManager::onManagerStateChange);
-        this->d_options_replica = this->m_replicaNode->acquire<QTOZWOptionsReplica>("QTOZWOptions");
-        QObject::connect(this->d_options_replica, &QTOZWOptionsReplica::stateChanged, this, &QTOZWManager::onOptionsStateChange);
+        this->m_ozwoptions->initilizeReplica(this->m_replicaNode);
+        QObject::connect(this->m_ozwoptions, &QTOZWOptions::onOptionStateChange, this, &QTOZWManager::onOptionsStateChange);
         this->m_nodeModel = this->m_replicaNode->acquireModel("QTOZW_nodeModel", QtRemoteObjects::InitialAction::PrefetchData);
         QObject::connect(qobject_cast<QAbstractItemModelReplica*>(this->m_nodeModel), &QAbstractItemModelReplica::initialized, this, &QTOZWManager::onNodeInitialized);
         this->m_valueModel= this->m_replicaNode->acquireModel("QTOZW_valueModel", QtRemoteObjects::InitialAction::PrefetchData);
@@ -150,6 +152,9 @@ QAbstractItemModel *QTOZWManager::getAssociationModel() {
     }
 }
 
+QTOZWOptions *QTOZWManager::getOptions() {
+    return this->m_ozwoptions;
+}
 
 
 

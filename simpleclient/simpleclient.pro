@@ -1,7 +1,7 @@
 
 QT += widgets remoteobjects testlib
 
-#CONFIG += silent
+CONFIG += silent
 DEFINES  += remote
 
 
@@ -46,7 +46,7 @@ macx {
     LIBOZW.files = ../../open-zwave/libopenzwave-1.6.dylib
     LIBOZW.path = Contents/Frameworks/
     QMAKE_BUNDLE_DATA += BUNDLE LIBOZW
-
+    INCLUDEPATH += ../qt-openzwave/qt-openzwave/include/
 } else {
     LIBS += -L../qt-openzwave/ -lqt-openzwave
     INCLUDEPATH += ../qt-openzwave/qt-openzwave/include/

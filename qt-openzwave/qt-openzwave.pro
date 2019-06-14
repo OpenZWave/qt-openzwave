@@ -14,7 +14,6 @@ TEMPLATE = lib
 VERSION = 1.0.0
 
 CONFIG += silent file_copies
-CONFIG -= silent
 !versionAtLeast(QT_VERSION, 5.11.2):error("Use at least Qt version 5.11.2")
 
 include(../qt-openzwave.pri)
@@ -93,7 +92,8 @@ macx {
         include/qt-openzwave/qtozwproxymodels.h include/qt-openzwave/rep_qtozwmanager_source.h \
         include/qt-openzwave/qtozw_pods.h include/qt-openzwave/qtozwvalueidmodel.h \
         include/qt-openzwave/qtozwassociationmodel.h include/qt-openzwave/qtozwnodemodel.h \
-        include/qt-openzwave/rep_qtozwmanager_replica.h include/qt-openzwave_global.h
+        include/qt-openzwave/rep_qtozwmanager_replica.h include/qt-openzwave_global.h \
+        include/qt-openzwave/qtozwoptions.h
     FRAMEWORK_HEADERS.path = Headers
 
     QMAKE_BUNDLE_DATA += FRAMEWORK_HEADERS

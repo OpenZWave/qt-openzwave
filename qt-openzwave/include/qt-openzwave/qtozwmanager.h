@@ -5,10 +5,11 @@
 #include <QUrl>
 #include <QtRemoteObjects>
 
-#include "rep_qtozwmanager_source.h"
-#include "qtozwnodemodel.h"
-#include "qtozwvalueidmodel.h"
-#include "qtozwassociationmodel.h"
+#include "qt-openzwave/rep_qtozwmanager_source.h"
+#include "qt-openzwave/qtozwoptions.h"
+#include "qt-openzwave/qtozwnodemodel.h"
+#include "qt-openzwave/qtozwvalueidmodel.h"
+#include "qt-openzwave/qtozwassociationmodel.h"
 
 enum QTOZW_UserRoles {
     ModelDataChanged = Qt::UserRole
@@ -41,6 +42,7 @@ public:
     QAbstractItemModel *getNodeModel();
     QAbstractItemModel *getValueModel();
     QAbstractItemModel *getAssociationModel();
+    QTOZWOptions *getOptions();
 
     /* OpenZWave::Manager methods */
     bool open(QString serialPort);
@@ -123,17 +125,20 @@ Q_SIGNALS:
 //    void error(QTOZWErrorCodes errorcode);
 
 
+
 private Q_SLOTS:
     void onReplicaError(QRemoteObjectNode::ErrorCode);
     void onSourceError(QRemoteObjectHost::ErrorCode);
     void onManagerStateChange(QRemoteObjectReplica::State);
     void onOptionsStateChange(QRemoteObjectReplica::State);
-
     void onNodeInitialized();
     void onValueInitialized();
     void onAssociationInitialized();
     void setStarted();
     void setStopped();
+
+
+
 private:
 
     void checkReplicaReady();
@@ -143,7 +148,7 @@ private:
     QRemoteObjectHost *m_sourceNode;
     QTOZWManager_Internal *d_ptr_internal;
     QTOZWManagerReplica *d_ptr_replica;
-    QTOZWOptionsReplica *d_options_replica;
+    QTOZWOptions *m_ozwoptions;
     QRemoteObjectReplica::State m_managerState;
     QRemoteObjectReplica::State m_optionsState;
     bool m_nodeState;

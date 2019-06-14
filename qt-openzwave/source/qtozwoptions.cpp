@@ -37,10 +37,17 @@
 
 
 
-QTOZWOptions::QTOZWOptions(QObject *parent)
-    : QObject(parent)
+QTOZWOptions::QTOZWOptions(connectionType type, QObject *parent)
+    : QObject(parent),
+      m_connectionType(type)
 {
-
+    if (type == QTOZWOptions::connectionType::Local) {
+        this->m_connectionType = connectionType::Local;
+        this->d_ptr_internal = new QTOZWOptions_Internal(this);
+        connectSignals();
+    } else if (type == connectionType::Remote) {
+        qDebug() << "Nothing to do till we connect";
+    }
 }
 
 bool QTOZWOptions::initilizeBase() {
@@ -49,8 +56,6 @@ bool QTOZWOptions::initilizeBase() {
 
 bool QTOZWOptions::initilizeSource(QRemoteObjectHost *m_sourceNode) {
     initilizeBase();
-    this->m_connectionType = connectionType::Local;
-    this->d_ptr_internal = new QTOZWOptions_Internal(this);
     if (m_sourceNode) {
         m_sourceNode->enableRemoting<QTOZWOptionsSourceAPI>(this->d_ptr_internal);
     }
@@ -60,16 +65,10 @@ bool QTOZWOptions::initilizeSource(QRemoteObjectHost *m_sourceNode) {
 bool QTOZWOptions::initilizeReplica(QRemoteObjectNode *m_replicaNode) {
     initilizeBase();
     this->m_connectionType = connectionType::Remote;
-    this->d_ptr_replica = m_replicaNode->acquire<QTOZWOptionsReplica>("QTOZW_Options");
+    this->d_ptr_replica = m_replicaNode->acquire<QTOZWOptionsReplica>("QTOZWOptions");
     QObject::connect(this->d_ptr_replica, &QTOZWOptionsReplica::stateChanged, this, &QTOZWOptions::onOptionStateChange);
-
+    connectSignals();
     return true;
-}
-
-void QTOZWOptions::onOptionStateChange(QRemoteObjectReplica::State state) {
-    if (state == QRemoteObjectReplica::State::Valid) {
-        connectSignals();
-    }
 }
 
 void QTOZWOptions::connectSignals() {

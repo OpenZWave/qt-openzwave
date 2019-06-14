@@ -7,11 +7,13 @@
 
 class QTOZWOptions_Internal;
 class QTOZWOptionsReplica;
-
+class QTOZWManager;
 
 class QTOZWOptions : public QObject {
-    Q_OBJECT
+    friend class QTOZWManager;
 
+
+    Q_OBJECT
 public:
     enum connectionType {
         Local,
@@ -20,7 +22,7 @@ public:
     };
     Q_ENUM(connectionType)
 
-    QTOZWOptions(QObject *parent = nullptr);
+    QTOZWOptions(connectionType type, QObject *parent = nullptr);
 
     Q_PROPERTY(QString ConfigPath READ ConfigPath WRITE setConfigPath NOTIFY ConfigPathChanged)
     Q_PROPERTY(QString UserPath READ UserPath WRITE setUserPath NOTIFY UserPathChanged)
@@ -172,8 +174,6 @@ Q_SIGNALS:
     void LanguageChanged(QString Language);
     void IncludeInstanceLabelsChanged(bool IncludeInstanceLabels);
     //void error(QTOZWOptionsReplica::QTOZWOptionsErrorCodes errorcode);
-
-private Q_SLOTS:
     void onOptionStateChange(QRemoteObjectReplica::State);
 
 private:
