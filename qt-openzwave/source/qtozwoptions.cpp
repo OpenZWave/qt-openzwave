@@ -1,5 +1,4 @@
 #include <QAbstractItemModelReplica>
-#include <QSignalSpy>
 
 #include "qt-openzwave/qtozwoptions.h"
 #include "qtozwoptions_p.h"
@@ -22,9 +21,7 @@
 #define CALL_DPTR_PROP_SET(x) if (this->m_connectionType == QTOZWOptions::connectionType::Local) { \
         this->d_ptr_internal->setProperty(#x, x); \
     } else { \
-        QSignalSpy spy(this, SIGNAL(xChanged)); \
         this->d_ptr_replica->setProperty(#x, x); \
-        spy.wait(); \
     }
 #define CALL_DPTR_METHOD_RTN(x, y) if (this->m_connectionType == QTOZWOptions::connectionType::Local) \
     return this->d_ptr_internal->x; \
