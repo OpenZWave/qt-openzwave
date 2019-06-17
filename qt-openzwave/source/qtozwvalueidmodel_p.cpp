@@ -23,7 +23,7 @@ void QTOZW_ValueIds_internal::addValue(quint64 _vidKey)
     this->endInsertRows();
 }
 
-void QTOZW_ValueIds_internal::setValueData(quint64 _vidKey, QTOZW_ValueIds::ValueIdColumns column, QVariant data)
+void QTOZW_ValueIds_internal::setValueData(quint64 _vidKey, QTOZW_ValueIds::ValueIdColumns column, QVariant data, bool transaction)
 {
     int row = this->getValueRow(_vidKey);
     if (row == -1) {
@@ -32,11 +32,13 @@ void QTOZW_ValueIds_internal::setValueData(quint64 _vidKey, QTOZW_ValueIds::Valu
     }
     if (this->m_valueData[row][column] != data) {
         this->m_valueData[row][column] = data;
-        this->dataChanged(this->createIndex(row, column), this->createIndex(row, column));
+        QVector<int> roles;
+        roles << Qt::DisplayRole;
+        if (!transaction) this->dataChanged(this->createIndex(row, column), this->createIndex(row, column), roles);
     }
 }
 
-void QTOZW_ValueIds_internal::setValueFlags(quint64 _vidKey, QTOZW_ValueIds::ValueIDFlags _flags, bool _value)
+void QTOZW_ValueIds_internal::setValueFlags(quint64 _vidKey, QTOZW_ValueIds::ValueIDFlags _flags, bool _value, bool transaction)
 {
     int row = this->getValueRow(_vidKey);
     if (row == -1) {
@@ -47,7 +49,9 @@ void QTOZW_ValueIds_internal::setValueFlags(quint64 _vidKey, QTOZW_ValueIds::Val
         QBitArray flags = this->m_valueData[row][QTOZW_ValueIds::ValueFlags].value<QBitArray>();
         flags.setBit(_flags, _value);
         this->m_valueData[row][QTOZW_ValueIds::ValueFlags] = flags;
-        this->dataChanged(this->createIndex(row, QTOZW_ValueIds::ValueFlags), this->createIndex(row, QTOZW_ValueIds::ValueFlags));
+        QVector<int> roles;
+        roles << Qt::DisplayRole;
+        if (!transaction) this->dataChanged(this->createIndex(row, QTOZW_ValueIds::ValueFlags), this->createIndex(row, QTOZW_ValueIds::ValueFlags), roles);
     }
 }
 
@@ -95,7 +99,14 @@ void QTOZW_ValueIds_internal::resetModel() {
     this->endRemoveRows();
 }
 
-
+void QTOZW_ValueIds_internal::finishTransaction(quint64 _vidKey) {
+    int row = this->getValueRow(_vidKey);
+    if (row == -1) {
+        qCWarning(valueModel) << "setValueFlags: Value " << _vidKey << " does not exist";
+        return;
+    }
+    this->dataChanged(this->createIndex(row, 0), this->createIndex(row, QTOZW_ValueIds::ValueIdColumns::ValueIdCount -1));
+}
 
 
 

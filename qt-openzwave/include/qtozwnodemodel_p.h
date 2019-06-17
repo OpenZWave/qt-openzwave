@@ -10,10 +10,11 @@ public:
     QTOZW_Nodes_internal(QObject *parent=nullptr);
 public Q_SLOTS:
     void addNode(quint8 _nodeID);
-    void setNodeData(quint8 _nodeID, QTOZW_Nodes::NodeColumns column, QVariant data);
-    void setNodeFlags(quint8 _nodeID, QTOZW_Nodes::nodeFlags _flags, bool _value);
+    void setNodeData(quint8 _nodeID, QTOZW_Nodes::NodeColumns column, QVariant data, bool transaction);
+    void setNodeFlags(quint8 _nodeID, QTOZW_Nodes::nodeFlags _flags, bool _value, bool transaction);
     void delNode(quint8 _nodeID);
     void resetModel();
+    void finishTransaction(quint8 _nodeID);
 };
 
 

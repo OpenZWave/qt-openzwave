@@ -597,8 +597,9 @@ bool QTOZWManager_Internal::convertValueID(quint64 vidKey) {
         {
             bool value;
             this->m_manager->GetValueAsBool(vid, &value);
-            this->m_valueModel->setValueData(vidKey, QTOZW_ValueIds::ValueIdColumns::Value, QVariant::fromValue(value));
-            this->m_valueModel->setValueData(vidKey, QTOZW_ValueIds::ValueIdColumns::Type, QTOZW_ValueIds::ValueIdTypes::Bool);
+            this->m_valueModel->setValueData(vidKey, QTOZW_ValueIds::ValueIdColumns::Value, QVariant::fromValue(value), true);
+            this->m_valueModel->setValueData(vidKey, QTOZW_ValueIds::ValueIdColumns::Type, QTOZW_ValueIds::ValueIdTypes::Bool, true);
+            this->m_valueModel->finishTransaction(vidKey);
             return true;
         }
         case OpenZWave::ValueID::ValueType_Byte:
@@ -606,24 +607,27 @@ bool QTOZWManager_Internal::convertValueID(quint64 vidKey) {
             quint8 value;
             this->m_manager->GetValueAsByte(vid, &value);
             /* QT has a habbit of treating quint8 as char... so cast it to 32 to get around that */
-            this->m_valueModel->setValueData(vidKey, QTOZW_ValueIds::ValueIdColumns::Value, QVariant::fromValue(static_cast<quint32>(value)));
-            this->m_valueModel->setValueData(vidKey, QTOZW_ValueIds::ValueIdColumns::Type, QTOZW_ValueIds::ValueIdTypes::Byte);
+            this->m_valueModel->setValueData(vidKey, QTOZW_ValueIds::ValueIdColumns::Value, QVariant::fromValue(static_cast<quint32>(value)), true);
+            this->m_valueModel->setValueData(vidKey, QTOZW_ValueIds::ValueIdColumns::Type, QTOZW_ValueIds::ValueIdTypes::Byte, true);
+            this->m_valueModel->finishTransaction(vidKey);
             return true;
         }
         case OpenZWave::ValueID::ValueType_Decimal:
         {
             std::string value;
             this->m_manager->GetValueAsString(vid, &value);
-            this->m_valueModel->setValueData(vidKey, QTOZW_ValueIds::ValueIdColumns::Value, QVariant::fromValue(QString(value.c_str()).toFloat()));
-            this->m_valueModel->setValueData(vidKey, QTOZW_ValueIds::ValueIdColumns::Type, QTOZW_ValueIds::ValueIdTypes::Decimal);
+            this->m_valueModel->setValueData(vidKey, QTOZW_ValueIds::ValueIdColumns::Value, QVariant::fromValue(QString(value.c_str()).toFloat()), true);
+            this->m_valueModel->setValueData(vidKey, QTOZW_ValueIds::ValueIdColumns::Type, QTOZW_ValueIds::ValueIdTypes::Decimal, true);
+            this->m_valueModel->finishTransaction(vidKey);
             return true;
         }
         case OpenZWave::ValueID::ValueType_Int:
         {
             qint32 value;
             this->m_manager->GetValueAsInt(vid, &value);
-            this->m_valueModel->setValueData(vidKey, QTOZW_ValueIds::ValueIdColumns::Value, QVariant::fromValue(value));
-            this->m_valueModel->setValueData(vidKey, QTOZW_ValueIds::ValueIdColumns::Type, QTOZW_ValueIds::ValueIdTypes::Int);
+            this->m_valueModel->setValueData(vidKey, QTOZW_ValueIds::ValueIdColumns::Value, QVariant::fromValue(value), true);
+            this->m_valueModel->setValueData(vidKey, QTOZW_ValueIds::ValueIdColumns::Type, QTOZW_ValueIds::ValueIdTypes::Int, true);
+            this->m_valueModel->finishTransaction(vidKey);
             return true;
         }
         case OpenZWave::ValueID::ValueType_List:
@@ -646,40 +650,46 @@ bool QTOZWManager_Internal::convertValueID(quint64 vidKey) {
                 std::string selectedItem;
                 this->m_manager->GetValueListSelection(vid, &selectedItem);
                 vidlist.selectedItem = QString::fromStdString(selectedItem);
-                this->m_valueModel->setValueData(vidKey, QTOZW_ValueIds::ValueIdColumns::Value, QVariant::fromValue(vidlist));
+                this->m_valueModel->setValueData(vidKey, QTOZW_ValueIds::ValueIdColumns::Value, QVariant::fromValue(vidlist), true);
             }
-            this->m_valueModel->setValueData(vidKey, QTOZW_ValueIds::ValueIdColumns::Type, QTOZW_ValueIds::ValueIdTypes::List);
+            this->m_valueModel->setValueData(vidKey, QTOZW_ValueIds::ValueIdColumns::Type, QTOZW_ValueIds::ValueIdTypes::List, true);
+            this->m_valueModel->finishTransaction(vidKey);
             return true;
         }
         case OpenZWave::ValueID::ValueType_Schedule:
         {
-            this->m_valueModel->setValueData(vidKey, QTOZW_ValueIds::ValueIdColumns::Type, QTOZW_ValueIds::ValueIdTypes::Schedule);
+            this->m_valueModel->setValueData(vidKey, QTOZW_ValueIds::ValueIdColumns::Type, QTOZW_ValueIds::ValueIdTypes::Schedule, true);
+            this->m_valueModel->finishTransaction(vidKey);
             return true;
         }
         case OpenZWave::ValueID::ValueType_Short:
         {
             int16_t value;
             this->m_manager->GetValueAsShort(vid, &value);
-            this->m_valueModel->setValueData(vidKey, QTOZW_ValueIds::ValueIdColumns::Value, QVariant::fromValue(value));
-            this->m_valueModel->setValueData(vidKey, QTOZW_ValueIds::ValueIdColumns::Type, QTOZW_ValueIds::ValueIdTypes::Short);
+            this->m_valueModel->setValueData(vidKey, QTOZW_ValueIds::ValueIdColumns::Value, QVariant::fromValue(value), true);
+            this->m_valueModel->setValueData(vidKey, QTOZW_ValueIds::ValueIdColumns::Type, QTOZW_ValueIds::ValueIdTypes::Short, true);
+            this->m_valueModel->finishTransaction(vidKey);
             return true;
         }
         case OpenZWave::ValueID::ValueType_String:
         {
             std::string value;
             this->m_manager->GetValueAsString(vid, &value);
-            this->m_valueModel->setValueData(vidKey, QTOZW_ValueIds::ValueIdColumns::Value, QVariant::fromValue(QString(value.c_str())));
-            this->m_valueModel->setValueData(vidKey, QTOZW_ValueIds::ValueIdColumns::Type, QTOZW_ValueIds::ValueIdTypes::String);
+            this->m_valueModel->setValueData(vidKey, QTOZW_ValueIds::ValueIdColumns::Value, QVariant::fromValue(QString(value.c_str())), true);
+            this->m_valueModel->setValueData(vidKey, QTOZW_ValueIds::ValueIdColumns::Type, QTOZW_ValueIds::ValueIdTypes::String, true);
+            this->m_valueModel->finishTransaction(vidKey);
             return true;
         }
         case OpenZWave::ValueID::ValueType_Button:
         {
-            this->m_valueModel->setValueData(vidKey, QTOZW_ValueIds::ValueIdColumns::Type, QTOZW_ValueIds::ValueIdTypes::Button);
+            this->m_valueModel->setValueData(vidKey, QTOZW_ValueIds::ValueIdColumns::Type, QTOZW_ValueIds::ValueIdTypes::Button, true);
+            this->m_valueModel->finishTransaction(vidKey);
             return true;
         }
         case OpenZWave::ValueID::ValueType_Raw:
         {
-            this->m_valueModel->setValueData(vidKey, QTOZW_ValueIds::ValueIdColumns::Type, QTOZW_ValueIds::ValueIdTypes::Raw);
+            this->m_valueModel->setValueData(vidKey, QTOZW_ValueIds::ValueIdColumns::Type, QTOZW_ValueIds::ValueIdTypes::Raw, true);
+            this->m_valueModel->finishTransaction(vidKey);
             return true;
         }
         case OpenZWave::ValueID::ValueType_BitSet:
@@ -705,8 +715,9 @@ bool QTOZWManager_Internal::convertValueID(quint64 vidKey) {
                     }
                 }
             }
-            this->m_valueModel->setValueData(vidKey, QTOZW_ValueIds::ValueIdColumns::Value, QVariant::fromValue(vidbs));
-            this->m_valueModel->setValueData(vidKey, QTOZW_ValueIds::ValueIdColumns::Type, QTOZW_ValueIds::ValueIdTypes::BitSet);
+            this->m_valueModel->setValueData(vidKey, QTOZW_ValueIds::ValueIdColumns::Value, QVariant::fromValue(vidbs), true);
+            this->m_valueModel->setValueData(vidKey, QTOZW_ValueIds::ValueIdColumns::Type, QTOZW_ValueIds::ValueIdTypes::BitSet, true);
+            this->m_valueModel->finishTransaction(vidKey);
             return true;
         }
     }
@@ -724,22 +735,22 @@ void QTOZWManager_Internal::pvt_valueAdded(quint64 vidKey)
 
     try {
         OpenZWave::ValueID vid(this->homeId(), vidKey);
-        this->m_valueModel->setValueData(vidKey, QTOZW_ValueIds::ValueIdColumns::Label, this->m_manager->GetValueLabel(vid).c_str());
-        this->m_valueModel->setValueData(vidKey, QTOZW_ValueIds::ValueIdColumns::Instance, vid.GetInstance());
-        this->m_valueModel->setValueData(vidKey, QTOZW_ValueIds::ValueIdColumns::CommandClass, vid.GetCommandClassId());
-        this->m_valueModel->setValueData(vidKey, QTOZW_ValueIds::ValueIdColumns::Index, vid.GetIndex());
-        this->m_valueModel->setValueData(vidKey, QTOZW_ValueIds::ValueIdColumns::Node, vid.GetNodeId());
-        this->m_valueModel->setValueData(vidKey, QTOZW_ValueIds::ValueIdColumns::Genre, vid.GetGenre());
-        this->m_valueModel->setValueData(vidKey, QTOZW_ValueIds::ValueIdColumns::Help, this->m_manager->GetValueHelp(vid).c_str());
-        this->m_valueModel->setValueData(vidKey, QTOZW_ValueIds::ValueIdColumns::Units, this->m_manager->GetValueUnits(vid).c_str());
-        this->m_valueModel->setValueData(vidKey, QTOZW_ValueIds::ValueIdColumns::Min, this->m_manager->GetValueMin(vid));
-        this->m_valueModel->setValueData(vidKey, QTOZW_ValueIds::ValueIdColumns::Max, this->m_manager->GetValueMax(vid));
-        this->m_valueModel->setValueFlags(vidKey, QTOZW_ValueIds::ValueIDFlags::ReadOnly, this->m_manager->IsValueReadOnly(vid));
-        this->m_valueModel->setValueFlags(vidKey, QTOZW_ValueIds::ValueIDFlags::WriteOnly, this->m_manager->IsValueWriteOnly(vid));
-        this->m_valueModel->setValueFlags(vidKey, QTOZW_ValueIds::ValueIDFlags::ValueSet, this->m_manager->IsValueSet(vid));
-        this->m_valueModel->setValueFlags(vidKey, QTOZW_ValueIds::ValueIDFlags::ValuePolled, this->m_manager->IsValuePolled(vid));
-        this->m_valueModel->setValueFlags(vidKey, QTOZW_ValueIds::ValueIDFlags::ChangeVerified, this->m_manager->GetChangeVerified(vid));
-
+        this->m_valueModel->setValueData(vidKey, QTOZW_ValueIds::ValueIdColumns::Label, this->m_manager->GetValueLabel(vid).c_str(), true);
+        this->m_valueModel->setValueData(vidKey, QTOZW_ValueIds::ValueIdColumns::Instance, vid.GetInstance(), true);
+        this->m_valueModel->setValueData(vidKey, QTOZW_ValueIds::ValueIdColumns::CommandClass, vid.GetCommandClassId(), true);
+        this->m_valueModel->setValueData(vidKey, QTOZW_ValueIds::ValueIdColumns::Index, vid.GetIndex(), true);
+        this->m_valueModel->setValueData(vidKey, QTOZW_ValueIds::ValueIdColumns::Node, vid.GetNodeId(), true);
+        this->m_valueModel->setValueData(vidKey, QTOZW_ValueIds::ValueIdColumns::Genre, vid.GetGenre(), true);
+        this->m_valueModel->setValueData(vidKey, QTOZW_ValueIds::ValueIdColumns::Help, this->m_manager->GetValueHelp(vid).c_str(), true);
+        this->m_valueModel->setValueData(vidKey, QTOZW_ValueIds::ValueIdColumns::Units, this->m_manager->GetValueUnits(vid).c_str(), true);
+        this->m_valueModel->setValueData(vidKey, QTOZW_ValueIds::ValueIdColumns::Min, this->m_manager->GetValueMin(vid), true);
+        this->m_valueModel->setValueData(vidKey, QTOZW_ValueIds::ValueIdColumns::Max, this->m_manager->GetValueMax(vid), true);
+        this->m_valueModel->setValueFlags(vidKey, QTOZW_ValueIds::ValueIDFlags::ReadOnly, this->m_manager->IsValueReadOnly(vid), true);
+        this->m_valueModel->setValueFlags(vidKey, QTOZW_ValueIds::ValueIDFlags::WriteOnly, this->m_manager->IsValueWriteOnly(vid), true);
+        this->m_valueModel->setValueFlags(vidKey, QTOZW_ValueIds::ValueIDFlags::ValueSet, this->m_manager->IsValueSet(vid), true);
+        this->m_valueModel->setValueFlags(vidKey, QTOZW_ValueIds::ValueIDFlags::ValuePolled, this->m_manager->IsValuePolled(vid), true);
+        this->m_valueModel->setValueFlags(vidKey, QTOZW_ValueIds::ValueIDFlags::ChangeVerified, this->m_manager->GetChangeVerified(vid), true);
+        this->m_valueModel->finishTransaction(vidKey);
         this->convertValueID(vidKey);
     } catch (OpenZWave::OZWException &e) {
         qCWarning(notifications) << "OZW Exception: " << e.GetMsg().c_str() << " at " << e.GetFile().c_str() <<":" << e.GetLine();
@@ -772,13 +783,15 @@ void QTOZWManager_Internal::pvt_valueRefreshed(quint64 vidKey)
 void QTOZWManager_Internal::pvt_valuePollingEnabled(quint64 vidKey)
 {
     qCDebug(notifications) << "Notification pvt_valuePollingEnabled " << vidKey;
-    this->m_valueModel->setValueFlags(vidKey, QTOZW_ValueIds::ValueIDFlags::ValuePolled, true);
+    this->m_valueModel->setValueFlags(vidKey, QTOZW_ValueIds::ValueIDFlags::ValuePolled, true, true);
+    this->m_valueModel->finishTransaction(vidKey);
 
 }
 void QTOZWManager_Internal::pvt_valuePollingDisabled(quint64 vidKey)
 {
     qCDebug(notifications) << "Notification pvt_valuePollingDisabled " << vidKey;
-    this->m_valueModel->setValueFlags(vidKey, QTOZW_ValueIds::ValueIDFlags::ValuePolled, false);
+    this->m_valueModel->setValueFlags(vidKey, QTOZW_ValueIds::ValueIDFlags::ValuePolled, false, true);
+    this->m_valueModel->finishTransaction(vidKey);
 
 }
 void QTOZWManager_Internal::pvt_nodeGroupChanged(quint8 node, quint8 group)
@@ -827,13 +840,14 @@ void QTOZWManager_Internal::pvt_nodeNew(quint8 node)
     this->m_nodeModel->addNode(node);
     try {
         QVariant data = this->m_manager->GetNodeQueryStage(this->homeId(), node).c_str();
-        this->m_nodeModel->setNodeData(node, QTOZW_Nodes::NodeQueryStage, data);
+        this->m_nodeModel->setNodeData(node, QTOZW_Nodes::NodeQueryStage, data, true);
 
-        this->m_nodeModel->setNodeFlags(node, QTOZW_Nodes::isNIFRecieved, this->m_manager->IsNodeInfoReceived(this->homeId(), node));
+        this->m_nodeModel->setNodeFlags(node, QTOZW_Nodes::isNIFRecieved, this->m_manager->IsNodeInfoReceived(this->homeId(), node), true);
 
-        this->m_nodeModel->setNodeFlags(node, QTOZW_Nodes::isAwake, this->m_manager->IsNodeAwake(this->homeId(), node));
+        this->m_nodeModel->setNodeFlags(node, QTOZW_Nodes::isAwake, this->m_manager->IsNodeAwake(this->homeId(), node), true);
 
-        this->m_nodeModel->setNodeFlags(node, QTOZW_Nodes::isFailed, this->m_manager->IsNodeFailed(this->homeId(), node));
+        this->m_nodeModel->setNodeFlags(node, QTOZW_Nodes::isFailed, this->m_manager->IsNodeFailed(this->homeId(), node), true);
+        this->m_nodeModel->finishTransaction(node);
     } catch (OpenZWave::OZWException &e) {
         qCWarning(notifications) << "OZW Exception: " << e.GetMsg().c_str() << " at " << e.GetFile().c_str() <<":" << e.GetLine();
         emit this->error(QTOZWManagerErrorCodes::OZWException);
@@ -851,13 +865,15 @@ void QTOZWManager_Internal::pvt_nodeAdded(quint8 node)
     this->m_nodeModel->addNode(node);
     try {
         QVariant data = this->m_manager->GetNodeQueryStage(this->homeId(), node).c_str();
-        this->m_nodeModel->setNodeData(node, QTOZW_Nodes::NodeQueryStage, data);
+        this->m_nodeModel->setNodeData(node, QTOZW_Nodes::NodeQueryStage, data, true);
 
-        this->m_nodeModel->setNodeFlags(node, QTOZW_Nodes::isNIFRecieved, this->m_manager->IsNodeInfoReceived(this->homeId(), node));
+        this->m_nodeModel->setNodeFlags(node, QTOZW_Nodes::isNIFRecieved, this->m_manager->IsNodeInfoReceived(this->homeId(), node), true);
 
-        this->m_nodeModel->setNodeFlags(node, QTOZW_Nodes::isAwake, this->m_manager->IsNodeAwake(this->homeId(), node));
+        this->m_nodeModel->setNodeFlags(node, QTOZW_Nodes::isAwake, this->m_manager->IsNodeAwake(this->homeId(), node), true);
 
-        this->m_nodeModel->setNodeFlags(node, QTOZW_Nodes::isFailed, this->m_manager->IsNodeFailed(this->homeId(), node));
+        this->m_nodeModel->setNodeFlags(node, QTOZW_Nodes::isFailed, this->m_manager->IsNodeFailed(this->homeId(), node), true);
+        this->m_nodeModel->finishTransaction(node);
+
     } catch (OpenZWave::OZWException &e) {
         qCWarning(notifications) << "OZW Exception: " << e.GetMsg().c_str() << " at " << e.GetFile().c_str() <<":" << e.GetLine();
         emit this->error(QTOZWManagerErrorCodes::OZWException);
@@ -896,18 +912,20 @@ void QTOZWManager_Internal::pvt_nodeNaming(quint8 node)
     qCDebug(notifications) << "Notification pvt_nodeNaming " << node;
     try {
         QString data = this->m_manager->GetNodeName(this->homeId(), node).c_str();
-        this->m_nodeModel->setNodeData(node, QTOZW_Nodes::NodeName, data);
+        this->m_nodeModel->setNodeData(node, QTOZW_Nodes::NodeName, data, true);
         data = this->m_manager->GetNodeLocation(this->homeId(), node).c_str();
-        this->m_nodeModel->setNodeData(node, QTOZW_Nodes::NodeLocation, data);
+        this->m_nodeModel->setNodeData(node, QTOZW_Nodes::NodeLocation, data, true);
 
         data = this->m_manager->GetNodeQueryStage(this->homeId(), node).c_str();
-        this->m_nodeModel->setNodeData(node, QTOZW_Nodes::NodeQueryStage, data);
+        this->m_nodeModel->setNodeData(node, QTOZW_Nodes::NodeQueryStage, data, true);
 
-        this->m_nodeModel->setNodeFlags(node, QTOZW_Nodes::isNIFRecieved, this->m_manager->IsNodeInfoReceived(this->homeId(), node));
+        this->m_nodeModel->setNodeFlags(node, QTOZW_Nodes::isNIFRecieved, this->m_manager->IsNodeInfoReceived(this->homeId(), node), true);
 
-        this->m_nodeModel->setNodeFlags(node, QTOZW_Nodes::isAwake, this->m_manager->IsNodeAwake(this->homeId(), node));
+        this->m_nodeModel->setNodeFlags(node, QTOZW_Nodes::isAwake, this->m_manager->IsNodeAwake(this->homeId(), node), true);
 
-        this->m_nodeModel->setNodeFlags(node, QTOZW_Nodes::isFailed, this->m_manager->IsNodeFailed(this->homeId(), node));
+        this->m_nodeModel->setNodeFlags(node, QTOZW_Nodes::isFailed, this->m_manager->IsNodeFailed(this->homeId(), node), true);
+        this->m_nodeModel->finishTransaction(node);
+
     } catch (OpenZWave::OZWException &e) {
         qCWarning(notifications) << "OZW Exception: " << e.GetMsg().c_str() << " at " << e.GetFile().c_str() <<":" << e.GetLine();
         emit this->error(QTOZWManagerErrorCodes::OZWException);
@@ -920,11 +938,13 @@ void QTOZWManager_Internal::pvt_nodeEvent(quint8 node, quint8 event)
     qCDebug(notifications) << "Notification pvt_nodeEvent " << node << " Event: " << event;
     try {
         QVariant data = this->m_manager->GetNodeQueryStage(this->homeId(), node).c_str();
-        this->m_nodeModel->setNodeData(node, QTOZW_Nodes::NodeQueryStage, data);
+        this->m_nodeModel->setNodeData(node, QTOZW_Nodes::NodeQueryStage, data, true);
 
-        this->m_nodeModel->setNodeFlags(node, QTOZW_Nodes::isAwake, this->m_manager->IsNodeAwake(this->homeId(), node));
+        this->m_nodeModel->setNodeFlags(node, QTOZW_Nodes::isAwake, this->m_manager->IsNodeAwake(this->homeId(), node), true);
 
-        this->m_nodeModel->setNodeFlags(node, QTOZW_Nodes::isFailed, this->m_manager->IsNodeFailed(this->homeId(), node));
+        this->m_nodeModel->setNodeFlags(node, QTOZW_Nodes::isFailed, this->m_manager->IsNodeFailed(this->homeId(), node), true);
+        this->m_nodeModel->finishTransaction(node);
+
     } catch (OpenZWave::OZWException &e) {
         qCWarning(notifications) << "OZW Exception: " << e.GetMsg().c_str() << " at " << e.GetFile().c_str() <<":" << e.GetLine();
         emit this->error(QTOZWManagerErrorCodes::OZWException);
@@ -937,68 +957,70 @@ void QTOZWManager_Internal::pvt_nodeProtocolInfo(quint8 node)
     qCDebug(notifications) << "Notification pvt_nodeProtocolInfo " << node;
     try {
         QVariant data = this->m_manager->GetNodeProductName(this->homeId(), node).c_str();
-        this->m_nodeModel->setNodeData(node, QTOZW_Nodes::NodeProductName, data);
+        this->m_nodeModel->setNodeData(node, QTOZW_Nodes::NodeProductName, data, true);
 
         data = this->m_manager->GetNodeManufacturerName(this->homeId(), node).c_str();
-        this->m_nodeModel->setNodeData(node, QTOZW_Nodes::NodeManufacturerName, data);
+        this->m_nodeModel->setNodeData(node, QTOZW_Nodes::NodeManufacturerName, data, true);
 
         data = this->m_manager->GetNodeManufacturerId(this->homeId(), node).c_str();
-        this->m_nodeModel->setNodeData(node, QTOZW_Nodes::NodeManufacturerID, data);
+        this->m_nodeModel->setNodeData(node, QTOZW_Nodes::NodeManufacturerID, data, true);
 
         data = this->m_manager->GetNodeProductId(this->homeId(), node).c_str();
-        this->m_nodeModel->setNodeData(node, QTOZW_Nodes::NodeProductID, data);
+        this->m_nodeModel->setNodeData(node, QTOZW_Nodes::NodeProductID, data, true);
 
         data = this->m_manager->GetNodeProductType(this->homeId(), node).c_str();
-        this->m_nodeModel->setNodeData(node, QTOZW_Nodes::NodeProductType, data);
+        this->m_nodeModel->setNodeData(node, QTOZW_Nodes::NodeProductType, data, true);
 
         data = this->m_manager->GetNodeProductId(this->homeId(), node).c_str();
-        this->m_nodeModel->setNodeData(node, QTOZW_Nodes::NodeProductID, data);
+        this->m_nodeModel->setNodeData(node, QTOZW_Nodes::NodeProductID, data, true);
 
         data = this->m_manager->GetNodeProductType(this->homeId(), node).c_str();
-        this->m_nodeModel->setNodeData(node, QTOZW_Nodes::NodeProductType, data);
+        this->m_nodeModel->setNodeData(node, QTOZW_Nodes::NodeProductType, data, true);
 
         data = nodeBasicStr(this->m_manager->GetNodeBasic(this->homeId(), node));
-        this->m_nodeModel->setNodeData(node, QTOZW_Nodes::NodeBasicString, data);
+        this->m_nodeModel->setNodeData(node, QTOZW_Nodes::NodeBasicString, data, true);
 
         data = this->m_manager->GetNodeBasic(this->homeId(), node);
-        this->m_nodeModel->setNodeData(node, QTOZW_Nodes::NodeBasic, data);
+        this->m_nodeModel->setNodeData(node, QTOZW_Nodes::NodeBasic, data, true);
 
         data = this->m_manager->GetNodeDeviceTypeString(this->homeId(), node).c_str();
-        this->m_nodeModel->setNodeData(node, QTOZW_Nodes::NodeGenericString, data);
+        this->m_nodeModel->setNodeData(node, QTOZW_Nodes::NodeGenericString, data, true);
 
         data = this->m_manager->GetNodeGeneric(this->homeId(), node);
-        this->m_nodeModel->setNodeData(node, QTOZW_Nodes::NodeGeneric, data);
+        this->m_nodeModel->setNodeData(node, QTOZW_Nodes::NodeGeneric, data, true);
 
         data = this->m_manager->GetNodeSpecific(this->homeId(), node);
-        this->m_nodeModel->setNodeData(node, QTOZW_Nodes::NodeSpecific, data);
+        this->m_nodeModel->setNodeData(node, QTOZW_Nodes::NodeSpecific, data, true);
 
         /* XXX TODO: Need a OZW SpecificString function */
         data = this->m_manager->GetNodeSpecific(this->homeId(), node);
-        this->m_nodeModel->setNodeData(node, QTOZW_Nodes::NodeSpecificString, data);
+        this->m_nodeModel->setNodeData(node, QTOZW_Nodes::NodeSpecificString, data, true);
 
         data = this->m_manager->GetNodeMaxBaudRate(this->homeId(), node);
-        this->m_nodeModel->setNodeData(node, QTOZW_Nodes::NodeBaudRate, data);
+        this->m_nodeModel->setNodeData(node, QTOZW_Nodes::NodeBaudRate, data, true);
 
         data = this->m_manager->GetNodeVersion(this->homeId(), node);
-        this->m_nodeModel->setNodeData(node, QTOZW_Nodes::NodeVersion, data);
+        this->m_nodeModel->setNodeData(node, QTOZW_Nodes::NodeVersion, data, true);
 
         data = this->m_manager->GetNodeQueryStage(this->homeId(), node).c_str();
-        this->m_nodeModel->setNodeData(node, QTOZW_Nodes::NodeQueryStage, data);
+        this->m_nodeModel->setNodeData(node, QTOZW_Nodes::NodeQueryStage, data, true);
 
         /* set our Flags */
-        this->m_nodeModel->setNodeFlags(node, QTOZW_Nodes::isListening, this->m_manager->IsNodeListeningDevice(this->homeId(), node));
+        this->m_nodeModel->setNodeFlags(node, QTOZW_Nodes::isListening, this->m_manager->IsNodeListeningDevice(this->homeId(), node), true);
 
-        this->m_nodeModel->setNodeFlags(node, QTOZW_Nodes::isFlirs, this->m_manager->IsNodeFrequentListeningDevice(this->homeId(), node));
+        this->m_nodeModel->setNodeFlags(node, QTOZW_Nodes::isFlirs, this->m_manager->IsNodeFrequentListeningDevice(this->homeId(), node), true);
 
-        this->m_nodeModel->setNodeFlags(node, QTOZW_Nodes::isBeaming, this->m_manager->IsNodeBeamingDevice(this->homeId(), node));
+        this->m_nodeModel->setNodeFlags(node, QTOZW_Nodes::isBeaming, this->m_manager->IsNodeBeamingDevice(this->homeId(), node), true);
 
-        this->m_nodeModel->setNodeFlags(node, QTOZW_Nodes::isRouting, this->m_manager->IsNodeRoutingDevice(this->homeId(), node));
+        this->m_nodeModel->setNodeFlags(node, QTOZW_Nodes::isRouting, this->m_manager->IsNodeRoutingDevice(this->homeId(), node), true);
 
-        this->m_nodeModel->setNodeFlags(node, QTOZW_Nodes::isNIFRecieved, this->m_manager->IsNodeInfoReceived(this->homeId(), node));
+        this->m_nodeModel->setNodeFlags(node, QTOZW_Nodes::isNIFRecieved, this->m_manager->IsNodeInfoReceived(this->homeId(), node), true);
 
-        this->m_nodeModel->setNodeFlags(node, QTOZW_Nodes::isAwake, this->m_manager->IsNodeAwake(this->homeId(), node));
+        this->m_nodeModel->setNodeFlags(node, QTOZW_Nodes::isAwake, this->m_manager->IsNodeAwake(this->homeId(), node), true);
 
-        this->m_nodeModel->setNodeFlags(node, QTOZW_Nodes::isFailed, this->m_manager->IsNodeFailed(this->homeId(), node));
+        this->m_nodeModel->setNodeFlags(node, QTOZW_Nodes::isFailed, this->m_manager->IsNodeFailed(this->homeId(), node), true);
+        this->m_nodeModel->finishTransaction(node);
+
     } catch (OpenZWave::OZWException &e) {
         qCWarning(notifications) << "OZW Exception: " << e.GetMsg().c_str() << " at " << e.GetFile().c_str() <<":" << e.GetLine();
         emit this->error(QTOZWManagerErrorCodes::OZWException);
@@ -1011,70 +1033,72 @@ void QTOZWManager_Internal::pvt_nodeEssentialNodeQueriesComplete(quint8 node)
     qCDebug(notifications) << "Notification pvt_nodeEssentialNodeQueriesComplete " << node;
     try {
         QVariant data = this->m_manager->GetNodeQueryStage(this->homeId(), node).c_str();
-        this->m_nodeModel->setNodeData(node, QTOZW_Nodes::NodeQueryStage, data);
+        this->m_nodeModel->setNodeData(node, QTOZW_Nodes::NodeQueryStage, data, true);
 
         data = this->m_manager->GetNodeProductName(this->homeId(), node).c_str();
-        this->m_nodeModel->setNodeData(node, QTOZW_Nodes::NodeProductName, data);
+        this->m_nodeModel->setNodeData(node, QTOZW_Nodes::NodeProductName, data, true);
 
         data = this->m_manager->GetNodeManufacturerName(this->homeId(), node).c_str();
-        this->m_nodeModel->setNodeData(node, QTOZW_Nodes::NodeManufacturerName, data);
+        this->m_nodeModel->setNodeData(node, QTOZW_Nodes::NodeManufacturerName, data, true);
 
         data = this->m_manager->GetNodeManufacturerId(this->homeId(), node).c_str();
-        this->m_nodeModel->setNodeData(node, QTOZW_Nodes::NodeManufacturerID, data);
+        this->m_nodeModel->setNodeData(node, QTOZW_Nodes::NodeManufacturerID, data, true);
 
         data = this->m_manager->GetNodeProductId(this->homeId(), node).c_str();
-        this->m_nodeModel->setNodeData(node, QTOZW_Nodes::NodeProductID, data);
+        this->m_nodeModel->setNodeData(node, QTOZW_Nodes::NodeProductID, data, true);
 
         data = this->m_manager->GetNodeProductType(this->homeId(), node).c_str();
-        this->m_nodeModel->setNodeData(node, QTOZW_Nodes::NodeProductType, data);
+        this->m_nodeModel->setNodeData(node, QTOZW_Nodes::NodeProductType, data, true);
 
         data = this->m_manager->GetNodeProductId(this->homeId(), node).c_str();
-        this->m_nodeModel->setNodeData(node, QTOZW_Nodes::NodeProductID, data);
+        this->m_nodeModel->setNodeData(node, QTOZW_Nodes::NodeProductID, data, true);
 
         data = this->m_manager->GetNodeProductType(this->homeId(), node).c_str();
-        this->m_nodeModel->setNodeData(node, QTOZW_Nodes::NodeProductType, data);
+        this->m_nodeModel->setNodeData(node, QTOZW_Nodes::NodeProductType, data, true);
 
         data = nodeBasicStr(this->m_manager->GetNodeBasic(this->homeId(), node));
-        this->m_nodeModel->setNodeData(node, QTOZW_Nodes::NodeBasicString, data);
+        this->m_nodeModel->setNodeData(node, QTOZW_Nodes::NodeBasicString, data, true);
 
         data = this->m_manager->GetNodeBasic(this->homeId(), node);
-        this->m_nodeModel->setNodeData(node, QTOZW_Nodes::NodeBasic, data);
+        this->m_nodeModel->setNodeData(node, QTOZW_Nodes::NodeBasic, data, true);
 
         data = this->m_manager->GetNodeDeviceTypeString(this->homeId(), node).c_str();
-        this->m_nodeModel->setNodeData(node, QTOZW_Nodes::NodeGenericString, data);
+        this->m_nodeModel->setNodeData(node, QTOZW_Nodes::NodeGenericString, data, true);
 
         data = this->m_manager->GetNodeGeneric(this->homeId(), node);
-        this->m_nodeModel->setNodeData(node, QTOZW_Nodes::NodeGeneric, data);
+        this->m_nodeModel->setNodeData(node, QTOZW_Nodes::NodeGeneric, data, true);
 
         data = this->m_manager->GetNodeSpecific(this->homeId(), node);
-        this->m_nodeModel->setNodeData(node, QTOZW_Nodes::NodeSpecific, data);
+        this->m_nodeModel->setNodeData(node, QTOZW_Nodes::NodeSpecific, data, true);
 
         /* XXX TODO: Need a OZW SpecificString function */
         data = this->m_manager->GetNodeSpecific(this->homeId(), node);
-        this->m_nodeModel->setNodeData(node, QTOZW_Nodes::NodeSpecificString, data);
+        this->m_nodeModel->setNodeData(node, QTOZW_Nodes::NodeSpecificString, data, true);
 
         data = this->m_manager->GetNodeMaxBaudRate(this->homeId(), node);
-        this->m_nodeModel->setNodeData(node, QTOZW_Nodes::NodeBaudRate, data);
+        this->m_nodeModel->setNodeData(node, QTOZW_Nodes::NodeBaudRate, data, true);
 
         data = this->m_manager->GetNodeVersion(this->homeId(), node);
-        this->m_nodeModel->setNodeData(node, QTOZW_Nodes::NodeVersion, data);
+        this->m_nodeModel->setNodeData(node, QTOZW_Nodes::NodeVersion, data, true);
 
         /* set our Flags */
-        this->m_nodeModel->setNodeFlags(node, QTOZW_Nodes::isListening, this->m_manager->IsNodeListeningDevice(this->homeId(), node));
+        this->m_nodeModel->setNodeFlags(node, QTOZW_Nodes::isListening, this->m_manager->IsNodeListeningDevice(this->homeId(), node), true);
 
-        this->m_nodeModel->setNodeFlags(node, QTOZW_Nodes::isFlirs, this->m_manager->IsNodeFrequentListeningDevice(this->homeId(), node));
+        this->m_nodeModel->setNodeFlags(node, QTOZW_Nodes::isFlirs, this->m_manager->IsNodeFrequentListeningDevice(this->homeId(), node), true);
 
-        this->m_nodeModel->setNodeFlags(node, QTOZW_Nodes::isBeaming, this->m_manager->IsNodeBeamingDevice(this->homeId(), node));
+        this->m_nodeModel->setNodeFlags(node, QTOZW_Nodes::isBeaming, this->m_manager->IsNodeBeamingDevice(this->homeId(), node), true);
 
-        this->m_nodeModel->setNodeFlags(node, QTOZW_Nodes::isRouting, this->m_manager->IsNodeRoutingDevice(this->homeId(), node));
+        this->m_nodeModel->setNodeFlags(node, QTOZW_Nodes::isRouting, this->m_manager->IsNodeRoutingDevice(this->homeId(), node), true);
 
-        this->m_nodeModel->setNodeFlags(node, QTOZW_Nodes::isNIFRecieved, this->m_manager->IsNodeInfoReceived(this->homeId(), node));
+        this->m_nodeModel->setNodeFlags(node, QTOZW_Nodes::isNIFRecieved, this->m_manager->IsNodeInfoReceived(this->homeId(), node), true);
 
-        this->m_nodeModel->setNodeFlags(node, QTOZW_Nodes::isAwake, this->m_manager->IsNodeAwake(this->homeId(), node));
+        this->m_nodeModel->setNodeFlags(node, QTOZW_Nodes::isAwake, this->m_manager->IsNodeAwake(this->homeId(), node), true);
 
-        this->m_nodeModel->setNodeFlags(node, QTOZW_Nodes::isFailed, this->m_manager->IsNodeFailed(this->homeId(), node));
+        this->m_nodeModel->setNodeFlags(node, QTOZW_Nodes::isFailed, this->m_manager->IsNodeFailed(this->homeId(), node), true);
 
-        this->m_nodeModel->setNodeData(node, QTOZW_Nodes::NodeGroups, this->m_manager->GetNumGroups(this->homeId(), node));
+        this->m_nodeModel->setNodeData(node, QTOZW_Nodes::NodeGroups, this->m_manager->GetNumGroups(this->homeId(), node), true);
+
+        this->m_nodeModel->finishTransaction(node);
 
     } catch (OpenZWave::OZWException &e) {
         qCWarning(notifications) << "OZW Exception: " << e.GetMsg().c_str() << " at " << e.GetFile().c_str() <<":" << e.GetLine();
@@ -1089,81 +1113,83 @@ void QTOZWManager_Internal::pvt_nodeQueriesComplete(quint8 node)
     /* Plus Type Info here */
     try {
         QVariant data = this->m_manager->GetNodeDeviceType(this->homeId(), node);
-        this->m_nodeModel->setNodeData(node, QTOZW_Nodes::NodeDeviceType, data);
+        this->m_nodeModel->setNodeData(node, QTOZW_Nodes::NodeDeviceType, data, true);
 
         data = this->m_manager->GetNodeDeviceTypeString(this->homeId(), node).c_str();
-        this->m_nodeModel->setNodeData(node, QTOZW_Nodes::NodeDeviceTypeString, data);
+        this->m_nodeModel->setNodeData(node, QTOZW_Nodes::NodeDeviceTypeString, data, true);
 
         data = this->m_manager->GetNodeRole(this->homeId(), node);
-        this->m_nodeModel->setNodeData(node, QTOZW_Nodes::NodeRole, data);
+        this->m_nodeModel->setNodeData(node, QTOZW_Nodes::NodeRole, data, true);
 
         data = this->m_manager->GetNodeRoleString(this->homeId(), node).c_str();
-        this->m_nodeModel->setNodeData(node, QTOZW_Nodes::NodeRoleString, data);
+        this->m_nodeModel->setNodeData(node, QTOZW_Nodes::NodeRoleString, data, true);
 
         data = this->m_manager->GetNodePlusType(this->homeId(), node);
-        this->m_nodeModel->setNodeData(node, QTOZW_Nodes::NodePlusType, data);
+        this->m_nodeModel->setNodeData(node, QTOZW_Nodes::NodePlusType, data, true);
 
         data = this->m_manager->GetNodePlusTypeString(this->homeId(), node).c_str();
-        this->m_nodeModel->setNodeData(node, QTOZW_Nodes::NodePlusTypeString, data);
+        this->m_nodeModel->setNodeData(node, QTOZW_Nodes::NodePlusTypeString, data, true);
 
         data = this->m_manager->GetNodeQueryStage(this->homeId(), node).c_str();
-        this->m_nodeModel->setNodeData(node, QTOZW_Nodes::NodeQueryStage, data);
+        this->m_nodeModel->setNodeData(node, QTOZW_Nodes::NodeQueryStage, data, true);
 
         data = this->m_manager->GetNodeProductName(this->homeId(), node).c_str();
-        this->m_nodeModel->setNodeData(node, QTOZW_Nodes::NodeProductName, data);
+        this->m_nodeModel->setNodeData(node, QTOZW_Nodes::NodeProductName, data, true);
 
         data = this->m_manager->GetNodeManufacturerName(this->homeId(), node).c_str();
-        this->m_nodeModel->setNodeData(node, QTOZW_Nodes::NodeManufacturerName, data);
+        this->m_nodeModel->setNodeData(node, QTOZW_Nodes::NodeManufacturerName, data, true);
 
         data = this->m_manager->GetNodeManufacturerId(this->homeId(), node).c_str();
-        this->m_nodeModel->setNodeData(node, QTOZW_Nodes::NodeManufacturerID, data);
+        this->m_nodeModel->setNodeData(node, QTOZW_Nodes::NodeManufacturerID, data, true);
 
         data = this->m_manager->GetNodeProductId(this->homeId(), node).c_str();
-        this->m_nodeModel->setNodeData(node, QTOZW_Nodes::NodeProductID, data);
+        this->m_nodeModel->setNodeData(node, QTOZW_Nodes::NodeProductID, data, true);
 
         data = this->m_manager->GetNodeProductType(this->homeId(), node).c_str();
-        this->m_nodeModel->setNodeData(node, QTOZW_Nodes::NodeProductType, data);
+        this->m_nodeModel->setNodeData(node, QTOZW_Nodes::NodeProductType, data, true);
 
         data = this->m_manager->GetNodeProductId(this->homeId(), node).c_str();
-        this->m_nodeModel->setNodeData(node, QTOZW_Nodes::NodeProductID, data);
+        this->m_nodeModel->setNodeData(node, QTOZW_Nodes::NodeProductID, data, true);
 
         data = this->m_manager->GetNodeProductType(this->homeId(), node).c_str();
-        this->m_nodeModel->setNodeData(node, QTOZW_Nodes::NodeProductType, data);
+        this->m_nodeModel->setNodeData(node, QTOZW_Nodes::NodeProductType, data, true);
 
         data = nodeBasicStr(this->m_manager->GetNodeBasic(this->homeId(), node));
-        this->m_nodeModel->setNodeData(node, QTOZW_Nodes::NodeBasicString, data);
+        this->m_nodeModel->setNodeData(node, QTOZW_Nodes::NodeBasicString, data, true);
 
         data = this->m_manager->GetNodeBasic(this->homeId(), node);
-        this->m_nodeModel->setNodeData(node, QTOZW_Nodes::NodeBasic, data);
+        this->m_nodeModel->setNodeData(node, QTOZW_Nodes::NodeBasic, data, true);
 
         data = this->m_manager->GetNodeDeviceTypeString(this->homeId(), node).c_str();
-        this->m_nodeModel->setNodeData(node, QTOZW_Nodes::NodeGenericString, data);
+        this->m_nodeModel->setNodeData(node, QTOZW_Nodes::NodeGenericString, data, true);
 
         data = this->m_manager->GetNodeGeneric(this->homeId(), node);
-        this->m_nodeModel->setNodeData(node, QTOZW_Nodes::NodeGeneric, data);
+        this->m_nodeModel->setNodeData(node, QTOZW_Nodes::NodeGeneric, data, true);
 
         data = this->m_manager->GetNodeSpecific(this->homeId(), node);
-        this->m_nodeModel->setNodeData(node, QTOZW_Nodes::NodeSpecific, data);
+        this->m_nodeModel->setNodeData(node, QTOZW_Nodes::NodeSpecific, data, true);
 
         /* XXX TODO: Need a OZW SpecificString function */
         data = this->m_manager->GetNodeSpecific(this->homeId(), node);
-        this->m_nodeModel->setNodeData(node, QTOZW_Nodes::NodeSpecificString, data);
+        this->m_nodeModel->setNodeData(node, QTOZW_Nodes::NodeSpecificString, data, true);
 
         data = this->m_manager->GetNodeMaxBaudRate(this->homeId(), node);
-        this->m_nodeModel->setNodeData(node, QTOZW_Nodes::NodeBaudRate, data);
+        this->m_nodeModel->setNodeData(node, QTOZW_Nodes::NodeBaudRate, data, true);
 
         data = this->m_manager->GetNodeVersion(this->homeId(), node);
-        this->m_nodeModel->setNodeData(node, QTOZW_Nodes::NodeVersion, data);
+        this->m_nodeModel->setNodeData(node, QTOZW_Nodes::NodeVersion, data, true);
 
 
         /* set our Flags */
-        this->m_nodeModel->setNodeFlags(node, QTOZW_Nodes::isZWavePlus, this->m_manager->IsNodeZWavePlus(this->homeId(), node));
+        this->m_nodeModel->setNodeFlags(node, QTOZW_Nodes::isZWavePlus, this->m_manager->IsNodeZWavePlus(this->homeId(), node), true);
 
-        this->m_nodeModel->setNodeFlags(node, QTOZW_Nodes::isNIFRecieved, this->m_manager->IsNodeInfoReceived(this->homeId(), node));
+        this->m_nodeModel->setNodeFlags(node, QTOZW_Nodes::isNIFRecieved, this->m_manager->IsNodeInfoReceived(this->homeId(), node), true);
 
-        this->m_nodeModel->setNodeFlags(node, QTOZW_Nodes::isAwake, this->m_manager->IsNodeAwake(this->homeId(), node));
+        this->m_nodeModel->setNodeFlags(node, QTOZW_Nodes::isAwake, this->m_manager->IsNodeAwake(this->homeId(), node), true);
 
-        this->m_nodeModel->setNodeFlags(node, QTOZW_Nodes::isFailed, this->m_manager->IsNodeFailed(this->homeId(), node));
+        this->m_nodeModel->setNodeFlags(node, QTOZW_Nodes::isFailed, this->m_manager->IsNodeFailed(this->homeId(), node), true);
+
+        this->m_nodeModel->finishTransaction(node);
 
     } catch (OpenZWave::OZWException &e) {
         qCWarning(notifications) << "OZW Exception: " << e.GetMsg().c_str() << " at " << e.GetFile().c_str() <<":" << e.GetLine();

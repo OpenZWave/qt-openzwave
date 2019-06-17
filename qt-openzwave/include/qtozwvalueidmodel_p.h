@@ -10,11 +10,12 @@ public:
     QTOZW_ValueIds_internal(QObject *parent=nullptr);
 public Q_SLOTS:
     void addValue(quint64 _vidKey);
-    void setValueData(quint64 _vidKey, QTOZW_ValueIds::ValueIdColumns column, QVariant data);
-    void setValueFlags(quint64 _vidKey, QTOZW_ValueIds::ValueIDFlags _flags, bool _value);
+    void setValueData(quint64 _vidKey, QTOZW_ValueIds::ValueIdColumns column, QVariant data, bool transaction);
+    void setValueFlags(quint64 _vidKey, QTOZW_ValueIds::ValueIDFlags _flags, bool _value, bool transaction);
     void delValue(quint64 _vidKey);
     void delNodeValues(quint8 _node);
     void resetModel();
+    void finishTransaction(quint64 _vidKey);
 };
 
 

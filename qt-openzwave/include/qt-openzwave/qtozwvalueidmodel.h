@@ -89,7 +89,6 @@ public:
     QVariant headerData(int section, Qt::Orientation orientation, int role) const override;
     Qt::ItemFlags flags(const QModelIndex &index) const override;
     bool setData(const QModelIndex &index, const QVariant &value, int role=Qt::EditRole) override;
-
 protected:
     QVariant getValueData(quint64, ValueIdColumns);
     int32_t getValueRow(quint64 _node);

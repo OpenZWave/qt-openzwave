@@ -25,7 +25,7 @@ void QTOZW_Nodes_internal::addNode(quint8 _nodeID)
     this->endInsertRows();
 }
 
-void QTOZW_Nodes_internal::setNodeData(quint8 _nodeID, QTOZW_Nodes::NodeColumns column, QVariant data)
+void QTOZW_Nodes_internal::setNodeData(quint8 _nodeID, QTOZW_Nodes::NodeColumns column, QVariant data, bool transaction)
 {
     int row = this->getNodeRow(_nodeID);
     if (row == -1) {
@@ -36,11 +36,11 @@ void QTOZW_Nodes_internal::setNodeData(quint8 _nodeID, QTOZW_Nodes::NodeColumns 
         this->m_nodeData[row][column] = data;
         QVector<int> roles;
         roles << Qt::DisplayRole;
-        this->dataChanged(this->createIndex(row, column), this->createIndex(row, column), roles);
+        if (!transaction) this->dataChanged(this->createIndex(row, column), this->createIndex(row, column), roles);
     }
 }
 
-void QTOZW_Nodes_internal::setNodeFlags(quint8 _nodeID, QTOZW_Nodes::nodeFlags _flags, bool _value)
+void QTOZW_Nodes_internal::setNodeFlags(quint8 _nodeID, QTOZW_Nodes::nodeFlags _flags, bool _value, bool transaction)
 {
     int row = this->getNodeRow(_nodeID);
     if (row == -1) {
@@ -53,7 +53,7 @@ void QTOZW_Nodes_internal::setNodeFlags(quint8 _nodeID, QTOZW_Nodes::nodeFlags _
         this->m_nodeData[row][QTOZW_Nodes::NodeFlags] = flag;
         QVector<int> roles;
         roles << Qt::DisplayRole;
-        this->dataChanged(this->createIndex(row, QTOZW_Nodes::NodeFlags), this->createIndex(row, QTOZW_Nodes::NodeFlags), roles);
+        if (!transaction) this->dataChanged(this->createIndex(row, QTOZW_Nodes::NodeFlags), this->createIndex(row, QTOZW_Nodes::NodeFlags), roles);
     }
 }
 void QTOZW_Nodes_internal::delNode(quint8 _nodeID) {
@@ -80,3 +80,14 @@ void QTOZW_Nodes_internal::resetModel() {
     this->m_nodeData.clear();
     this->endRemoveRows();
 }
+
+void QTOZW_Nodes_internal::finishTransaction(quint8 _nodeID) {
+    int row = this->getNodeRow(_nodeID);
+    if (row == -1) {
+        qCWarning(nodeModel) << "finishTransaction: Node " << _nodeID << " does not exist";
+        return;
+    }
+    this->dataChanged(this->createIndex(row, 0), this->createIndex(row, QTOZW_Nodes::NodeColumns::NodeCount-1));
+
+}
+
