@@ -31,19 +31,14 @@ HEADERS += \
 RESOURCES += \
     simpleclient.qrc
 
-LIBS += -lresolv
+LIBS += -lresolv -L../qt-openzwave/ -lqt-openzwave
+INCLUDEPATH += ../qt-openzwave/include/
+
 macx {
-    QMAKE_CXXFLAGS += -F../qt-openzwave/
-    LIBS += -F../qt-openzwave/ -framework qt-openzwave
     ICON = res/ozw_logo.icns
-    BUNDLE.files = ../qt-openzwave/qt-openzwave.framework/
-    BUNDLE.path = Contents/Frameworks/qt-openzwave.framework/
-    LIBOZW.files = ../../open-zwave/libopenzwave-1.6.dylib
+    LIBOZW.files = ../../open-zwave/libopenzwave-1.6.dylib ../qt-openzwave/libqt-openzwave.1.0.dylib
     LIBOZW.path = Contents/Frameworks/
     QMAKE_BUNDLE_DATA += BUNDLE LIBOZW
-    INCLUDEPATH += ../qt-openzwave/qt-openzwave/include/
-} else {
-    LIBS += -L../qt-openzwave/ -lqt-openzwave -L../../open-zwave -lopenzwave
-    INCLUDEPATH += ../qt-openzwave/include/
+    QMAKE_POST_LINK=$$top_srcdir/updaterpath.sh $(TARGET)
 }
 include(../qt-openzwave.pri)

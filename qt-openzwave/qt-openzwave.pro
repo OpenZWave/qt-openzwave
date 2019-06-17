@@ -84,23 +84,11 @@ unix {
     target.path = /usr/local/lib
     INSTALLS += target
 }
+LIBS += -L../../open-zwave -lopenzwave
 
 macx {
-#    QMAKE_MACOSX_DEPLOYMENT_TARGET = 10.11
-    FRAMEWORK_HEADERS.version = Versions
-    FRAMEWORK_HEADERS.files = include/qt-openzwave/qtopenzwave.h include/qt-openzwave/qtozwmanager.h \
-        include/qt-openzwave/qtozwproxymodels.h include/qt-openzwave/rep_qtozwmanager_source.h \
-        include/qt-openzwave/qtozw_pods.h include/qt-openzwave/qtozwvalueidmodel.h \
-        include/qt-openzwave/qtozwassociationmodel.h include/qt-openzwave/qtozwnodemodel.h \
-        include/qt-openzwave/rep_qtozwmanager_replica.h include/qt-openzwave_global.h \
-        include/qt-openzwave/qtozwoptions.h
-    FRAMEWORK_HEADERS.path = Headers
-
-    QMAKE_BUNDLE_DATA += FRAMEWORK_HEADERS
     QMAKE_LFLAGS_SONAME = -Wl,-install_name,@rpath/
-    CONFIG +=lib_bundle
-} else {
-    LIBS += -L../../open-zwave -lopenzwave
+    QMAKE_POST_LINK=$$top_srcdir/updaterpath.sh $(TARGET)
 } 
 
 message(" ")

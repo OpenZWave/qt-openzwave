@@ -4,7 +4,6 @@ QT += remoteobjects
 
 CONFIG += c++11 console silent
 CONFIG -= app_bundle
-CONFIG -= silent
 
 # The following define makes your compiler emit warnings if you use
 # any Qt feature that has been marked deprecated (the exact warnings
@@ -29,14 +28,12 @@ else: unix:!android: target.path = /opt/$${TARGET}/bin
 HEADERS += \
     qtozwdaemon.h
 
-LIBS += -lresolv
+LIBS += -lresolv -L../qt-openzwave/ -lqt-openzwave
+INCLUDEPATH += ../qt-openzwave/include/
+
 macx {
-    QMAKE_CXXFLAGS += -F../qt-openzwave/
-    LIBS += -F../qt-openzwave/ -framework qt-openzwave
     ICON = res/ozw_logo.icns
-} else {
-    LIBS += -L../qt-openzwave/ -lqt-openzwave
-    INCLUDEPATH += ../qt-openzwave/include/
+    QMAKE_POST_LINK=$$top_srcdir/updaterpath.sh $(TARGET)
 }
 
 include(../qt-openzwave.pri)
