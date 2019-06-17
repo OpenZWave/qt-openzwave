@@ -136,8 +136,7 @@ public:
     bool GetOptionAsBool(QString option);
     qint32 GetOptionAsInt(QString option);
     QString GetOptionAsString(QString option);
-
-
+    bool isLocked();
 
 Q_SIGNALS:
     void ConfigPathChanged(QString ConfigPath);

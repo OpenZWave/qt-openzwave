@@ -22,6 +22,7 @@ public Q_SLOTS:
     bool GetOptionAsBool(QString option);
     qint32 GetOptionAsInt(QString option);
     QString GetOptionAsString(QString option);
+    bool isLocked();
 
 private Q_SLOTS:
     void pvt_ConfigPathChanged(QString value);

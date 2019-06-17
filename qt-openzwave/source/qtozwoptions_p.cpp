@@ -85,6 +85,11 @@ QString QTOZWOptions_Internal::GetOptionAsString(QString option) {
     return QString();
 }
 
+bool QTOZWOptions_Internal::isLocked() {
+    return this->m_options->AreLocked();
+}
+
+
 bool QTOZWOptions_Internal::populateProperties() {
     this->m_updating = true;
     this->setConfigPath(this->GetOptionAsString("ConfigPath"));

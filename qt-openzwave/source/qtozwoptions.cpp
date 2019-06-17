@@ -20,10 +20,10 @@
 #define CALL_DPTR(x) if (this->m_connectionType == QTOZWOptions::connectionType::Local) this->d_ptr_internal->x; else this->d_ptr_replica->x;
 #define CALL_DPTR_PROP(x) if (this->m_connectionType == QTOZWOptions::connectionType::Local) return this->d_ptr_internal->x; else return this->d_ptr_replica->x;
 #define CALL_DPTR_PROP_SET(x) if (this->m_connectionType == QTOZWOptions::connectionType::Local) { \
-        this->d_ptr_internal->setProperty("x", x); \
+        this->d_ptr_internal->setProperty(#x, x); \
     } else { \
         QSignalSpy spy(this, SIGNAL(xChanged)); \
-        this->d_ptr_replica->setProperty("x", x); \
+        this->d_ptr_replica->setProperty(#x, x); \
         spy.wait(); \
     }
 #define CALL_DPTR_METHOD_RTN(x, y) if (this->m_connectionType == QTOZWOptions::connectionType::Local) \
@@ -325,4 +325,8 @@ qint32 QTOZWOptions::GetOptionAsInt(QString option) {
 }
 QString QTOZWOptions::GetOptionAsString(QString option) {
     CALL_DPTR_METHOD_RTN(GetOptionAsString(option), QString);
+}
+
+bool QTOZWOptions::isLocked() {
+    CALL_DPTR_METHOD_RTN(isLocked(), bool);
 }
