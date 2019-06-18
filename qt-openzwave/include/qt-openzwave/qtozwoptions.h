@@ -3,6 +3,7 @@
 
 #include <QObject>
 #include <QtRemoteObjects>
+#include "qt-openzwave/qtozw_pods.h"
 
 
 class QTOZWOptions_Internal;
@@ -30,9 +31,9 @@ public:
     Q_PROPERTY(QString LogFileName READ LogFileName WRITE setLogFileName NOTIFY LogFileNameChanged)
     Q_PROPERTY(bool AppendLogFile READ AppendLogFile WRITE setAppendLogFile NOTIFY AppendLogFileChanged)
     Q_PROPERTY(bool ConsoleOutput READ ConsoleOutput WRITE setConsoleOutput NOTIFY ConsoleOutputChanged)
-    Q_PROPERTY(qint32 SaveLogLevel READ SaveLogLevel WRITE setSaveLogLevel NOTIFY SaveLogLevelChanged)
-    Q_PROPERTY(qint32 QueueLogLevel READ QueueLogLevel WRITE setQueueLogLevel NOTIFY QueueLogLevelChanged)
-    Q_PROPERTY(qint32 DumpTriggerLevel READ DumpTriggerLevel WRITE setDumpTriggerLevel NOTIFY DumpTriggerLevelChanged)
+    Q_PROPERTY(OptionList SaveLogLevel READ SaveLogLevel WRITE setSaveLogLevel NOTIFY SaveLogLevelChanged)
+    Q_PROPERTY(OptionList QueueLogLevel READ QueueLogLevel WRITE setQueueLogLevel NOTIFY QueueLogLevelChanged)
+    Q_PROPERTY(OptionList DumpTriggerLevel READ DumpTriggerLevel WRITE setDumpTriggerLevel NOTIFY DumpTriggerLevelChanged)
     Q_PROPERTY(bool Associate READ Associate WRITE setAssociate NOTIFY AssociateChanged)
     Q_PROPERTY(QString Exclude READ Exclude WRITE setExclude NOTIFY ExcludeChanged)
     Q_PROPERTY(QString Include READ Include WRITE setInclude NOTIFY IncludeChanged)
@@ -64,9 +65,9 @@ public:
     QString LogFileName() const;
     bool AppendLogFile() const;
     bool ConsoleOutput() const;
-    qint32 SaveLogLevel() const;
-    qint32 QueueLogLevel() const;
-    qint32 DumpTriggerLevel() const;
+    OptionList SaveLogLevel() const;
+    OptionList QueueLogLevel() const;
+    OptionList DumpTriggerLevel() const;
     bool Associate() const;
     QString Exclude() const;
     QString Include() const;
@@ -98,9 +99,9 @@ public:
     void setLogFileName(QString LogFileName);
     void setAppendLogFile(bool AppendLogFile);
     void setConsoleOutput(bool ConsoleOutput);
-    void setSaveLogLevel(qint32 SaveLogLevel);
-    void setQueueLogLevel(qint32 QueueLogLevel);
-    void setDumpTriggerLevel(qint32 DumpTriggerLevel);
+    void setSaveLogLevel(OptionList SaveLogLevel);
+    void setQueueLogLevel(OptionList QueueLogLevel);
+    void setDumpTriggerLevel(OptionList DumpTriggerLevel);
     void setAssociate(bool Associate);
     void setExclude(QString Exclude);
     void setInclude(QString Include);
@@ -145,9 +146,9 @@ Q_SIGNALS:
     void LogFileNameChanged(QString LogFileName);
     void AppendLogFileChanged(bool AppendLogFile);
     void ConsoleOutputChanged(bool ConsoleOutput);
-    void SaveLogLevelChanged(qint32 SaveLogLevel);
-    void QueueLogLevelChanged(qint32 QueueLogLevel);
-    void DumpTriggerLevelChanged(qint32 DumpTriggerLevel);
+    void SaveLogLevelChanged(OptionList SaveLogLevel);
+    void QueueLogLevelChanged(OptionList QueueLogLevel);
+    void DumpTriggerLevelChanged(OptionList DumpTriggerLevel);
     void AssociateChanged(bool Associate);
     void ExcludeChanged(QString Exclude);
     void IncludeChanged(QString Include);

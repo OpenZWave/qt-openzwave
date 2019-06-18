@@ -31,9 +31,9 @@ private Q_SLOTS:
     void pvt_LogFileNameChanged(QString value);
     void pvt_AppendLogFileChanged(bool value);
     void pvt_ConsoleOutputChanged(bool value);
-    void pvt_SaveLogLevelChanged(qint32 value);
-    void pvt_QueueLogLevelChanged(qint32 value);
-    void pvt_DumpTriggerLevelChanged(qint32 value);
+    void pvt_SaveLogLevelChanged(OptionList value);
+    void pvt_QueueLogLevelChanged(OptionList value);
+    void pvt_DumpTriggerLevelChanged(OptionList value);
     void pvt_AssociateChanged(bool value);
     void pvt_ExcludeChanged(QString value);
     void pvt_IncludeChanged(QString value);

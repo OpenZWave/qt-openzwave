@@ -1,4 +1,5 @@
 #include "qtozwoptions_p.h"
+#include "platform/Log.h"
 
 
 QTOZWOptions_Internal::QTOZWOptions_Internal(QObject *parent)
@@ -98,9 +99,40 @@ bool QTOZWOptions_Internal::populateProperties() {
     this->setLogFileName(this->GetOptionAsString("LogFileName"));
     this->setAppendLogFile(this->GetOptionAsBool("AppendLogFile"));
     this->setConsoleOutput(this->GetOptionAsBool("ConsoleOutput"));
-    this->setSaveLogLevel(this->GetOptionAsInt("SaveLogLevel"));
-    this->setQueueLogLevel(this->GetOptionAsInt("QueueLogLevel"));
-    this->setDumpTriggerLevel(this->GetOptionAsInt("DumpTriggerLevel"));
+    {
+        OptionList saveLevel;
+        saveLevel.setEnums(QStringList() << "None" << "Always" << "Fatal" << "Error" << "Warning" << "Alert" << "Info" << "Detail" << "Debug");
+        int level = this->GetOptionAsInt("SaveLogLevel");
+        if ((level >= OpenZWave::LogLevel::LogLevel_None) && (level <= OpenZWave::LogLevel::LogLevel_Debug))
+            saveLevel.setSelected(level);
+        else {
+            saveLevel.setSelected(0);
+        }
+        this->setSaveLogLevel(saveLevel);
+    }
+    {
+        OptionList queueLevel;
+        queueLevel.setEnums(QStringList() << "None" << "Always" << "Fatal" << "Error" << "Warning" << "Alert" << "Info" << "Detail" << "Debug");
+        int level = this->GetOptionAsInt("QueueLogLevel");
+        if ((level >= OpenZWave::LogLevel::LogLevel_None) && (level <= OpenZWave::LogLevel::LogLevel_Debug))
+            queueLevel.setSelected(level);
+        else {
+            queueLevel.setSelected(0);
+        }
+        this->setQueueLogLevel(queueLevel);
+    }
+    {
+        OptionList dumpLevel;
+        dumpLevel.setEnums(QStringList() << "None" << "Always" << "Fatal" << "Error" << "Warning" << "Alert" << "Info" << "Detail" << "Debug");
+        int level = this->GetOptionAsInt("DumpTriggerLevel");
+        if ((level >= OpenZWave::LogLevel::LogLevel_None) && (level <= OpenZWave::LogLevel::LogLevel_Debug))
+            dumpLevel.setSelected(level);
+        else {
+            dumpLevel.setSelected(0);
+        }
+        this->setDumpTriggerLevel(dumpLevel);
+    }
+
     this->setAssociate(this->GetOptionAsBool("Associate"));
     this->setExclude(this->GetOptionAsString("Exclude"));
     this->setInclude(this->GetOptionAsString("Include"));
@@ -132,12 +164,12 @@ bool QTOZWOptions_Internal::populateProperties() {
 void QTOZWOptions_Internal::pvt_ConfigPathChanged(QString value) {
     if (this->m_updating)
         return;
-    this->m_options->AddOptionString("ConfigPath", value.toStdString(), false);
+//    this->m_options->AddOptionString("ConfigPath", value.toStdString(), false);
 }
 void QTOZWOptions_Internal::pvt_UserPathChanged(QString value) {
     if (this->m_updating)
         return;
-    this->m_options->AddOptionString("UserPath", value.toStdString(), false);
+//    this->m_options->AddOptionString("UserPath", value.toStdString(), false);
 }
 void QTOZWOptions_Internal::pvt_LoggingChanged(bool value) {
     if (this->m_updating)
@@ -159,20 +191,20 @@ void QTOZWOptions_Internal::pvt_ConsoleOutputChanged(bool value) {
         return;
     this->m_options->AddOptionBool("ConsoleOutput", value);
 }
-void QTOZWOptions_Internal::pvt_SaveLogLevelChanged(qint32 value) {
+void QTOZWOptions_Internal::pvt_SaveLogLevelChanged(OptionList value) {
     if (this->m_updating)
         return;
-    this->m_options->AddOptionInt("SaveLogLevel", value);
+    this->m_options->AddOptionInt("SaveLogLevel", value.getSelected());
 }
-void QTOZWOptions_Internal::pvt_QueueLogLevelChanged(qint32 value) {
+void QTOZWOptions_Internal::pvt_QueueLogLevelChanged(OptionList value) {
     if (this->m_updating)
         return;
-    this->m_options->AddOptionInt("QueueLogLevel", value);
+    this->m_options->AddOptionInt("QueueLogLevel", value.getSelected());
 }
-void QTOZWOptions_Internal::pvt_DumpTriggerLevelChanged(qint32 value) {
+void QTOZWOptions_Internal::pvt_DumpTriggerLevelChanged(OptionList value) {
     if (this->m_updating)
         return;
-    this->m_options->AddOptionInt("DumpTriggerLevel", value);
+    this->m_options->AddOptionInt("DumpTriggerLevel", value.getSelected());
 }
 void QTOZWOptions_Internal::pvt_AssociateChanged(bool value) {
     if (this->m_updating)

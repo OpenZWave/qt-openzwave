@@ -29,6 +29,10 @@ QTOpenZwave::QTOpenZwave
 
     qRegisterMetaType<NodeStatistics>("NodeStatistics");
     qRegisterMetaTypeStreamOperators<NodeStatistics>("NodeStatistics");
+
+    qRegisterMetaType<OptionList>("OptionList");
+    qRegisterMetaTypeStreamOperators<OptionList>("OptionList");
+
     qSetMessagePattern("%{category} %{message}");
 }
 

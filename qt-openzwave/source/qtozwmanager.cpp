@@ -30,7 +30,8 @@ bool QTOZWManager::initilizeSource(bool enableServer) {
         qCWarning(manager) << "User Path Does Not Exist: " << this->m_ozwuserpath;
         return false;
     }
-    OpenZWave::Options::Create(this->m_ozwdatabasepath.path().toStdString(), this->m_ozwuserpath.path().toStdString(), "");
+    qCDebug(manager) << "Database Path: " << this->m_ozwdatabasepath.path().append("/") << " User Path" << this->m_ozwuserpath.path().append("/");
+    OpenZWave::Options::Create(this->m_ozwdatabasepath.path().append("/").toStdString(), this->m_ozwuserpath.path().append("/").toStdString(), "");
     this->d_ptr_internal = new QTOZWManager_Internal(this);
     this->m_ozwoptions = new QTOZWOptions(QTOZWOptions::connectionType::Local, this);
     if (enableServer) {

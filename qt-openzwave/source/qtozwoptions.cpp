@@ -23,6 +23,11 @@
     } else { \
         this->d_ptr_replica->setProperty(#x, x); \
     }
+#define CALL_DPTR_PROP_SET_TYPE(x, y) if (this->m_connectionType == QTOZWOptions::connectionType::Local) { \
+        this->d_ptr_internal->setProperty(#x, QVariant::fromValue<y>(x)); \
+    } else { \
+        this->d_ptr_replica->setProperty(#x, QVariant::fromValue<y>(x)); \
+    }
 #define CALL_DPTR_METHOD_RTN(x, y) if (this->m_connectionType == QTOZWOptions::connectionType::Local) \
     return this->d_ptr_internal->x; \
     else { \
@@ -123,13 +128,13 @@ bool QTOZWOptions::AppendLogFile() const {
 bool QTOZWOptions::ConsoleOutput() const {
     CALL_DPTR_PROP(ConsoleOutput());
 }
-qint32 QTOZWOptions::SaveLogLevel() const {
+OptionList QTOZWOptions::SaveLogLevel() const {
     CALL_DPTR_PROP(SaveLogLevel());
 }
-qint32 QTOZWOptions::QueueLogLevel() const {
+OptionList QTOZWOptions::QueueLogLevel() const {
     CALL_DPTR_PROP(QueueLogLevel());
 }
-qint32 QTOZWOptions::DumpTriggerLevel() const {
+OptionList QTOZWOptions::DumpTriggerLevel() const {
     CALL_DPTR_PROP(DumpTriggerLevel());
 }
 bool QTOZWOptions::Associate() const {
@@ -223,14 +228,14 @@ void QTOZWOptions::setAppendLogFile(bool AppendLogFile) {
 void QTOZWOptions::setConsoleOutput(bool ConsoleOutput) {
     CALL_DPTR_PROP_SET(ConsoleOutput);
 }
-void QTOZWOptions::setSaveLogLevel(qint32 SaveLogLevel) {
-    CALL_DPTR_PROP_SET(SaveLogLevel);
+void QTOZWOptions::setSaveLogLevel(OptionList SaveLogLevel) {
+    CALL_DPTR_PROP_SET_TYPE(SaveLogLevel, OptionList);
 }
-void QTOZWOptions::setQueueLogLevel(qint32 QueueLogLevel) {
-    CALL_DPTR_PROP_SET(QueueLogLevel);
+void QTOZWOptions::setQueueLogLevel(OptionList QueueLogLevel) {
+    CALL_DPTR_PROP_SET_TYPE(QueueLogLevel, OptionList);
 }
-void QTOZWOptions::setDumpTriggerLevel(qint32 DumpTriggerLevel) {
-    CALL_DPTR_PROP_SET(DumpTriggerLevel);
+void QTOZWOptions::setDumpTriggerLevel(OptionList DumpTriggerLevel) {
+    CALL_DPTR_PROP_SET_TYPE(DumpTriggerLevel, OptionList);
 }
 void QTOZWOptions::setAssociate(bool Associate) {
     CALL_DPTR_PROP_SET(Associate);

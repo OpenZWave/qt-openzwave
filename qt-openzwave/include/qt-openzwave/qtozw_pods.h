@@ -3,6 +3,7 @@
 #include <QObject>
 #include <QtGlobal>
 #include <QDataStream>
+#include <QDebug>
 
 struct NodeStatistics {
         quint32 sentCount;
@@ -131,6 +132,41 @@ inline QDataStream &operator>>(QDataStream &ds, NodeStatistics &obj) {
     ds >> obj.route_3;
     ds >> obj.route_4;
 
+    return ds;
+}
+
+class OptionList
+{
+    Q_GADGET
+    friend QDataStream &operator<<(QDataStream &ds, const OptionList &obj);
+    friend QDataStream &operator>>(QDataStream &ds, OptionList &obj);
+public:
+    OptionList();
+    ~OptionList();
+    bool operator!=(OptionList &c2);
+    void setEnums(QStringList list);
+    QStringList getEnums();
+    QString getSelectedName();
+    int getSelected();
+    bool setSelected(int index);
+    bool setSelected(QString value);
+private:
+    QStringList enumnames;
+    int selected;
+};
+
+
+Q_DECLARE_METATYPE(OptionList)
+
+inline QDataStream &operator<<(QDataStream &ds, const OptionList &obj) {
+    ds << obj.enumnames;
+    ds << obj.selected;
+    return ds;
+}
+
+inline QDataStream &operator>>(QDataStream &ds, OptionList &obj) {
+    ds >> obj.enumnames;
+    ds >> obj.selected;
     return ds;
 }
 
