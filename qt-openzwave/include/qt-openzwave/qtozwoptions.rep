@@ -35,11 +35,11 @@ class QTOZWOptions {
     PROP(bool EnableSIS READWRITE)
     PROP(bool AssumeAwake READWRITE)
     PROP(bool NotifyOnDriverUnload READWRITE)
-    PROP(QString SecurityStrategy READWRITE)
+    PROP(OptionList SecurityStrategy READWRITE)
     PROP(QString CustomSecuredCC READWRITE)
     PROP(bool EnforceSecureReception READWRITE)
     PROP(bool AutoUpdateConfigFile READWRITE)
-    PROP(QString ReloadAfterUpdate READWRITE)
+    PROP(OptionList ReloadAfterUpdate READWRITE)
     PROP(QString Language READWRITE)
     PROP(bool IncludeInstanceLabels READWRITE)
 

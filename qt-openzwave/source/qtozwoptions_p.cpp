@@ -150,11 +150,23 @@ bool QTOZWOptions_Internal::populateProperties() {
     this->setEnableSIS(this->GetOptionAsBool("EnableSIS"));
     this->setAssumeAwake(this->GetOptionAsBool("AssumeAwake"));
     this->setNotifyOnDriverUnload(this->GetOptionAsBool("NotifyOnDriverUnload"));
-    this->setSecurityStrategy(this->GetOptionAsString("SecurityStrategy"));
+    {
+        OptionList secstrategy;
+        secstrategy.setEnums(QStringList() << "Essential" << "Supported" << "Custom");
+        QString strategy = this->GetOptionAsString("SecurityStrategy");
+        secstrategy.setSelected(strategy);
+        this->setSecurityStrategy(secstrategy);
+    }
     this->setCustomSecuredCC(this->GetOptionAsString("CustomSecuredCC"));
     this->setEnforceSecureReception(this->GetOptionAsBool("EnforceSecureReception"));
     this->setAutoUpdateConfigFile(this->GetOptionAsBool("AutoUpdateConfigFile"));
-    this->setReloadAfterUpdate(this->GetOptionAsString("ReloadAfterUpdate"));
+    {
+        OptionList reloadoption;
+        reloadoption.setEnums(QStringList() << "Never" << "Immediate" << "Awake");
+        QString strategy = this->GetOptionAsString("ReloadAfterUpdate");
+        reloadoption.setSelected(strategy);
+        this->setReloadAfterUpdate(reloadoption);
+    }
     this->setLanguage(this->GetOptionAsString("Language"));
     this->setIncludeInstanceLabels(this->GetOptionAsBool("IncludeInstanceLabels"));
     this->m_updating = false;
@@ -164,12 +176,18 @@ bool QTOZWOptions_Internal::populateProperties() {
 void QTOZWOptions_Internal::pvt_ConfigPathChanged(QString value) {
     if (this->m_updating)
         return;
-//    this->m_options->AddOptionString("ConfigPath", value.toStdString(), false);
+    /* OZW expects the paths to end with a / otherwise it treats it as a file */
+    if (value.at(value.size()) != "/")
+        value.append("/");
+    this->m_options->AddOptionString("ConfigPath", value.toStdString(), false);
 }
 void QTOZWOptions_Internal::pvt_UserPathChanged(QString value) {
     if (this->m_updating)
         return;
-//    this->m_options->AddOptionString("UserPath", value.toStdString(), false);
+    /* OZW expects the paths to end with a / otherwise it treats it as a file */
+    if (value.at(value.size()) != "/")
+        value.append("/");
+        this->m_options->AddOptionString("UserPath", value.toStdString(), false);
 }
 void QTOZWOptions_Internal::pvt_LoggingChanged(bool value) {
     if (this->m_updating)
@@ -291,10 +309,10 @@ void QTOZWOptions_Internal::pvt_NotifyOnDriverUnloadChanged(bool value) {
         return;
     this->m_options->AddOptionBool("NotifyOnDriverUnload", value);
 }
-void QTOZWOptions_Internal::pvt_SecurityStrategyChanged(QString value) {
+void QTOZWOptions_Internal::pvt_SecurityStrategyChanged(OptionList value) {
     if (this->m_updating)
         return;
-    this->m_options->AddOptionString("SecurityStrategy", value.toStdString(), false);
+    this->m_options->AddOptionString("SecurityStrategy", value.getSelectedName().toStdString(), false);
 }
 void QTOZWOptions_Internal::pvt_CustomSecuredCCChanged(QString value) {
     if (this->m_updating)
@@ -311,10 +329,10 @@ void QTOZWOptions_Internal::pvt_AutoUpdateConfigFileChanged(bool value) {
         return;
     this->m_options->AddOptionBool("AutoUpdateConfigFile", value);
 }
-void QTOZWOptions_Internal::pvt_ReloadAfterUpdateChanged(QString value) {
+void QTOZWOptions_Internal::pvt_ReloadAfterUpdateChanged(OptionList value) {
     if (this->m_updating)
         return;
-    this->m_options->AddOptionString("ReloadAfterUpdate", value.toStdString(), false);
+    this->m_options->AddOptionString("ReloadAfterUpdate", value.getSelectedName().toStdString(), false);
 }
 void QTOZWOptions_Internal::pvt_LanguageChanged(QString value) {
     if (this->m_updating)

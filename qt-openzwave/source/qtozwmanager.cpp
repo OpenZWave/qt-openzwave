@@ -31,7 +31,14 @@ bool QTOZWManager::initilizeSource(bool enableServer) {
         return false;
     }
     qCDebug(manager) << "Database Path: " << this->m_ozwdatabasepath.path().append("/") << " User Path" << this->m_ozwuserpath.path().append("/");
-    OpenZWave::Options::Create(this->m_ozwdatabasepath.path().append("/").toStdString(), this->m_ozwuserpath.path().append("/").toStdString(), "");
+    QString dbPath = this->m_ozwdatabasepath.path();
+    QString userPath = this->m_ozwuserpath.path();
+    /* OZW expects the paths to end with a / otherwise it treats it as a file */
+    if (dbPath.at(dbPath.size()) != "/")
+        dbPath.append("/");
+    if (userPath.at(userPath.size()) != "/")
+        userPath.append("/");
+    OpenZWave::Options::Create(dbPath.toStdString(), userPath.toStdString(), "");
     this->d_ptr_internal = new QTOZWManager_Internal(this);
     this->m_ozwoptions = new QTOZWOptions(QTOZWOptions::connectionType::Local, this);
     if (enableServer) {

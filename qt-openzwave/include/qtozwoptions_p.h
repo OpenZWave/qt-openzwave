@@ -51,11 +51,11 @@ private Q_SLOTS:
     void pvt_EnableSISChanged(bool value);
     void pvt_AssumeAwakeChanged(bool value);
     void pvt_NotifyOnDriverUnloadChanged(bool value);
-    void pvt_SecurityStrategyChanged(QString value);
+    void pvt_SecurityStrategyChanged(OptionList value);
     void pvt_CustomSecuredCCChanged(QString value);
     void pvt_EnforceSecureReceptionChanged(bool value);
     void pvt_AutoUpdateConfigFileChanged(bool value);
-    void pvt_ReloadAfterUpdateChanged(QString value);
+    void pvt_ReloadAfterUpdateChanged(OptionList value);
     void pvt_LanguageChanged(QString value);
     void pvt_IncludeInstanceLabelsChanged(bool value);
 

@@ -51,11 +51,11 @@ public:
     Q_PROPERTY(bool EnableSIS READ EnableSIS WRITE setEnableSIS NOTIFY EnableSISChanged)
     Q_PROPERTY(bool AssumeAwake READ AssumeAwake WRITE setAssumeAwake NOTIFY AssumeAwakeChanged)
     Q_PROPERTY(bool NotifyOnDriverUnload READ NotifyOnDriverUnload WRITE setNotifyOnDriverUnload NOTIFY NotifyOnDriverUnloadChanged)
-    Q_PROPERTY(QString SecurityStrategy READ SecurityStrategy WRITE setSecurityStrategy NOTIFY SecurityStrategyChanged)
+    Q_PROPERTY(OptionList SecurityStrategy READ SecurityStrategy WRITE setSecurityStrategy NOTIFY SecurityStrategyChanged)
     Q_PROPERTY(QString CustomSecuredCC READ CustomSecuredCC WRITE setCustomSecuredCC NOTIFY CustomSecuredCCChanged)
     Q_PROPERTY(bool EnforceSecureReception READ EnforceSecureReception WRITE setEnforceSecureReception NOTIFY EnforceSecureReceptionChanged)
     Q_PROPERTY(bool AutoUpdateConfigFile READ AutoUpdateConfigFile WRITE setAutoUpdateConfigFile NOTIFY AutoUpdateConfigFileChanged)
-    Q_PROPERTY(QString ReloadAfterUpdate READ ReloadAfterUpdate WRITE setReloadAfterUpdate NOTIFY ReloadAfterUpdateChanged)
+    Q_PROPERTY(OptionList ReloadAfterUpdate READ ReloadAfterUpdate WRITE setReloadAfterUpdate NOTIFY ReloadAfterUpdateChanged)
     Q_PROPERTY(QString Language READ Language WRITE setLanguage NOTIFY LanguageChanged)
     Q_PROPERTY(bool IncludeInstanceLabels READ IncludeInstanceLabels WRITE setIncludeInstanceLabels NOTIFY IncludeInstanceLabelsChanged)
 
@@ -85,11 +85,11 @@ public:
     bool EnableSIS() const;
     bool AssumeAwake() const;
     bool NotifyOnDriverUnload() const;
-    QString SecurityStrategy() const;
+    OptionList SecurityStrategy() const;
     QString CustomSecuredCC() const;
     bool EnforceSecureReception() const;
     bool AutoUpdateConfigFile() const;
-    QString ReloadAfterUpdate() const;
+    OptionList ReloadAfterUpdate() const;
     QString Language() const;
     bool IncludeInstanceLabels() const;
 
@@ -119,11 +119,11 @@ public:
     void setEnableSIS(bool EnableSIS);
     void setAssumeAwake(bool AssumeAwake);
     void setNotifyOnDriverUnload(bool NotifyOnDriverUnload);
-    void setSecurityStrategy(QString SecurityStrategy);
+    void setSecurityStrategy(OptionList SecurityStrategy);
     void setCustomSecuredCC(QString CustomSecuredCC);
     void setEnforceSecureReception(bool EnforceSecureReception);
     void setAutoUpdateConfigFile(bool AutoUpdateConfigFile);
-    void setReloadAfterUpdate(QString ReloadAfterUpdate);
+    void setReloadAfterUpdate(OptionList ReloadAfterUpdate);
     void setLanguage(QString Language);
     void setIncludeInstanceLabels(bool IncludeInstanceLabels);
 
@@ -166,11 +166,11 @@ Q_SIGNALS:
     void EnableSISChanged(bool EnableSIS);
     void AssumeAwakeChanged(bool AssumeAwake);
     void NotifyOnDriverUnloadChanged(bool NotifyOnDriverUnload);
-    void SecurityStrategyChanged(QString SecurityStrategy);
+    void SecurityStrategyChanged(OptionList SecurityStrategy);
     void CustomSecuredCCChanged(QString CustomSecuredCC);
     void EnforceSecureReceptionChanged(bool EnforceSecureReception);
     void AutoUpdateConfigFileChanged(bool AutoUpdateConfigFile);
-    void ReloadAfterUpdateChanged(QString ReloadAfterUpdate);
+    void ReloadAfterUpdateChanged(OptionList ReloadAfterUpdate);
     void LanguageChanged(QString Language);
     void IncludeInstanceLabelsChanged(bool IncludeInstanceLabels);
     //void error(QTOZWOptionsReplica::QTOZWOptionsErrorCodes errorcode);

@@ -188,7 +188,7 @@ bool QTOZWOptions::AssumeAwake() const {
 bool QTOZWOptions::NotifyOnDriverUnload() const {
     CALL_DPTR_PROP(NotifyTransactions());
 }
-QString QTOZWOptions::SecurityStrategy() const {
+OptionList QTOZWOptions::SecurityStrategy() const {
     CALL_DPTR_PROP(SecurityStrategy());
 }
 QString QTOZWOptions::CustomSecuredCC() const {
@@ -200,7 +200,7 @@ bool QTOZWOptions::EnforceSecureReception() const {
 bool QTOZWOptions::AutoUpdateConfigFile() const {
     CALL_DPTR_PROP(AutoUpdateConfigFile());
 }
-QString QTOZWOptions::ReloadAfterUpdate() const {
+OptionList QTOZWOptions::ReloadAfterUpdate() const {
     CALL_DPTR_PROP(ReloadAfterUpdate());
 }
 QString QTOZWOptions::Language() const {
@@ -209,7 +209,6 @@ QString QTOZWOptions::Language() const {
 bool QTOZWOptions::IncludeInstanceLabels() const {
     CALL_DPTR_PROP(IncludeInstanceLabels());
 }
-
 void QTOZWOptions::setConfigPath(QString ConfigPath) {
     CALL_DPTR_PROP_SET(ConfigPath);
 }
@@ -288,8 +287,8 @@ void QTOZWOptions::setAssumeAwake(bool AssumeAwake) {
 void QTOZWOptions::setNotifyOnDriverUnload(bool NotifyOnDriverUnload) {
     CALL_DPTR_PROP_SET(NotifyOnDriverUnload);
 }
-void QTOZWOptions::setSecurityStrategy(QString SecurityStrategy) {
-    CALL_DPTR_PROP_SET(SecurityStrategy);
+void QTOZWOptions::setSecurityStrategy(OptionList SecurityStrategy) {
+    CALL_DPTR_PROP_SET_TYPE(SecurityStrategy, OptionList);
 }
 void QTOZWOptions::setCustomSecuredCC(QString CustomSecuredCC) {
     CALL_DPTR_PROP_SET(CustomSecuredCC);
@@ -300,8 +299,8 @@ void QTOZWOptions::setEnforceSecureReception(bool EnforceSecureReception) {
 void QTOZWOptions::setAutoUpdateConfigFile(bool AutoUpdateConfigFile) {
     CALL_DPTR_PROP_SET(AutoUpdateConfigFile);
 }
-void QTOZWOptions::setReloadAfterUpdate(QString ReloadAfterUpdate) {
-    CALL_DPTR_PROP_SET(ReloadAfterUpdate);
+void QTOZWOptions::setReloadAfterUpdate(OptionList ReloadAfterUpdate) {
+    CALL_DPTR_PROP_SET_TYPE(ReloadAfterUpdate, OptionList);
 }
 void QTOZWOptions::setLanguage(QString Language) {
     CALL_DPTR_PROP_SET(Language);
