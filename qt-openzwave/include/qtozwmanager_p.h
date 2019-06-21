@@ -12,6 +12,7 @@
 #include "qtozwnodemodel_p.h"
 #include "qtozwvalueidmodel_p.h"
 #include "qtozwassociationmodel_p.h"
+#include "qtozwlog_p.h"
 
 /* OZW Includes */
 #include "Manager.h"
@@ -31,6 +32,8 @@ public:
     QTOZW_ValueIds *getValueModel();
     QTOZW_Associations *getAssociationModel();
     QTOZWOptions_Internal *getOptions();
+    QTOZW_Log_Internal *getLogModel();
+    bool setLogModel(QTOZW_Log_Internal *);
 
 public Q_SLOTS:
     bool open(QString serialPort);
@@ -120,6 +123,7 @@ private:
     QTOZW_Nodes_internal *m_nodeModel;
     QTOZW_ValueIds_internal *m_valueModel;
     QTOZW_Associations_internal *m_associationsModel;
+    QTOZW_Log_Internal *m_logModel;
     QVector<quint8> m_validNodes;
     QVector<quint64> m_validValues;
     QMap<quint8, QMap<quint8, bool > > m_associationDefaultsSet;

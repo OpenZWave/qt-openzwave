@@ -42,6 +42,7 @@ public:
     QAbstractItemModel *getNodeModel();
     QAbstractItemModel *getValueModel();
     QAbstractItemModel *getAssociationModel();
+    QAbstractItemModel *getLogModel();
     QTOZWOptions *getOptions();
 
     /* OpenZWave::Manager methods */
@@ -134,6 +135,7 @@ private Q_SLOTS:
     void onNodeInitialized();
     void onValueInitialized();
     void onAssociationInitialized();
+    void onLogInitialized();
     void setStarted();
     void setStopped();
 
@@ -154,10 +156,12 @@ private:
     bool m_nodeState;
     bool m_valuesState;
     bool m_associationsState;
+    bool m_logState;
 
     QAbstractItemModel *m_nodeModel;
     QAbstractItemModel *m_valueModel;
     QAbstractItemModel *m_associationModel;
+    QAbstractItemModel *m_logModel;
 
     bool m_running;
     QDir m_ozwdatabasepath;

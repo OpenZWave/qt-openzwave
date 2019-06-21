@@ -9,6 +9,7 @@ Q_LOGGING_CATEGORY(nodeModel, "ozw.nodes");
 Q_LOGGING_CATEGORY(associationModel, "ozw.assocations");
 Q_LOGGING_CATEGORY(notifications, "ozw.notifications");
 Q_LOGGING_CATEGORY(logModel, "ozw.logging");
+Q_LOGGING_CATEGORY(libopenzwave, "ozw.library");
 
 
 QTOpenZwave::QTOpenZwave

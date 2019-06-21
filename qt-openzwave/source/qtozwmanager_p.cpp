@@ -557,6 +557,15 @@ QTOZWOptions_Internal *QTOZWManager_Internal::getOptions() {
     return this->m_options;
 }
 
+QTOZW_Log_Internal *QTOZWManager_Internal::getLogModel() {
+    return this->m_logModel;
+}
+bool QTOZWManager_Internal::setLogModel(QTOZW_Log_Internal *t_logModel) {
+    this->m_logModel= t_logModel;
+    return true;
+}
+
+
 
 
 bool QTOZWManager_Internal::checkHomeId() {

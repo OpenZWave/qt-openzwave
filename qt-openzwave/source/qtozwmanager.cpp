@@ -22,6 +22,13 @@ bool QTOZWManager::initilizeBase() {
 bool QTOZWManager::initilizeSource(bool enableServer) {
     initilizeBase();
     this->m_connectionType = connectionType::Local;
+
+    /* initilize the OZW Logging Class - To Pass Log Messages to us */
+
+    QTOZW_Log_Internal *t_logModel = new QTOZW_Log_Internal(this);
+    OpenZWave::Log::SetLoggingClass(static_cast<OpenZWave::i_LogImpl*>(t_logModel));
+
+    /* Initilize the OZW Options Static Class */
     if (!this->m_ozwdatabasepath.exists()) {
         qCWarning(manager) << "Database Path Does Not Exist: " << this->m_ozwdatabasepath;
         return false;
@@ -34,12 +41,17 @@ bool QTOZWManager::initilizeSource(bool enableServer) {
     QString dbPath = this->m_ozwdatabasepath.path();
     QString userPath = this->m_ozwuserpath.path();
     /* OZW expects the paths to end with a / otherwise it treats it as a file */
-    if (dbPath.at(dbPath.size()) != "/")
+    if (dbPath.at(dbPath.size()-1) != "/")
         dbPath.append("/");
-    if (userPath.at(userPath.size()) != "/")
+    if (userPath.at(userPath.size()-1) != "/")
         userPath.append("/");
     OpenZWave::Options::Create(dbPath.toStdString(), userPath.toStdString(), "");
+
+
+    /* Initilize our QTOZWManager Class */
+
     this->d_ptr_internal = new QTOZWManager_Internal(this);
+    this->d_ptr_internal->setLogModel(t_logModel);
     this->m_ozwoptions = new QTOZWOptions(QTOZWOptions::connectionType::Local, this);
     if (enableServer) {
         this->m_sourceNode = new QRemoteObjectHost(QUrl(QStringLiteral("tcp://0.0.0.0:1983")), this);
@@ -52,6 +64,7 @@ bool QTOZWManager::initilizeSource(bool enableServer) {
         this->m_sourceNode->enableRemoting(this->d_ptr_internal->getNodeModel(), "QTOZW_nodeModel", roles);
         this->m_sourceNode->enableRemoting(this->d_ptr_internal->getValueModel(), "QTOZW_valueModel", roles);
         this->m_sourceNode->enableRemoting(this->d_ptr_internal->getAssociationModel(), "QTOZW_associationModel", roles);
+        this->m_sourceNode->enableRemoting(this->d_ptr_internal->getLogModel(), "QTOZW_Log");
     }
     connectSignals();
     emit this->ready();
@@ -75,6 +88,8 @@ bool QTOZWManager::initilizeReplica(QUrl remote) {
         QObject::connect(qobject_cast<QAbstractItemModelReplica*>(this->m_valueModel), &QAbstractItemModelReplica::initialized, this, &QTOZWManager::onValueInitialized);
         this->m_associationModel= this->m_replicaNode->acquireModel("QTOZW_associationModel", QtRemoteObjects::InitialAction::PrefetchData);
         QObject::connect(qobject_cast<QAbstractItemModelReplica*>(this->m_associationModel), &QAbstractItemModelReplica::initialized, this, &QTOZWManager::onAssociationInitialized);
+        this->m_logModel = this->m_replicaNode->acquireModel("QTOZW_logModel", QtRemoteObjects::InitialAction::FetchRootSize);
+        QObject::connect(qobject_cast<QAbstractItemModelReplica*>(this->m_logModel), &QAbstractItemModelReplica::initialized, this, &QTOZWManager::onLogInitialized);
     }
     return true;
 }
@@ -112,12 +127,18 @@ void QTOZWManager::onAssociationInitialized() {
     this->checkReplicaReady();
 }
 
+void QTOZWManager::onLogInitialized() {
+    this->m_logState = true;
+    this->checkReplicaReady();
+}
+
 void QTOZWManager::checkReplicaReady() {
     if ((this->m_managerState == QRemoteObjectReplica::State::Valid) &&
             (this->m_optionsState == QRemoteObjectReplica::State::Valid) &&
                 (this->m_nodeState == true) &&
                     (this->m_valuesState == true) &&
-                        (this->m_associationsState == true)) {
+                        (this->m_associationsState == true) &&
+                            (this->m_logState == true)) {
         /* have to connect all the d_ptr SIGNALS to our SIGNALS now */
         connectSignals();
         emit this->ready();
@@ -164,6 +185,13 @@ QTOZWOptions *QTOZWManager::getOptions() {
     return this->m_ozwoptions;
 }
 
+QAbstractItemModel *QTOZWManager::getLogModel() {
+    if (this->m_connectionType == connectionType::Local) {
+        return this->d_ptr_internal->getLogModel();
+    } else {
+        return this->m_logModel;
+    }
+}
 
 
 #define CONNECT_DPTR(x)     if (this->m_connectionType == connectionType::Local) { \

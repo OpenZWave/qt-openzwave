@@ -38,7 +38,8 @@ DEFINES += QT_DEPRECATED_WARNINGS
 #DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0x060000    # disables all the APIs deprecated before Qt 6.0.0
 
 SOURCES += source/qtopenzwave.cpp \
-    source/qtozwlogging.cpp \
+    source/qtozwlog.cpp \
+    source/qtozwlog_p.cpp \
     source/qtozwoptions.cpp \
     source/qtozwoptions_p.cpp \
     source/qt_pods.cpp \
@@ -55,8 +56,9 @@ SOURCES += source/qtopenzwave.cpp \
 
 HEADERS += include/qt-openzwave/qtopenzwave.h \
         include/qt-openzwave/qtozw_pods.h \
-        include/qt-openzwave/qtozwlogging.h \
+        include/qt-openzwave/qtozwlog.h \
         include/qt-openzwave/qtozwoptions.h \
+        include/qtozwlog_p.h \
         include/qtozwoptions_p.h \
         include/qt-openzwave_global.h \  \
         include/qtozw_logging.h \

@@ -71,7 +71,7 @@ int main(int argc, char **argv)
                                      "default.debug=true");
 #else
     QLoggingCategory::setFilterRules("default.debug=true\n"
-                                     "qt.modeltest.*=true");
+                                     "qt.modeltest.debug=false");
 #endif
     QApplication app(argc, argv);
     QIcon icon(":res/ozw_SF2_notext.png");

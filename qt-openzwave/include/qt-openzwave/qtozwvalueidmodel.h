@@ -2,8 +2,7 @@
 #define QTOZWVALUEIDMODEL_H
 
 #include <QObject>
-#include <QAbstractItemModel>
-#include <QAbstractListModel>
+#include <QAbstractTableModel>
 #include <QBitArray>
 
 

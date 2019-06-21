@@ -171,6 +171,13 @@ void MainWindow::QTOZW_Ready() {
 
     //QAbstractItemModelTester *associationTester = new QAbstractItemModelTester(this->m_qtozwmanager->getAssociationModel(), QAbstractItemModelTester::FailureReportingMode::Fatal, this);
     //Q_UNSED(associationTester)
+
+//    QAbstractItemModelTester *logTester = new QAbstractItemModelTester(this->m_qtozwmanager->getLogModel(), QAbstractItemModelTester::FailureReportingMode::Fatal, this);
+    QTableView *tableView = new QTableView;
+    tableView->setModel(this->m_qtozwmanager->getLogModel());
+    tableView->show();
+//    Q_UNUSED(logTester)
+
 }
 
 void MainWindow::valueAdded(quint64 vidKey) {

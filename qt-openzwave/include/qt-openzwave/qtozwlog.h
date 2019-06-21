@@ -6,48 +6,50 @@
 #include <QDateTime>
 
 
-class QTOZW_Logging : public QAbstractTableModel {
+class QTOZW_Log : public QAbstractTableModel {
     Q_OBJECT
 public:
-    enum LoggingColumns {
+    enum LogColumns {
         TimeStamp,
         Node,
         Level,
         Message,
         Count
     };
-    Q_ENUM(LoggingColumns)
-    enum LoggingLevels {
+    Q_ENUM(LogColumns)
+    enum LogLevels {
         Always,
         Fatal,
         Error,
         Warning,
         Alert,
         Info,
+        Detail,
         Debug,
         StreamDetail,
         Internal,
         LogLevelCount
     };
-    Q_ENUM(LoggingLevels)
+    Q_ENUM(LogLevels)
     struct QTOZW_LogEntry {
+        QString s_msg;
         QDateTime s_time;
         quint8 s_node;
-        LoggingColumns s_level;
-        QString s_msg;
+        LogLevels s_level;
     };
 
 
-    QTOZW_Logging(QObject *parent = nullptr);
+    QTOZW_Log(QObject *parent = nullptr);
     int rowCount(const QModelIndex &parent) const override;
     int columnCount(const QModelIndex &parent) const override;
     QVariant data(const QModelIndex &index, int role) const override;
     QVariant headerData(int section, Qt::Orientation orientation, int role) const override;
     Qt::ItemFlags flags(const QModelIndex &index) const override;
 protected:
-    QTOZW_LogEntry getLogData(int);
+    QTOZW_LogEntry getLogData(int) const;
 
     QVector<QTOZW_LogEntry> m_logData;
+    quint32 m_maxLogLength;
 };
 
 
