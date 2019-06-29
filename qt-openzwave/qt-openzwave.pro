@@ -38,11 +38,11 @@ DEFINES += QT_DEPRECATED_WARNINGS
 #DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0x060000    # disables all the APIs deprecated before Qt 6.0.0
 
 SOURCES += source/qtopenzwave.cpp \
+    source/qtozw_pods.cpp \
     source/qtozwlog.cpp \
     source/qtozwlog_p.cpp \
     source/qtozwoptions.cpp \
     source/qtozwoptions_p.cpp \
-    source/qt_pods.cpp \
     source/qtozwassociationmodel.cpp \
     source/qtozwassociationmodel_p.cpp \
     source/qtozwmanager.cpp \

@@ -1,3 +1,31 @@
+//-----------------------------------------------------------------------------
+//
+//	qtozwmanager_p.cpp
+//
+//	QT-OpenZWave Manager - Internal Class to interface between OZW and the QT
+//  Wrapper
+//
+//	Copyright (c) 2019 Justin Hammond <Justin@dynam.ac>
+//
+//	SOFTWARE NOTICE AND LICENSE
+//
+//	This file is part of QT-OpenZWave.
+//
+//	OpenZWave is free software: you can redistribute it and/or modify
+//	it under the terms of the GNU Lesser General Public License as published
+//	by the Free Software Foundation, either version 3 of the License,
+//	or (at your option) any later version.
+//
+//	OpenZWave is distributed in the hope that it will be useful,
+//	but WITHOUT ANY WARRANTY; without even the implied warranty of
+//	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+//	GNU Lesser General Public License for more details.
+//
+//	You should have received a copy of the GNU Lesser General Public License
+//	along with OpenZWave.  If not, see <http://www.gnu.org/licenses/>.
+//
+//-----------------------------------------------------------------------------
+
 #include "qtozwmanager_p.h"
 #include "qt-openzwave/qtozwmanager.h"
 
@@ -461,15 +489,15 @@ NodeStatistics QTOZWManager_Internal::GetNodeStatistics(quint8 const _node) {
         ns.lastTXChannel = nd.m_lastTxChannel;
         ns.lastRequestRTT = nd.m_lastRequestRTT;
         ns.lastResponseRTT = nd.m_lastResponseRTT;
-        ns.recievedPackets = nd.m_receivedCnt;
+        ns.receivedPackets = nd.m_receivedCnt;
         ns.lastFailedLinkTo = nd.m_lastFailedLinkTo;
         ns.averageRequestRTT = nd.m_averageRequestRTT;
         ns.lastSentTimeStamp = nd.m_sentTS.c_str();
         ns.averageResponseRTT = nd.m_averageResponseRTT;
         ns.lastFailedLinkFrom = nd.m_lastFailedLinkFrom;
-        ns.recievedDupPackets = nd.m_receivedDups;
+        ns.receivedDupPackets = nd.m_receivedDups;
         ns.extendedTXSupported = nd.m_txStatusReportSupported;
-        ns.recievedUnsolicited = nd.m_receivedUnsolicited;
+        ns.receivedUnsolicited = nd.m_receivedUnsolicited;
         ns.lastReceivedTimeStamp = nd.m_receivedTS.c_str();
         return ns;
     } catch (OpenZWave::OZWException &e) {

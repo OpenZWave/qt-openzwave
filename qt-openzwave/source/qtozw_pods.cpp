@@ -1,8 +1,8 @@
 //-----------------------------------------------------------------------------
 //
-//	qtozwvalueidmodel_p.h
+//	qtozw_pods.cpp
 //
-//	ValueID Model - Internal Class to Manage the Model
+//	Common Structures for QTOZW Wrapper
 //
 //	Copyright (c) 2019 Justin Hammond <Justin@dynam.ac>
 //
@@ -25,29 +25,49 @@
 //
 //-----------------------------------------------------------------------------
 
-#ifndef QTOZWVALUEIDMODEL_P_H
-#define QTOZWVALUEIDMODEL_P_H
-
-#include <QObject>
-#include "qt-openzwave/qtozwvalueidmodel.h"
-
-class QTOZW_ValueIds_internal : public QTOZW_ValueIds {
-    Q_OBJECT
-public:
-    QTOZW_ValueIds_internal(QObject *parent=nullptr);
-public Q_SLOTS:
-    void addValue(quint64 _vidKey);
-    void setValueData(quint64 _vidKey, QTOZW_ValueIds::ValueIdColumns column, QVariant data, bool transaction);
-    void setValueFlags(quint64 _vidKey, QTOZW_ValueIds::ValueIDFlags _flags, bool _value, bool transaction);
-    void delValue(quint64 _vidKey);
-    void delNodeValues(quint8 _node);
-    void resetModel();
-    void finishTransaction(quint64 _vidKey);
-};
+#include "qt-openzwave/qtozw_pods.h"
 
 
-QString BitSettoQString(QBitArray ba);
-quint32 BitSettoInteger(QBitArray ba);
 
-
-#endif // QTOZWVALUEIDMODEL_P_H
+OptionList::OptionList()
+{
+}
+OptionList::~OptionList()
+{
+}
+bool OptionList::operator!=(OptionList &c2)
+{
+    return this->selected != c2.selected;
+}
+void OptionList::setEnums(QStringList list)
+{
+    this->enumnames = list;
+}
+QStringList OptionList::getEnums()
+{
+    return this->enumnames;
+}
+QString OptionList::getSelectedName()
+{
+    return this->enumnames.at(this->selected);
+}
+int OptionList::getSelected()
+{
+    return this->selected;
+}
+bool OptionList::setSelected(int index)
+{
+    if (!this->enumnames.value(index).isEmpty()) {
+        this->selected = index;
+        return true;
+    }
+    return false;
+}
+bool OptionList::setSelected(QString value)
+{
+    if (this->enumnames.count(value) > 0) {
+        this->selected = this->enumnames.indexOf(value);
+        return true;
+    }
+    return false;
+}

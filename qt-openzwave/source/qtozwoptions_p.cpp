@@ -1,3 +1,30 @@
+//-----------------------------------------------------------------------------
+//
+//	qtozwoptions_p.cpp
+//
+//	OpenZWave Options Wrapper - Internal Class to interface with it
+//
+//	Copyright (c) 2019 Justin Hammond <Justin@dynam.ac>
+//
+//	SOFTWARE NOTICE AND LICENSE
+//
+//	This file is part of QT-OpenZWave.
+//
+//	OpenZWave is free software: you can redistribute it and/or modify
+//	it under the terms of the GNU Lesser General Public License as published
+//	by the Free Software Foundation, either version 3 of the License,
+//	or (at your option) any later version.
+//
+//	OpenZWave is distributed in the hope that it will be useful,
+//	but WITHOUT ANY WARRANTY; without even the implied warranty of
+//	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+//	GNU Lesser General Public License for more details.
+//
+//	You should have received a copy of the GNU Lesser General Public License
+//	along with OpenZWave.  If not, see <http://www.gnu.org/licenses/>.
+//
+//-----------------------------------------------------------------------------
+
 #include "qtozwoptions_p.h"
 #include "platform/Log.h"
 
@@ -177,7 +204,8 @@ void QTOZWOptions_Internal::pvt_ConfigPathChanged(QString value) {
     if (this->m_updating)
         return;
     /* OZW expects the paths to end with a / otherwise it treats it as a file */
-    if (value.at(value.size()) != "/")
+    qDebug() << value << value.size();
+    if (value.at(value.size()-1) != "/")
         value.append("/");
     this->m_options->AddOptionString("ConfigPath", value.toStdString(), false);
 }
@@ -185,7 +213,7 @@ void QTOZWOptions_Internal::pvt_UserPathChanged(QString value) {
     if (this->m_updating)
         return;
     /* OZW expects the paths to end with a / otherwise it treats it as a file */
-    if (value.at(value.size()) != "/")
+    if (value.at(value.size()-1) != "/")
         value.append("/");
         this->m_options->AddOptionString("UserPath", value.toStdString(), false);
 }
