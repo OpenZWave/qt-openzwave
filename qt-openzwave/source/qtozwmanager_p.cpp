@@ -429,9 +429,11 @@ QByteArray QTOZWManager_Internal::GetMetaDataProductPic(quint8 _node) {
     if (!this->checkHomeId() || !this->checkNodeId(_node))
         return QByteArray();
     try {
-        QString path("config/");
+        this->m_options->GetOptionAsString("ConfigPath");
+        QString path(this->m_options->GetOptionAsString("ConfigPath"));
         path.append(QString::fromStdString(this->m_manager->GetMetaData(this->homeId(), _node, OpenZWave::Node::MetaDataFields::MetaData_ProductPic)));
-        if (path == "config/")
+        qCDebug(manager) << "ProductPic Path: " << path;
+        if (path == this->m_options->GetOptionAsString("ConfigPath"))
             return QByteArray();
         QFile file(path);
         if (!file.open(QIODevice::ReadOnly)) return QByteArray();
