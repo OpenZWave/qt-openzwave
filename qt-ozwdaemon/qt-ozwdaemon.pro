@@ -2,7 +2,7 @@ QT -= gui
 
 QT += remoteobjects
 
-TARGET = ozwdaemon
+TARGET = ../ozwdaemon
 
 CONFIG += c++11 console silent
 CONFIG -= app_bundle
