@@ -1,6 +1,8 @@
 
 QT += widgets remoteobjects testlib
 
+TARGET = ../simpleclient
+
 CONFIG += silent
 DEFINES  += remote
 
@@ -36,7 +38,7 @@ INCLUDEPATH += ../qt-openzwave/include/
 
 macx {
     ICON = res/ozw_logo.icns
-    LIBOZW.files = ../../open-zwave/libopenzwave-1.6.dylib ../qt-openzwave/libqt-openzwave.1.0.dylib
+    LIBOZW.files = ../../open-zwave/libopenzwave-1.6.dylib ../qt-openzwave/libqt-openzwave.1.dylib
     LIBOZW.path = Contents/Frameworks/
     QMAKE_BUNDLE_DATA += BUNDLE LIBOZW
     QMAKE_POST_LINK=$$top_srcdir/updaterpath.sh $(TARGET)
