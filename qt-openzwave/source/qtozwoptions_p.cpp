@@ -215,7 +215,7 @@ void QTOZWOptions_Internal::pvt_UserPathChanged(QString value) {
     /* OZW expects the paths to end with a / otherwise it treats it as a file */
     if (value.at(value.size()-1) != "/")
         value.append("/");
-        this->m_options->AddOptionString("UserPath", value.toStdString(), false);
+    this->m_options->AddOptionString("UserPath", value.toStdString(), false);
 }
 void QTOZWOptions_Internal::pvt_LoggingChanged(bool value) {
     if (this->m_updating)

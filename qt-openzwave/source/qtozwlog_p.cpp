@@ -65,7 +65,7 @@ void QTOZW_Log_Internal::Write(OpenZWave::LogLevel _level, uint8 const _nodeId, 
         vsnprintf(lineBuf, sizeof(lineBuf), _format, _args);
         va_end(saveargs);
     }
-    QTOZW_Log::LogLevels qtozwlevel;
+    QTOZW_Log::LogLevels qtozwlevel = LogLevels::Debug;
     switch (_level) {
         case OpenZWave::LogLevel_Invalid:
         case OpenZWave::LogLevel_None:
