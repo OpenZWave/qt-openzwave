@@ -28,6 +28,8 @@
 #ifndef QTOZWVALUEIDMODEL_P_H
 #define QTOZWVALUEIDMODEL_P_H
 
+#include "qt-openzwave_global.h"
+
 #include <QObject>
 #include "qt-openzwave/qtozwvalueidmodel.h"
 

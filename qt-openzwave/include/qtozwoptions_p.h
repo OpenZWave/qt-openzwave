@@ -28,6 +28,8 @@
 #ifndef QTOZWOPTIONS_P_H
 #define QTOZWOPTIONS_P_H
 
+#include "qt-openzwave_global.h"
+
 #include <QObject>
 #include <QUrl>
 #include <Options.h>

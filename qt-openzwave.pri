@@ -34,3 +34,14 @@ unix {
     }
 
 }
+
+win32 {
+    exists( $$top_srcdir/../open-zwave/cpp/src/) {
+        message("Found OZW in $$absolute_path($$top_srcdir/../open-zwave/cpp/src)")
+        OZW_LIB_PATH = $$absolute_path($$top_srcdir/../open-zwave/)
+        INCLUDEPATH += $$absolute_path($$top_srcdir/../open-zwave/cpp/src/)/
+        LIBS += -L$$absolute_path($$top_srcdir/../open-zwave/cpp/build/windows/vs2010/ReleaseDLL) -lopenzwave
+    } else {
+        error("Can't Find a copy of OpenZwave")
+    }
+}

@@ -24,8 +24,9 @@
 //	along with OpenZWave.  If not, see <http://www.gnu.org/licenses/>.
 //
 //-----------------------------------------------------------------------------
-
+#ifndef WIN32
 #include <unistd.h>
+#endif
 #include <QDebug>
 #include <QAbstractItemModel>
 #include <QAbstractItemModelReplica>

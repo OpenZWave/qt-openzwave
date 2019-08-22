@@ -25,6 +25,7 @@
 //
 //-----------------------------------------------------------------------------
 
+#include "qt-openzwave_global.h"
 #include <QLoggingCategory>
 
 #ifndef QTOZW_LOGGING_H

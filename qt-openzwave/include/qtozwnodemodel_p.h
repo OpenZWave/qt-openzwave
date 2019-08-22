@@ -28,6 +28,8 @@
 #ifndef QTOZWNODEMODEL_P_H
 #define QTOZWNODEMODEL_P_H
 
+#include "qt-openzwave_global.h"
+
 #include <QObject>
 #include "qt-openzwave/qtozwnodemodel.h"
 
