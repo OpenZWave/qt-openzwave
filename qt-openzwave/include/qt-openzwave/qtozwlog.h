@@ -28,12 +28,14 @@
 #ifndef QTOZWLOGGING_H
 #define QTOZWLOGGING_H
 
+#include "qt-openzwave/qtopenzwave.h"
+
 #include <QObject>
 #include <QAbstractTableModel>
 #include <QDateTime>
 
 
-class QTOZW_Log : public QAbstractTableModel {
+class QTOPENZWAVESHARED_EXPORT QTOZW_Log : public QAbstractTableModel {
     Q_OBJECT
 public:
     enum LogColumns {

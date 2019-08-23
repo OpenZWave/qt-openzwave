@@ -28,7 +28,7 @@
 #ifndef QTOZWOPTIONS_P_H
 #define QTOZWOPTIONS_P_H
 
-#include "qt-openzwave_global.h"
+#include "qt-openzwave/qtopenzwave.h"
 
 #include <QObject>
 #include <QUrl>

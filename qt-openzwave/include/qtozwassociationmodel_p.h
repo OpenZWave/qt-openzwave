@@ -28,7 +28,7 @@
 #ifndef QTOZWASSOCIATIONMODEL_P_H
 #define QTOZWASSOCIATIONMODEL_P_H
 
-#include "qt-openzwave_global.h"
+#include "qt-openzwave/qtopenzwave.h"
 #include <QObject>
 #include "qt-openzwave/qtozwassociationmodel.h"
 

@@ -28,6 +28,7 @@
 #ifndef QTOZWVALUEIDMODEL_H
 #define QTOZWVALUEIDMODEL_H
 
+#include "qt-openzwave/qtopenzwave.h"
 #include <QObject>
 #include <QAbstractTableModel>
 #include <QBitArray>
@@ -55,7 +56,7 @@ QDataStream & operator>>(QDataStream & dataStream, QTOZW_ValueIDBitSet & list);
 Q_DECLARE_METATYPE(QTOZW_ValueIDBitSet);
 
 
-class QTOZW_ValueIds : public QAbstractTableModel {
+class QTOPENZWAVESHARED_EXPORT QTOZW_ValueIds : public QAbstractTableModel {
     Q_OBJECT
 public:
     enum ValueIdColumns {

@@ -28,7 +28,7 @@
 #ifndef QTOZWVALUEIDMODEL_P_H
 #define QTOZWVALUEIDMODEL_P_H
 
-#include "qt-openzwave_global.h"
+#include "qt-openzwave/qtopenzwave.h"
 
 #include <QObject>
 #include "qt-openzwave/qtozwvalueidmodel.h"

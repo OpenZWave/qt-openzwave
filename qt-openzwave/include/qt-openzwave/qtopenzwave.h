@@ -29,8 +29,18 @@
 
 #include <QObject>
 #include <QtRemoteObjects>
-#include "qt-openzwave_global.h"
-#include "qtozwmanager.h"
+#include <QtCore/qglobal.h>
+
+#if defined(QTOPENZWAVE_LIBRARY)
+#define QTOPENZWAVESHARED_EXPORT Q_DECL_EXPORT
+#else
+#define QTOPENZWAVESHARED_EXPORT Q_DECL_IMPORT
+#define OPENZWAVE_USEDLL 1
+#endif
+
+//#include "qtozwmanager.h"
+
+
 
 /**
  * \mainpage QT-OpenZWave
@@ -78,6 +88,8 @@
  *   Your Application will then call GetManager() to get a copy of the QTOZW_Manager
  *   class which is the main interface to QT-OpenZWave
  */
+
+class QTOZWManager;
 
 class QTOPENZWAVESHARED_EXPORT QTOpenZwave : public QObject
 {

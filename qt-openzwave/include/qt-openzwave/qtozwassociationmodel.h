@@ -28,10 +28,13 @@
 #ifndef QTOZWASSOCIATIONS_H
 #define QTOZWASSOCIATIONS_H
 
+#include "qt-openzwave/qtopenzwave.h"
+
 #include <QObject>
 #include <QAbstractItemModel>
 
-class QTOZW_Associations : public QAbstractTableModel {
+
+class QTOPENZWAVESHARED_EXPORT QTOZW_Associations : public QAbstractTableModel {
     Q_OBJECT
 public:
     enum associationColumns {

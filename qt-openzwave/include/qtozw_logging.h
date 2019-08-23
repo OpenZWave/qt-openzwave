@@ -25,11 +25,11 @@
 //
 //-----------------------------------------------------------------------------
 
-#include "qt-openzwave_global.h"
-#include <QLoggingCategory>
 
 #ifndef QTOZW_LOGGING_H
 #define QTOZW_LOGGING_H
+#include "qt-openzwave/qtopenzwave.h"
+#include <QLoggingCategory>
 
 Q_DECLARE_LOGGING_CATEGORY(manager);
 Q_DECLARE_LOGGING_CATEGORY(valueModel);

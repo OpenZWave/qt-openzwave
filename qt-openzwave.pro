@@ -12,3 +12,7 @@ SUBDIRS = qt-openzwave \
     qt-openzwavedatabase \
     qt-ozwdaemon \
     qt-simpleclient
+
+win32 {
+    SUBDIRS -= qt-openzwavedatabase
+}

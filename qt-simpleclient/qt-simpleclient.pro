@@ -33,7 +33,15 @@ HEADERS += \
 RESOURCES += \
     simpleclient.qrc
 
-LIBS += -lresolv -L../qt-openzwave/ -lqt-openzwave
+include(../qt-openzwave.pri)
+
+unix {
+    LIBS += -lresolv -L../qt-openzwave/ -lqt-openzwave
+}
+win32 {
+    LIBS += -lDnsapi -L../qt-openzwave/$$BUILDTYPE/ -lqt-openzwave1
+}
+
 INCLUDEPATH += ../qt-openzwave/include/
 
 macx {
@@ -43,4 +51,3 @@ macx {
     QMAKE_BUNDLE_DATA += BUNDLE LIBOZW
     QMAKE_POST_LINK=$$top_srcdir/updaterpath.sh $(TARGET)
 }
-include(../qt-openzwave.pri)

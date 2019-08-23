@@ -28,6 +28,8 @@
 #ifndef QTOZWMANAGER_H
 #define QTOZWMANAGER_H
 
+#include "qt-openzwave/qtopenzwave.h"
+
 #include <QObject>
 #include <QUrl>
 #include <QtRemoteObjects>
@@ -46,7 +48,7 @@ class QTOZWManager_Internal;
 class QTOZWManagerReplica;
 class QTOZWOptionsReplica;
 
-class QTOZWManager : public QObject {
+class QTOPENZWAVESHARED_EXPORT QTOZWManager : public QObject {
     Q_OBJECT
 public:
     enum connectionType {

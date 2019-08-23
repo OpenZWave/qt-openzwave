@@ -28,10 +28,12 @@
 #ifndef QTOZWNODEMODEL_H
 #define QTOZWNODEMODEL_H
 
+#include "qt-openzwave/qtopenzwave.h"
+
 #include <QObject>
 #include <QAbstractItemModel>
 
-class QTOZW_Nodes : public QAbstractTableModel {
+class QTOPENZWAVESHARED_EXPORT QTOZW_Nodes : public QAbstractTableModel {
     Q_OBJECT
 public:
     enum NodeColumns {

@@ -4,7 +4,7 @@ QT += remoteobjects
 
 TARGET = ../ozwdaemon
 
-CONFIG += c++11 console silent
+CONFIG += c++11 console
 CONFIG -= app_bundle
 
 # The following define makes your compiler emit warnings if you use
@@ -30,12 +30,20 @@ else: unix:!android: target.path = /opt/$${TARGET}/bin
 HEADERS += \
     qtozwdaemon.h
 
-LIBS += -lresolv -L../qt-openzwave/ -lqt-openzwave
+include(../qt-openzwave.pri)
+
 INCLUDEPATH += ../qt-openzwave/include/
+
+unix {
+    LIBS += -lresolv -L../qt-openzwave/ -lqt-openzwave
+}
+win32 {
+    LIBS += -lDnsapi -L../qt-openzwave/$$BUILDTYPE/ -lqt-openzwave1
+}
 
 macx {
     ICON = res/ozw_logo.icns
     QMAKE_POST_LINK=$$top_srcdir/updaterpath.sh $(TARGET)
 }
 
-include(../qt-openzwave.pri)
+

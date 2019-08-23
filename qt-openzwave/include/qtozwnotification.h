@@ -28,7 +28,7 @@
 #ifndef QTOZWNOTIFICATION_H
 #define QTOZWNOTIFICATION_H
 
-#include "qt-openzwave_global.h"
+#include "qt-openzwave/qtopenzwave.h"
 
 #include <QObject>
 #include "Notification.h"

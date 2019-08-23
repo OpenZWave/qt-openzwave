@@ -28,6 +28,8 @@
 #ifndef QTOZWPROXYMODELS_H
 #define QTOZWPROXYMODELS_H
 
+#include "qt-openzwave/qtopenzwave.h"
+
 #include <QObject>
 #include <QSortFilterProxyModel>
 #include <QItemSelectionModel>
@@ -35,7 +37,7 @@
 #include "qtozwnodemodel.h"
 #include "qtozwvalueidmodel.h"
 
-class QTOZW_proxyNodeModel : public QSortFilterProxyModel
+class QTOPENZWAVESHARED_EXPORT QTOZW_proxyNodeModel : public QSortFilterProxyModel
 {
     Q_OBJECT
 public:
@@ -47,7 +49,7 @@ public slots:
 };
 
 
-class QTOZW_proxyValueModel : public QSortFilterProxyModel
+class QTOPENZWAVESHARED_EXPORT QTOZW_proxyValueModel : public QSortFilterProxyModel
 {
     Q_OBJECT
 public:
@@ -69,7 +71,7 @@ private:
 };
 
 
-class QTOZW_proxyAssociationModel : public QSortFilterProxyModel
+class QTOPENZWAVESHARED_EXPORT QTOZW_proxyAssociationModel : public QSortFilterProxyModel
 {
     Q_OBJECT
 public:

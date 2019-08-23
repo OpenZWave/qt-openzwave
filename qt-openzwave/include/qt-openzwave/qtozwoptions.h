@@ -28,6 +28,8 @@
 #ifndef QTOZWOPTIONS_H
 #define QTOZWOPTIONS_H
 
+#include "qt-openzwave/qtopenzwave.h"
+
 #include <QObject>
 #include <QtRemoteObjects>
 #include "qt-openzwave/qtozw_pods.h"
@@ -37,7 +39,7 @@ class QTOZWOptions_Internal;
 class QTOZWOptionsReplica;
 class QTOZWManager;
 
-class QTOZWOptions : public QObject {
+class QTOPENZWAVESHARED_EXPORT QTOZWOptions : public QObject {
     friend class QTOZWManager;
 
 

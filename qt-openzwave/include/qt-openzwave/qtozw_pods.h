@@ -27,6 +27,9 @@
 
 #ifndef QTOZW_PODS_H
 #define QTOZW_PODS_H
+
+#include "qt-openzwave/qtopenzwave.h"
+
 #include <QObject>
 #include <QtGlobal>
 #include <QDataStream>

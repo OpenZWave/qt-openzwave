@@ -28,6 +28,7 @@
 #include <QDebug>
 #include <QBitArray>
 #include "qtozw_logging.h"
+#include "qt-openzwave/qtozwmanager.h"
 #include "qt-openzwave/qtozwnodemodel.h"
 #include "qt-openzwave/qtopenzwave.h"
 

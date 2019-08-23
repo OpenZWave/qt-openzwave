@@ -27,7 +27,7 @@
 
 #ifndef QTOZW_LOG_P_H
 #define QTOZW_LOG_P_H
-#include "qt-openzwave_global.h"
+#include "qt-openzwave/qtopenzwave.h"
 #include "qt-openzwave/qtozwlog.h"
 #include <platform/Log.h>
 

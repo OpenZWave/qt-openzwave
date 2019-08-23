@@ -36,12 +36,24 @@ unix {
 }
 
 win32 {
+    CONFIG(debug,debug|release) BUILDTYPE = debug
+    CONFIG(release,debug|release) BUILDTYPE = release
     exists( $$top_srcdir/../open-zwave/cpp/src/) {
         message("Found OZW in $$absolute_path($$top_srcdir/../open-zwave/cpp/src)")
         OZW_LIB_PATH = $$absolute_path($$top_srcdir/../open-zwave/)
         INCLUDEPATH += $$absolute_path($$top_srcdir/../open-zwave/cpp/src/)/
-        LIBS += -L$$absolute_path($$top_srcdir/../open-zwave/cpp/build/windows/vs2010/ReleaseDLL) -lopenzwave
+        exists( $$OZW_LIB_PATH/cpp/build/windows/vs2010/ReleaseDLL/OpenZWave.dll) {
+            LIBS += -L$$absolute_path($$top_srcdir/../open-zwave/cpp/build/windows/vs2010/ReleaseDLL) -lopenzwave
+        } else {
+            exists ( $$top_srcdir../open-zwave/cpp/build/windows/vs2010/DebugDLL/OpenZWave.dll) {
+                LIBS += -L$$absolute_path($$top_srcdir/../open-zwave/cpp/build/windows/vs2010/DebugDLL) -lopenzwave
+            } else {
+                error("Can't find a copy of OpenZWave.dll in the DebugDLL or ReleaseDLL Directory");
+            }
+        }
     } else {
         error("Can't Find a copy of OpenZwave")
     }
+    CONFIG(debug,debug|release) BUILDTYPE = debug
+    CONFIG(release,debug|release) BUILDTYPE = release
 }

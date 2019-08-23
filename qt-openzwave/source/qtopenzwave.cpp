@@ -1,5 +1,7 @@
 #include "qt-openzwave/qtopenzwave.h"
+#include "qt-openzwave/qtozwmanager.h"
 #include "qt-openzwave/qtozw_pods.h"
+#include "qt-openzwave/qtozwvalueidmodel.h"
 #include "qtozw_logging.h"
 
 

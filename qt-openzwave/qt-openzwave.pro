@@ -60,7 +60,7 @@ HEADERS += include/qt-openzwave/qtopenzwave.h \
         include/qt-openzwave/qtozwoptions.h \
         include/qtozwlog_p.h \
         include/qtozwoptions_p.h \
-        include/qt-openzwave_global.h \  \
+        \  \
         include/qtozw_logging.h \
         include/qt-openzwave/qtozwassociationmodel.h \
         include/qtozwassociationmodel_p.h \
@@ -88,7 +88,7 @@ unix {
     target.path = /usr/local/lib
     INSTALLS += target
 }
-LIBS += -L../../open-zwave -lopenzwave
+#LIBS += -L../../open-zwave -lopenzwave
 
 macx {
     QMAKE_LFLAGS_SONAME = -Wl,-install_name,@rpath/
