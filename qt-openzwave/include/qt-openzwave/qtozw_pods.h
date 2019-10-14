@@ -35,6 +35,14 @@
 #include <QDataStream>
 #include <QDebug>
 
+#if defined(QTOPENZWAVE_LIBRARY)
+#define QTOPENZWAVESHARED_EXPORT Q_DECL_EXPORT
+#else
+#define QTOPENZWAVESHARED_EXPORT Q_DECL_IMPORT
+#define OPENZWAVE_USEDLL 1
+#endif
+
+
 /** \brief Statistics Relating to Communications with Nodes on your Network
  */
 struct NodeStatistics {
@@ -178,7 +186,7 @@ inline QDataStream &operator>>(QDataStream &ds, NodeStatistics &obj) {
  *  in fact a ENUM of a limited set of Possible Values. This simple
  *  Class allows us to represent those value
  */
-class OptionList
+class QTOPENZWAVESHARED_EXPORT OptionList
 {
     Q_GADGET
     friend QDataStream &operator<<(QDataStream &ds, const OptionList &obj);
