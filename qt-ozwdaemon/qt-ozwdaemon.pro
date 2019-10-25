@@ -1,6 +1,6 @@
 QT -= gui
 
-QT += remoteobjects
+QT += remoteobjects mqtt
 
 TARGET = ../ozwdaemon
 

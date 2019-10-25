@@ -3,6 +3,7 @@
 
 #include <QObject>
 #include <QString>
+#include <QtMqtt/QMqttClient>
 
 #include <qt-openzwave/qtopenzwave.h>
 #include <qt-openzwave/qtozwmanager.h>
@@ -22,12 +23,15 @@ signals:
 
 public slots:
     void QTOZW_Ready();
-
+    void updateLogStateChange();
+    void brokerDisconnected();
+    void handleMessage(const QByteArray &message, const QMqttTopicName &topic = QMqttTopicName());
 
 private:
     QTOpenZwave *m_openzwave;
     QTOZWManager *m_qtozwmanager;
     QString m_serialPort;
+    QMqttClient *m_client;
 };
 
 #endif // QTOZWDAEMON_H
