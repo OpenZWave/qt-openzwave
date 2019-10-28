@@ -20,6 +20,7 @@ DEFINES += QT_DEPRECATED_WARNINGS
 
 SOURCES += \
         main.cpp \
+        mqttpublisher.cpp \
         qtozwdaemon.cpp
 
 # Default rules for deployment.
@@ -28,6 +29,7 @@ else: unix:!android: target.path = /opt/$${TARGET}/bin
 !isEmpty(target.path): INSTALLS += target
 
 HEADERS += \
+    mqttpublisher.h \
     qtozwdaemon.h
 
 include(../qt-openzwave.pri)
@@ -35,7 +37,8 @@ include(../qt-openzwave.pri)
 INCLUDEPATH += ../qt-openzwave/include/
 
 unix {
-    LIBS += -lresolv -L../qt-openzwave/ -lqt-openzwave
+    LIBS += -lresolv -L../qt-openzwave/ -lqt-openzwave -L../qt-openzwavedatabase/ -lqt-openzwavedatabase
+    INCLUDEPATH += ../qt-openzwavedatabase/include/
 }
 win32 {
     LIBS += -lDnsapi -L../qt-openzwave/$$BUILDTYPE/ -lqt-openzwave1

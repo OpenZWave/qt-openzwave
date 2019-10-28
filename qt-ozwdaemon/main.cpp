@@ -2,12 +2,14 @@
 #include <QLoggingCategory>
 #include <QCommandLineParser>
 #include "qtozwdaemon.h"
+#include "mqttpublisher.h"
+#include <qt-openzwave/qt-openzwavedatabase.h>
 
 int main(int argc, char *argv[])
 {
     QCoreApplication a(argc, argv);
-    QCoreApplication::setApplicationName("qt-ozwdaemon");
-    QCoreApplication::setApplicationVersion("1.0");
+    QCoreApplication::setApplicationName("ozwdaemon");
+    QCoreApplication::setApplicationVersion("0.1");
     QCoreApplication::setOrganizationName("OpenZWave");
     QCoreApplication::setOrganizationDomain("openzwave.com");
 
@@ -36,6 +38,22 @@ int main(int argc, char *argv[])
 
     parser.addOption(userDir);
 
+    QCommandLineOption MQTTServer(QStringList() << "mqtt-server",
+        "MQTT Server Hostname/IP Address",
+        "IP/Hostname"
+    );
+
+    parser.addOption(MQTTServer);
+
+    QCommandLineOption MQTTPort(QStringList() << "mqtt-port",
+        "MQTT Server Port",
+        "Port"
+    );
+
+
+    parser.addOption(MQTTPort);
+
+
     parser.process(a);
     if (!parser.isSet(serialPort)) {
         fputs(qPrintable("Serial Port is Required\n"), stderr);
@@ -43,7 +61,13 @@ int main(int argc, char *argv[])
         fputs(qPrintable(parser.helpText()), stderr);
         exit(-1);
     }
-
+    QSettings settings;
+    if (parser.isSet(MQTTServer)) {
+        settings.setValue("MQTTServer", parser.value(MQTTServer));
+    }
+    if (parser.isSet(MQTTPort)) {
+        settings.setValue("MQTTPort", parser.value(MQTTPort).toInt());
+    }
 
 #if 1
     QLoggingCategory::setFilterRules("qt.remoteobjects.debug=true\n"
@@ -55,7 +79,69 @@ int main(int argc, char *argv[])
 #else
     QLoggingCategory::setFilterRules("default.debug=true");
 #endif
+
+    QStringList PossibleDBPaths;
+    if (parser.isSet(configDir))
+        PossibleDBPaths << parser.value(configDir);
+    PossibleDBPaths << "./config/";
+    PossibleDBPaths << settings.value("openzwave/ConfigPath", QDir::toNativeSeparators("../../../config/")).toString().append("/");
+    PossibleDBPaths << QStandardPaths::standardLocations(QStandardPaths::AppDataLocation);
+
+    QString path, dbPath, userPath;
+    foreach(path, PossibleDBPaths) {
+        qDebug() << "Checking " << QFileInfo(QDir::toNativeSeparators(path+"/config/manufacturer_specific.xml")).absoluteFilePath() << " for manufacturer_specific.xml";
+        if (QFileInfo(QDir::toNativeSeparators(path+"/config/manufacturer_specific.xml")).exists()) {
+            dbPath = QFileInfo(QDir::toNativeSeparators(path+"/config/manufacturer_specific.xml")).absoluteFilePath();
+            break;
+        }
+        qDebug() << "Checking " << QFileInfo(QDir::toNativeSeparators(path+"../config/manufacturer_specific.xml")).absoluteFilePath() << " for manufacturer_specific.xml";
+        if (QFile(QDir::toNativeSeparators(path+"/../config/manufacturer_specific.xml")).exists()) {
+            dbPath = QFileInfo(QDir::toNativeSeparators(path+"/../config/manufacturer_specific.xml")).absoluteFilePath();
+            break;
+        }
+    }
+    PossibleDBPaths.clear();
+    if (parser.isSet(userDir))
+        PossibleDBPaths << parser.value(userDir);
+    PossibleDBPaths << "./config/";
+    PossibleDBPaths << settings.value("openzwave/UserPath", QDir::toNativeSeparators("../../../config/")).toString().append("/");
+    PossibleDBPaths << QStandardPaths::standardLocations(QStandardPaths::AppDataLocation);
+
+    foreach(path, PossibleDBPaths) {
+        qDebug() << "Checking " << QFileInfo(QDir::toNativeSeparators(path+"/config/Options.xml")).absoluteFilePath() << " for options.xml";
+        if (QFileInfo(QDir::toNativeSeparators(path+"/config/options.xml")).exists()) {
+            userPath = QFileInfo(QDir::toNativeSeparators(path+"/config/options.xml")).absoluteFilePath();
+            break;
+        }
+        qDebug() << "Checking " << QFileInfo(QDir::toNativeSeparators(path+"/../config/options.xml")).absoluteFilePath() << " for options.xml";
+        if (QFile(QDir::toNativeSeparators(path+"/../config/options.xml")).exists()) {
+            userPath = QFileInfo(QDir::toNativeSeparators(path+"/../config/options.xml")).absoluteFilePath();
+            break;
+        }
+    }
+
+//    if (userPath.isEmpty()) {
+//        fputs(qPrintable("userPath is Not Set or Missing\n"), stderr);
+//        exit(-1);
+//    }
+    if (dbPath.isEmpty()) {
+        copyConfigDatabase(QFileInfo("./").absoluteFilePath().append("/"));
+        dbPath = "./config/";
+        userPath = "./config/";
+    }
+    qDebug() << "DBPath: " << dbPath;
+    qDebug() << "userPath: " << userPath;
+
+
+    QTOZWOptions options(QTOZWOptions::Local);
+    options.setUserPath(userPath);
+    options.setConfigPath(dbPath);
+
+
+
     qtozwdaemon daemon;
+    mqttpublisher mqttpublisher;
+    mqttpublisher.setOZWDaemon(&daemon);
     daemon.setSerialPort(parser.value(serialPort));
     daemon.startOZW();
     return a.exec();

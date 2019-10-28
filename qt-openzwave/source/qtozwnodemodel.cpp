@@ -142,7 +142,7 @@ QVariant QTOZW_Nodes::headerData(int section, Qt::Orientation orientation, int r
                 return tr("Node Version");
 
             case NodeGroups:
-                    return tr("Node Groups Supported");
+                return tr("Node Groups Supported");
 
             case NodeFlags:
                 return tr("Node Flags");

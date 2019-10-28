@@ -3,7 +3,7 @@
 
 #include <QObject>
 #include <QString>
-#include <QtMqtt/QMqttClient>
+
 
 #include <qt-openzwave/qtopenzwave.h>
 #include <qt-openzwave/qtozwmanager.h>
@@ -16,22 +16,17 @@ public:
     explicit qtozwdaemon(QObject *parent = nullptr);
     QString getSerialPort() { return this->m_serialPort; }
     void setSerialPort(QString serialPort) { this->m_serialPort = serialPort;}
-
     void startOZW();
-
+    QTOZWManager *getManager();
 signals:
 
 public slots:
     void QTOZW_Ready();
-    void updateLogStateChange();
-    void brokerDisconnected();
-    void handleMessage(const QByteArray &message, const QMqttTopicName &topic = QMqttTopicName());
 
 private:
     QTOpenZwave *m_openzwave;
     QTOZWManager *m_qtozwmanager;
     QString m_serialPort;
-    QMqttClient *m_client;
 };
 
 #endif // QTOZWDAEMON_H
