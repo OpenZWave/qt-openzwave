@@ -27,5 +27,5 @@ ENV MQTT_PORT="1883"
 WORKDIR /opt/ozw/
 EXPOSE 1983
 VOLUME ["/opt/ozw/config/"]
-ENTRYPOINT "ls -lah /ozwdaemon/bin/ && /ozwdaemon/bin/ozwdaemon -s $USBPATH -c /opt/ozw/config/ -u /opt/ozw/config/ --mqtt-server $MQTT_SERVER --mqtt-port $MQTT_PORT"
+ENTRYPOINT /ozwdaemon/bin/ozwdaemon -s $USBPATH -c /opt/ozw/config/ -u /opt/ozw/config/ --mqtt-server $MQTT_SERVER --mqtt-port $MQTT_PORT
 
