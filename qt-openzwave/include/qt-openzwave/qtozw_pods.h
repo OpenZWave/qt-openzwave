@@ -180,6 +180,87 @@ inline QDataStream &operator>>(QDataStream &ds, NodeStatistics &obj) {
 /** \endcond
  */
 
+
+/** \brief Statistics Relating to Communications with the Network
+ */
+struct DriverStatistics {
+    quint32 	m_SOFCnt;
+    quint32 	m_ACKWaiting;
+    quint32 	m_readAborts;
+    quint32 	m_badChecksum;
+    quint32 	m_readCnt;
+    quint32 	m_writeCnt;
+    quint32 	m_CANCnt;
+    quint32 	m_NAKCnt;
+    quint32 	m_ACKCnt;
+    quint32 	m_OOFCnt;
+    quint32 	m_dropped;
+    quint32 	m_retries;
+    quint32 	m_callbacks;
+    quint32 	m_badroutes;
+    quint32 	m_noack;
+    quint32 	m_netbusy;
+    quint32 	m_notidle;
+    quint32 	m_txverified;
+    quint32 	m_nondelivery;
+    quint32 	m_routedbusy;
+    quint32 	m_broadcastReadCnt;
+    quint32 	m_broadcastWriteCnt;
+};
+
+Q_DECLARE_METATYPE(DriverStatistics)
+
+inline QDataStream &operator<<(QDataStream &ds, const DriverStatistics &obj) {
+    ds << static_cast<quint32>(obj.m_SOFCnt);
+    ds << static_cast<quint32>(obj.m_ACKWaiting);
+    ds << static_cast<quint32>(obj.m_readAborts);
+    ds << static_cast<quint32>(obj.m_badChecksum);
+    ds << static_cast<quint32>(obj.m_readCnt);
+    ds << static_cast<quint32>(obj.m_writeCnt);
+    ds << static_cast<quint32>(obj.m_CANCnt);
+    ds << static_cast<quint32>(obj.m_NAKCnt);
+    ds << static_cast<quint32>(obj.m_ACKCnt);
+    ds << static_cast<quint32>(obj.m_OOFCnt);
+    ds << static_cast<quint32>(obj.m_dropped);
+    ds << static_cast<quint32>(obj.m_retries);
+    ds << static_cast<quint32>(obj.m_callbacks);
+    ds << static_cast<quint32>(obj.m_badroutes);
+    ds << static_cast<quint32>(obj.m_noack);
+    ds << static_cast<quint32>(obj.m_netbusy);
+    ds << static_cast<quint32>(obj.m_notidle);
+    ds << static_cast<quint32>(obj.m_txverified);
+    ds << static_cast<quint32>(obj.m_nondelivery);
+    ds << static_cast<quint32>(obj.m_routedbusy);
+    ds << static_cast<quint32>(obj.m_broadcastReadCnt);
+    ds << static_cast<quint32>(obj.m_broadcastWriteCnt);
+    return ds;
+}
+
+inline QDataStream &operator>>(QDataStream &ds, DriverStatistics &obj) {
+    ds >> obj.m_SOFCnt;
+    ds >> obj.m_ACKWaiting;
+    ds >> obj.m_readAborts;
+    ds >> obj.m_badChecksum;
+    ds >> obj.m_readCnt;
+    ds >> obj.m_writeCnt;
+    ds >> obj.m_CANCnt;
+    ds >> obj.m_NAKCnt;
+    ds >> obj.m_ACKCnt;
+    ds >> obj.m_OOFCnt;
+    ds >> obj.m_dropped;
+    ds >> obj.m_retries;
+    ds >> obj.m_callbacks;
+    ds >> obj.m_badroutes;
+    ds >> obj.m_noack;
+    ds >> obj.m_netbusy;
+    ds >> obj.m_notidle;
+    ds >> obj.m_txverified;
+    ds >> obj.m_nondelivery;
+    ds >> obj.m_routedbusy;
+    ds >> obj.m_broadcastReadCnt;
+    ds >> obj.m_broadcastWriteCnt;
+    return ds;
+}
 /** \brief Represents a ENUM list for a Single Option
  *
  *  Some of the Options available in the QTOZW_Options class are

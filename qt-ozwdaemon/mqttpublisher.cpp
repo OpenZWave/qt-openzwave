@@ -15,6 +15,9 @@ QVariant mqttNodeModel::getNodeData(quint8 node, NodeColumns col) {
 bool mqttNodeModel::populateJsonObject(QJsonObject *jsonobject, quint8 node, QTOZWManager *mgr) {
     for (int i = 0; i < this->columnCount(QModelIndex()); i++) {
         QVariant data = this->getNodeData(node, static_cast<NodeColumns>(i));
+        if (data.type() == QVariant::Invalid) {
+            continue;
+        }
         switch (static_cast<NodeColumns>(i)) {
             case NodeColumns::NodeFlags: {
                 QBitArray flag = data.toBitArray();
@@ -52,7 +55,15 @@ bool mqttNodeModel::populateJsonObject(QJsonObject *jsonobject, quint8 node, QTO
         metadata.insert("ProductPicBase64", QString(mgr->GetMetaDataProductPic(node).toBase64()));
         jsonobject->insert("MetaData", metadata);
     }
-    qDebug() << jsonobject;
+    /* Neihbors */
+    QVector<quint8> neighbors = mgr->GetNodeNeighbors(node);
+    if (neighbors.size() > 0) {
+        QJsonArray N;
+        for (int i = 0; i < neighbors.count(); i++) {
+            N.append(neighbors[i]);
+        }
+        jsonobject->insert("Neighbors", N);
+    }
     return true;
 }
 
@@ -81,6 +92,21 @@ bool mqttValueIDModel::populateJsonObject(QJsonObject *jsonobject, quint64 vidKe
             jsonobject->insert("Value", this->encodeValue(vidKey));
             break;
         }
+        case Genre: {
+            QMetaEnum metaEnum = QMetaEnum::fromType<ValueIdGenres>();
+            jsonobject->insert("Genre", metaEnum.valueToKey(data.toInt()));
+            break;
+        }
+        case Type: {
+            QMetaEnum metaEnum = QMetaEnum::fromType<ValueIdTypes>();
+            jsonobject->insert("Type", metaEnum.valueToKey(data.toInt()));
+            break;
+        }
+        case CommandClass: {
+            jsonobject->insert("CommandClass", mgr->getCommandClassString(data.toInt()));
+            break;
+        }
+
         default: {
             QMetaEnum metaEnum = QMetaEnum::fromType<ValueIdColumns>();
             if (data.type() == QMetaType::QString) {
@@ -105,7 +131,6 @@ bool mqttValueIDModel::populateJsonObject(QJsonObject *jsonobject, quint64 vidKe
     }
 
 
-    qDebug() << jsonobject;
     return true;
 }
 
@@ -124,8 +149,10 @@ QJsonValue mqttValueIDModel::encodeValue(quint64 vidKey) {
         value = data.toDouble();
     } else if (data.type() == QMetaType::ULongLong) {
         value = static_cast<qint64>(data.toULongLong());
+    } else if (data.type()  == QMetaType::Short) {
+        value = static_cast<qint16>(data.toInt());
     } else {
-        qWarning() << "Can't Convert " << data.type() << " to store in JsonObject: " << vidKey;
+        qWarning() << "Can't Convert " << data.type() << " to store in JsonObject: " << vidKey << this->getValueData(vidKey, mqttValueIDModel::ValueIdColumns::Label).toString() << this->getValueData(vidKey, mqttValueIDModel::ValueIdColumns::Type);
     }
     return value;
 }
@@ -155,6 +182,43 @@ mqttpublisher::mqttpublisher(QObject *parent) : QObject(parent)
     willMsg["Status"] = "Offline";
     this->m_client->setWillMessage(QJsonDocument(willMsg).toJson());
     this->m_client->setWillRetain(true);
+    connect(&this->m_statsTimer, &QTimer::timeout, this, &mqttpublisher::doStats);
+}
+
+void mqttpublisher::doStats() {
+    QJsonObject stats;
+    if (!this->m_qtozwdeamon) {
+        return; 
+    }
+    QTOZWManager *manager = this->m_qtozwdeamon->getManager();
+    DriverStatistics ds = manager->GetDriverStatistics();
+    QJsonObject dsjson;
+    dsjson["SOFCnt"] = static_cast<int>(ds.m_SOFCnt);
+    dsjson["ACKWaiting"] = static_cast<int>(ds.m_ACKWaiting);
+    dsjson["readAborts"] = static_cast<int>(ds.m_readAborts);
+    dsjson["badChecksum"] = static_cast<int>(ds.m_badChecksum);
+    dsjson["readCnt"] = static_cast<int>(ds.m_readCnt);
+    dsjson["writeCnt"] = static_cast<int>(ds.m_writeCnt);
+    dsjson["CANCnt"] = static_cast<int>(ds.m_CANCnt);
+    dsjson["NAKCnt"] = static_cast<int>(ds.m_NAKCnt);
+    dsjson["ACKCnt"] = static_cast<int>(ds.m_ACKCnt);
+    dsjson["OOFCnt"] = static_cast<int>(ds.m_OOFCnt);
+    dsjson["dropped"] = static_cast<int>(ds.m_dropped);
+    dsjson["retries"] = static_cast<int>(ds.m_retries);
+    dsjson["callbacks"] = static_cast<int>(ds.m_callbacks);
+    dsjson["badroutes"] = static_cast<int>(ds.m_badroutes);
+    dsjson["noack"] = static_cast<int>(ds.m_noack);
+    dsjson["netbusy"] = static_cast<int>(ds.m_netbusy);
+    dsjson["notidle"] = static_cast<int>(ds.m_notidle);
+    dsjson["txverified"] = static_cast<int>(ds.m_txverified);
+    dsjson["nondelivery"] = static_cast<int>(ds.m_nondelivery);
+    dsjson["routedbusy"] = static_cast<int>(ds.m_routedbusy);
+    dsjson["broadcastReadCnt"] = static_cast<int>(ds.m_broadcastReadCnt);
+    dsjson["broadcastWriteCnt"] = static_cast<int>(ds.m_broadcastWriteCnt);
+
+    stats["Network"] = dsjson;
+
+    this->m_client->publish(QMqttTopicName(getTopic(MQTT_OZW_STATS_TOPIC)), QJsonDocument(stats).toJson(), 0, false);
 
 }
 
@@ -212,6 +276,8 @@ void mqttpublisher::setOZWDaemon(qtozwdaemon *ozwdaemon) {
     connect(manager, &QTOZWManager::stopped, this, &mqttpublisher::stopped);
 
     this->m_client->connectToHost();
+    this->m_statsTimer.start(10000);
+
 }
 
 void mqttpublisher::updateLogStateChange()
@@ -237,13 +303,11 @@ void mqttpublisher::handleMessage(const QByteArray &message, const QMqttTopicNam
 
 
 bool mqttpublisher::sendStatusUpdate() {
-    qDebug() << QJsonDocument(this->m_ozwstatus).toJson();
     this->m_client->publish(QMqttTopicName(getTopic(MQTT_OZW_STATUS_TOPIC)), QJsonDocument(this->m_ozwstatus).toJson(), 0, true);
     return true;
 }
 
 bool mqttpublisher::sendNodeUpdate(quint8 node) {
-    qDebug() << this->m_nodeModel->getNodeData(node, QTOZW_Nodes::NodeProductName);
     this->m_client->publish(QMqttTopicName(getNodeTopic(MQTT_OZW_NODE_TOPIC, node)), QJsonDocument(this->m_nodes[node]).toJson(), 0, true);
     return true;
 }
@@ -258,100 +322,121 @@ bool mqttpublisher::sendValueUpdate(quint64 vidKey) {
 
 
 void mqttpublisher::ready() {
+    qDebug() << "Publishing Event ready:";
     this->m_ozwstatus["Status"] = "Ready";
     this->sendStatusUpdate();
 }
 void mqttpublisher::valueAdded(quint64 vidKey) {
+    qDebug() << "Publishing Event valueAdded:" << vidKey;
     this->m_valueModel->populateJsonObject(&this->m_values[vidKey], vidKey, this->m_qtozwdeamon->getManager());
     this->m_values[vidKey]["Event"] = "valueAdded";
     this->sendValueUpdate(vidKey);
 }
 void mqttpublisher::valueRemoved(quint64 vidKey) {
+    qDebug() << "Publishing Event valueRemoved:" << vidKey;
     this->m_values[vidKey]["Event"] = "valueRemoved";
     this->sendValueUpdate(vidKey);
 
 }
 void mqttpublisher::valueChanged(quint64 vidKey) {
+    qDebug() << "Publishing Event valueChanged:" << vidKey;
     this->m_values[vidKey]["Event"] = "valueChanged";
     this->m_values[vidKey]["Value"] = this->m_valueModel->encodeValue(vidKey);
     this->sendValueUpdate(vidKey);
 
 }
 void mqttpublisher::valueRefreshed(quint64 vidKey) {
+    qDebug() << "Publishing Event valueRefreshed:" << vidKey;
     this->m_values[vidKey]["Event"] = "valueRefreshed";
     this->m_values[vidKey]["Value"] = this->m_valueModel->encodeValue(vidKey);
     this->sendValueUpdate(vidKey);
 }
 void mqttpublisher::nodeNew(quint8 node) {
+    qDebug() << "Publishing Event NodeNew:" << node;
     this->m_nodeModel->populateJsonObject(&this->m_nodes[node], node, this->m_qtozwdeamon->getManager());
     this->m_nodes[node]["Event"] = "nodeNew";
     this->sendNodeUpdate(node);
 }
 void mqttpublisher::nodeAdded(quint8 node) {
+    qDebug() << "Publishing Event NodeAdded:" << node;
     this->m_nodeModel->populateJsonObject(&this->m_nodes[node], node, this->m_qtozwdeamon->getManager());
     this->m_nodes[node]["Event"] = "nodeAdded";
     this->sendNodeUpdate(node);
 }
 void mqttpublisher::nodeRemoved(quint8 node) {
+    qDebug() << "Publishing Event nodeRemoved:" << node;
     this->m_nodes[node]["Event"] = "nodeRemoved";
     this->sendNodeUpdate(node);
 }
 void mqttpublisher::nodeReset(quint8 node) {
+    qDebug() << "Publishing Event nodeReset:" << node;
     this->m_nodes[node]["Event"] = "nodeReset";
     this->sendNodeUpdate(node);
 }
 void mqttpublisher::nodeNaming(quint8 node) {
+    qDebug() << "Publishing Event nodeNaming:" << node;
     this->m_nodes[node]["Event"] = "nodeNaming";
     this->sendNodeUpdate(node);
 }
 void mqttpublisher::nodeEvent(quint8 node, quint8 event) {
+    qDebug() << "Publishing Event nodeEvent:" << node;
     this->m_nodes[node]["Event"] = "nodeEvent";
     this->sendNodeUpdate(node);
 }
 void mqttpublisher::nodeProtocolInfo(quint8 node) {
+    qDebug() << "Publishing Event nodeProtocolInfo:" << node;
     this->m_nodeModel->populateJsonObject(&this->m_nodes[node], node, this->m_qtozwdeamon->getManager());
     this->m_nodes[node]["Event"] = "nodeProtocolInfo";
     this->sendNodeUpdate(node);
 }
 void mqttpublisher::nodeEssentialNodeQueriesComplete(quint8 node) {
+    qDebug() << "Publishing Event nodeEssentialNodeQueriesComplete:" << node;
     this->m_nodeModel->populateJsonObject(&this->m_nodes[node], node, this->m_qtozwdeamon->getManager());
     this->m_nodes[node]["Event"] = "nodeEssentialNodeQueriesComplete";
     this->sendNodeUpdate(node);
 }
 void mqttpublisher::nodeQueriesComplete(quint8 node) {
+    qDebug() << "Publishing Event nodeQueriesComplete:" << node;
     this->m_nodeModel->populateJsonObject(&this->m_nodes[node], node, this->m_qtozwdeamon->getManager());
     this->m_nodes[node]["Event"] = "nodeQueriesComplete";
     this->sendNodeUpdate(node);
 }
 void mqttpublisher::driverReady(quint32 homeID) {
+    qDebug() << "Publishing Event driverReady:" << homeID;
     this->m_ozwstatus["Status"] = "driverReady";
     this->m_ozwstatus["homeID"] = QJsonValue(static_cast<int>(homeID));
     this->sendStatusUpdate();
 }
 void mqttpublisher::driverFailed(quint32 homeID) {
+    qDebug() << "Publishing Event driverFailed:" << homeID;
     this->m_ozwstatus["Status"] = "driverFailed";
     this->m_ozwstatus["homeID"] = QJsonValue(static_cast<int>(homeID));
     this->sendStatusUpdate();
 }
 void mqttpublisher::driverReset(quint32 homeID) {
+    qDebug() << "Publishing Event driverReset:" << homeID;
     this->m_ozwstatus["Status"] = "driverReset";
     this->m_ozwstatus["homeID"] = QJsonValue(static_cast<int>(homeID));
     this->sendStatusUpdate();
 }
 void mqttpublisher::driverRemoved(quint32 homeID) {
+    qDebug() << "Publishing Event driverRemoved:" << homeID;
     this->m_ozwstatus["Status"] = "driverRemoved";
     this->m_ozwstatus["homeID"] = QJsonValue(static_cast<int>(homeID));
     this->sendStatusUpdate();
 }
 void mqttpublisher::driverAllNodesQueriedSomeDead() {
+    qDebug() << "Publishing Event driverAllNodesQueriedSomeDead:" ;
     this->m_ozwstatus["Status"] = "driverAllNodesQueriedSomeDead";
     this->sendStatusUpdate();
 }
 void mqttpublisher::driverAllNodesQueried() {
+    qDebug() << "Publishing Event driverAllNodesQueried:" ;
     this->m_ozwstatus["Status"] = "driverAllNodesQueried";
     this->sendStatusUpdate();
 }
 void mqttpublisher::driverAwakeNodesQueried() {
+    qDebug() << "Publishing Event driverAwakeNodesQueried:" ;
     this->m_ozwstatus["Status"] = "driverAwakeNodesQueried";
     this->sendStatusUpdate();
 }

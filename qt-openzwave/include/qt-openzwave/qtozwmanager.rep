@@ -124,10 +124,12 @@ class QTOZWManager {
 
     SLOT(QString GetNodeQueryStage(quint8 _node))
     SLOT(NodeStatistics GetNodeStatistics(quint8 _node))
+    SLOT(DriverStatistics GetDriverStatistics())
+    SLOT(QVector<quint8> GetNodeNeighbors(quint8 const _node))
     SLOT(bool IsNodeFailed(quint8 _node))
     SLOT(bool checkLatestConfigFileRevision(quint8 const _node))
     SLOT(bool checkLatestMFSRevision())
     SLOT(bool downloadLatestConfigFileRevision(quint8 const _node))
     SLOT(bool downloadLatestMFSRevision())
-
+    SLOT(QString getCommandClassString(quint8 const _cc))
 }

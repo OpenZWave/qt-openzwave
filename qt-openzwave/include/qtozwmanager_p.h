@@ -49,6 +49,8 @@
 #include "Notification.h"
 #include "platform/Log.h"
 #include "OZWException.h"
+#include "command_classes/CommandClasses.h"
+
 
 
 class QTOZWManager_Internal : public QTOZWManagerSimpleSource
@@ -99,13 +101,18 @@ public Q_SLOTS:
 
     QString GetNodeQueryStage(quint8 const node);
     NodeStatistics GetNodeStatistics(quint8 const node);
+    DriverStatistics GetDriverStatistics();
 
+    QVector<quint8> GetNodeNeighbors(quint8 const node);
+    
     bool IsNodeFailed(quint8 const _node);
 
     bool checkLatestConfigFileRevision(quint8 const _node);
     bool checkLatestMFSRevision();
     bool downloadLatestConfigFileRevision(quint8 const _node);
     bool downloadLatestMFSRevision();
+
+    QString getCommandClassString(quint8 const _cc);
 
 
     /* these slots are called from our OZWNotification Class. Applications should not call them */

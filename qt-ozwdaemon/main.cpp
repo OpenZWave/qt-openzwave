@@ -69,7 +69,7 @@ int main(int argc, char *argv[])
         settings.setValue("MQTTPort", parser.value(MQTTPort).toInt());
     }
 
-#if 1
+#if 0
     QLoggingCategory::setFilterRules("qt.remoteobjects.debug=true\n"
                                      "qt.remoteobjects.warning=true\n"
                                      "qt.remoteobjects.models.debug=true\n"

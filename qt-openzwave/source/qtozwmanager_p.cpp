@@ -510,6 +510,65 @@ NodeStatistics QTOZWManager_Internal::GetNodeStatistics(quint8 const _node) {
 
 }
 
+DriverStatistics QTOZWManager_Internal::GetDriverStatistics() {
+        if (!this->checkHomeId())
+        return DriverStatistics();
+    try {
+        OpenZWave::Driver::DriverData dd;
+        DriverStatistics ds;
+        this->m_manager->GetDriverStatistics(this->homeId(), &dd);
+        /* copy */
+        ds.m_SOFCnt = dd.m_SOFCnt;
+        ds.m_ACKWaiting = dd.m_ACKWaiting;
+        ds.m_readAborts = dd.m_readAborts;
+        ds.m_badChecksum = dd.m_badChecksum;
+        ds.m_readCnt = dd.m_readCnt;
+        ds.m_writeCnt = dd.m_writeCnt;
+        ds.m_CANCnt = dd.m_CANCnt;
+        ds.m_NAKCnt = dd.m_NAKCnt;
+        ds.m_ACKCnt = dd.m_ACKCnt;
+        ds.m_OOFCnt = dd.m_OOFCnt;
+        ds.m_dropped = dd.m_dropped;
+        ds.m_retries = dd.m_retries;
+        ds.m_callbacks = dd.m_callbacks;
+        ds.m_badroutes = dd.m_badroutes;
+        ds.m_noack = dd.m_noack;
+        ds.m_netbusy = dd.m_netbusy;
+        ds.m_notidle = dd.m_notidle;
+        ds.m_txverified = dd.m_txverified;
+        ds.m_nondelivery = dd.m_nondelivery;
+        ds.m_routedbusy = dd.m_routedbusy;
+        ds.m_broadcastReadCnt = dd.m_broadcastReadCnt;
+        ds.m_broadcastWriteCnt = dd.m_broadcastWriteCnt;
+        return ds;
+    } catch (OpenZWave::OZWException &e) {
+        emit this->error(QTOZWManagerErrorCodes::OZWException);
+        this->setErrorString(e.GetMsg().c_str());
+    }
+    return DriverStatistics();
+}
+
+
+
+QVector<quint8> QTOZWManager_Internal::GetNodeNeighbors(quint8 const _node) {
+        if (!this->checkHomeId() || !this->checkNodeId(_node))
+        return QVector<quint8>();
+    try {
+        uint8 *neighbours;
+        int size = this->m_manager->GetNodeNeighbors(this->homeId(), _node, &neighbours);
+        QVector<quint8> data;
+        for (int i = 0; i < size; i++) {
+            data.append(neighbours[i]);
+        }
+        delete[] neighbours;
+        return data;
+    } catch (OpenZWave::OZWException &e) {
+        emit this->error(QTOZWManagerErrorCodes::OZWException);
+        this->setErrorString(e.GetMsg().c_str());
+    }
+    return QVector<quint8>();
+}
+
 bool QTOZWManager_Internal::IsNodeFailed(quint8 const _node) {
     if (!this->checkHomeId() || !this->checkNodeId(_node))
         return false;
@@ -570,6 +629,21 @@ bool QTOZWManager_Internal::downloadLatestMFSRevision() {
     }
     return false;
 }
+
+QString QTOZWManager_Internal::getCommandClassString(quint8 const _cc) {
+    if (!this->checkHomeId())
+        return QString();
+    try {
+        /* TODO: This should be a public method on the Manager Class of OZW */
+        return OpenZWave::Internal::CC::CommandClasses::GetName(_cc).c_str();
+    } catch (OpenZWave::OZWException &e) {
+        emit this->error(QTOZWManagerErrorCodes::OZWException);
+        this->setErrorString(e.GetMsg().c_str());
+    }
+    return QString();
+}
+
+
 
 QTOZW_Nodes *QTOZWManager_Internal::getNodeModel() {
     return static_cast<QTOZW_Nodes *>(this->m_nodeModel);

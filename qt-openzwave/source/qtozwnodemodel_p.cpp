@@ -50,6 +50,7 @@ void QTOZW_Nodes_internal::addNode(quint8 _nodeID)
     this->beginInsertRows(QModelIndex(), this->rowCount(QModelIndex()), this->rowCount(QModelIndex()));
     this->m_nodeData[this->rowCount(QModelIndex())] = newNode;
     this->endInsertRows();
+    qCInfo(nodeModel) << "Adding Node " << _nodeID << "At Row " << this->getNodeRow(_nodeID);
 }
 
 void QTOZW_Nodes_internal::setNodeData(quint8 _nodeID, QTOZW_Nodes::NodeColumns column, QVariant data, bool transaction)
@@ -64,6 +65,8 @@ void QTOZW_Nodes_internal::setNodeData(quint8 _nodeID, QTOZW_Nodes::NodeColumns 
         QVector<int> roles;
         roles << Qt::DisplayRole;
         if (!transaction) this->dataChanged(this->createIndex(row, column), this->createIndex(row, column), roles);
+        qCDebug(nodeModel) << "setNodeData " << _nodeID << ": " << column << ":" << data << " Transaction:" << transaction;
+
     }
 }
 

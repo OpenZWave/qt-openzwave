@@ -6,11 +6,13 @@
 #include <QtMqtt/QMqttClient>
 #include <QJsonDocument>
 #include <QJsonObject>
+#include <QTimer>
 
 #include "qtozwdaemon.h"
 
 
 #define MQTT_OZW_TOP_TOPIC "/OpenZWave/%1/"
+#define MQTT_OZW_STATS_TOPIC "statistics"
 #define MQTT_OZW_STATUS_TOPIC "status/"
 #define MQTT_OZW_NODE_TOPIC "node/%1/"
 #define MQTT_OZW_VID_TOPIC "node/%1/%2/"
@@ -80,6 +82,7 @@ private slots:
     void updateLogStateChange();
     void brokerDisconnected();
     void handleMessage(const QByteArray &message, const QMqttTopicName &topic = QMqttTopicName());
+    void doStats();
 
 private:
 
@@ -99,6 +102,7 @@ private:
     QMqttClient *m_client;
     qtozwdaemon *m_qtozwdeamon;
     QSettings settings;
+    QTimer m_statsTimer;
 };
 
 #endif // MQTTPUBLISHER_H

@@ -108,12 +108,16 @@ public:
 
     QString GetNodeQueryStage(quint8 const _node);
     NodeStatistics GetNodeStatistics(quint8 const node);
+    DriverStatistics GetDriverStatistics(); 
+    QVector<quint8> GetNodeNeighbors(quint8 const node);
     bool IsNodeFailed(const quint8 _node);
 
     bool checkLatestConfigFileRevision(quint8 const _node);
     bool checkLatestMFSRevision();
     bool downloadLatestConfigFileRevision(quint8 const _node);
     bool downloadLatestMFSRevision();
+
+    QString getCommandClassString(quint8 const _cc);
 
 /* Property Methods */
     QDir OZWDatabasePath() { return this->m_ozwdatabasepath; }

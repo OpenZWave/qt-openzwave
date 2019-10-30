@@ -207,6 +207,6 @@ int32_t QTOZW_ValueIds::getValueRow(quint64 _vidKey) {
             return it.key();
         }
     }
-    qCWarning(valueModel) << "Can't Find ValueID " << _vidKey << " in valueData";
+    //qCWarning(valueModel) << "Can't Find ValueID " << _vidKey << " in valueData";
     return -1;
 }

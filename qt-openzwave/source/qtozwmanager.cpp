@@ -373,6 +373,15 @@ QString QTOZWManager::GetNodeQueryStage(const quint8 _node) {
 NodeStatistics QTOZWManager::GetNodeStatistics(const quint8 _node) {
     CALL_DPTR_RTN(GetNodeStatistics(_node), NodeStatistics);
 }
+
+DriverStatistics QTOZWManager::GetDriverStatistics() {
+    CALL_DPTR_RTN(GetDriverStatistics(), DriverStatistics);
+}
+
+QVector<quint8> QTOZWManager::GetNodeNeighbors(quint8 const _node) {
+    CALL_DPTR_RTN(GetNodeNeighbors(_node), QVector<quint8>);
+}
+
 bool QTOZWManager::IsNodeFailed(const quint8 _node) {
     CALL_DPTR_RTN(IsNodeFailed(_node), bool);
 }
@@ -388,6 +397,12 @@ bool QTOZWManager::downloadLatestConfigFileRevision(quint8 const _node) {
 bool QTOZWManager::downloadLatestMFSRevision() {
     CALL_DPTR_RTN(downloadLatestMFSRevision(), bool);
 }
+
+QString QTOZWManager::getCommandClassString(quint8 const _cc) {
+    CALL_DPTR_RTN(getCommandClassString(_cc), QString);
+}
+
+
 
 void QTOZWManager::setOZWDatabasePath(QDir path) {
     if (path.exists())
