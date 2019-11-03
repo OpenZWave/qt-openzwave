@@ -166,6 +166,11 @@ mqttpublisher::mqttpublisher(QObject *parent) : QObject(parent)
     this->m_client->setHostname(settings.value("MQTTServer", "127.0.0.1").toString());
     this->m_client->setPort(static_cast<quint16>(settings.value("MQTTPort", 1883).toInt()));
 
+    /* setup the Commands */
+    this->m_commands =  new MqttCommands(this);
+    this->m_commands->setupCommands();
+
+
     connect(this->m_client, &QMqttClient::stateChanged, this, &mqttpublisher::updateLogStateChange);
     connect(this->m_client, &QMqttClient::disconnected, this, &mqttpublisher::brokerDisconnected);
 
@@ -239,6 +244,19 @@ QString mqttpublisher::getValueTopic(QString topic, quint8 node, quint64 vid) {
     return t;
 }
 
+QString mqttpublisher::getCommandTopic() {
+    QString t(MQTT_OZW_TOP_TOPIC);
+    t = t.arg(settings.value("Instance", 1).toInt());
+    t.append(QString(MQTT_OZW_COMMAND_TOPIC));
+    return t;
+}
+
+QString mqttpublisher::getCommandResponseTopic(QString cmd) {
+    QString t(MQTT_OZW_TOP_TOPIC);
+    t = t.arg(settings.value("Instance", 1).toInt());
+    t.append(QString(MQTT_OZW_RESPONSE_TOPIC).arg(cmd));
+    return t;
+}
 
 void mqttpublisher::setOZWDaemon(qtozwdaemon *ozwdaemon) {
     this->m_qtozwdeamon = ozwdaemon;
@@ -288,6 +306,7 @@ void mqttpublisher::updateLogStateChange()
     qDebug() << content;
     if (this->m_client->state() == QMqttClient::ClientState::Connected) {
         this->m_client->subscribe(QMqttTopicFilter("/OpenZWave/commands"));
+        this->m_commands->setupSubscriptions(this->m_client, this->getCommandTopic());
     }
 
 }
@@ -318,6 +337,10 @@ bool mqttpublisher::sendValueUpdate(quint64 vidKey) {
         return false;
     this->m_client->publish(QMqttTopicName(getValueTopic(MQTT_OZW_VID_TOPIC, node, vidKey)), QJsonDocument(this->m_values[vidKey]).toJson(), 0, true);
     return true;
+}
+void mqttpublisher::sendCommandUpdate(QString command, QJsonObject js) {
+    this->m_client->publish(QMqttTopicName(getCommandResponseTopic(command.toLower())), QJsonDocument(js).toJson(), 0, false);
+    return;
 }
 
 
@@ -466,3 +489,6 @@ void mqttpublisher::stopped(quint32 homeID) {
 }
 //void error(QTOZWErrorCodes errorcode);
 
+QTOZWManager *mqttpublisher::getQTOZWManager() {
+    return this->m_qtozwdeamon->getManager();
+}

@@ -20,8 +20,10 @@ DEFINES += QT_DEPRECATED_WARNINGS
 
 SOURCES += \
         main.cpp \
+        mqttcommands/ping.cpp \
         mqttpublisher.cpp \
-        qtozwdaemon.cpp
+        qtozwdaemon.cpp \
+        mqttcommands/mqttcommands.cpp
 
 # Default rules for deployment.
 qnx: target.path = /tmp/$${TARGET}/bin
@@ -29,8 +31,10 @@ else: unix:!android: target.path = /opt/$${TARGET}/bin
 !isEmpty(target.path): INSTALLS += target
 
 HEADERS += \
+    mqttcommands/ping.h \
     mqttpublisher.h \
-    qtozwdaemon.h
+    qtozwdaemon.h \
+    mqttcommands/mqttcommands.h
 
 include(../qt-openzwave.pri)
 

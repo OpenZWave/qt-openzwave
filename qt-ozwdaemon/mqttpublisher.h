@@ -9,13 +9,17 @@
 #include <QTimer>
 
 #include "qtozwdaemon.h"
+#include "mqttcommands/mqttcommands.h"
 
+class MqttCommands;
 
 #define MQTT_OZW_TOP_TOPIC "/OpenZWave/%1/"
 #define MQTT_OZW_STATS_TOPIC "statistics"
 #define MQTT_OZW_STATUS_TOPIC "status/"
 #define MQTT_OZW_NODE_TOPIC "node/%1/"
 #define MQTT_OZW_VID_TOPIC "node/%1/%2/"
+#define MQTT_OZW_COMMAND_TOPIC "command/%1/"
+#define MQTT_OZW_RESPONSE_TOPIC "event/%1/"
 
 class mqttNodeModel : public QTOZW_Nodes {
     Q_OBJECT
@@ -41,6 +45,7 @@ class mqttpublisher : public QObject
 public:
     explicit mqttpublisher(QObject *parent = nullptr);
     void setOZWDaemon(qtozwdaemon *ozwdaemon);
+
 signals:
 
 public slots:
@@ -76,6 +81,8 @@ public slots:
 //    void error(QTOZWErrorCodes errorcode);
 
 
+    QTOZWManager *getQTOZWManager();
+    void sendCommandUpdate(QString, QJsonObject);
 
 
 private slots:
@@ -89,9 +96,12 @@ private:
     QString getTopic(QString);
     QString getNodeTopic(QString, quint8);
     QString getValueTopic(QString, quint8, quint64);
+    QString getCommandTopic();
+    QString getCommandResponseTopic(QString);
     bool sendStatusUpdate();
     bool sendNodeUpdate(quint8);
     bool sendValueUpdate(quint64);
+
 
     QJsonObject m_ozwstatus;
     QMap<quint8, QJsonObject> m_nodes;
@@ -103,6 +113,7 @@ private:
     qtozwdaemon *m_qtozwdeamon;
     QSettings settings;
     QTimer m_statsTimer;
+    MqttCommands *m_commands;
 };
 
 #endif // MQTTPUBLISHER_H
