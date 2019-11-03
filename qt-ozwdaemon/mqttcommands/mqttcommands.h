@@ -17,7 +17,6 @@ class mqttpublisher;
 class MqttCommand : public QObject {
     Q_OBJECT
 public:
-    MqttCommand(QObject *parent = nullptr);
     void Setup(QMqttSubscription *);
     void messageReceived(QMqttMessage msg);
     virtual bool processMessage(QJsonDocument) = 0;
@@ -25,6 +24,7 @@ public:
 signals:
     void sendCommandUpdate(QString, QJsonObject);
 protected:
+    MqttCommand(QObject *parent = nullptr);
     QTOZWManager *getOZWManager();
     mqttpublisher *getMqttPublisher();
     QVector<QString> m_requiredFields;

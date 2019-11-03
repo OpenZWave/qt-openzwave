@@ -93,7 +93,7 @@ public Q_SLOTS:
     bool requestNodeNeighborUpdate(quint8 _node);
     bool assignReturnRoute(quint8 _node);
     bool deleteAllReturnRoute(quint8 _node);
-    bool sendNodeInfomation(quint8 _node);
+    bool sendNodeInformation(quint8 _node);
     bool replaceFailedNode(quint8 _node);
     bool requestNetworkUpdate(quint8 _node);
     QString GetMetaData(quint8 _node, QTOZWManagerSource::QTOZWMetaDataField _field);

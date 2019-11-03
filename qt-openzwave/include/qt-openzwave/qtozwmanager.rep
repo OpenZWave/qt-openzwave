@@ -115,7 +115,7 @@ class QTOZWManager {
     SLOT(bool requestNodeNeighborUpdate(quint8 _node))
     SLOT(bool assignReturnRoute(quint8 _node))
     SLOT(bool deleteAllReturnRoute(quint8 _node))
-    SLOT(bool sendNodeInfomation(quint8 _node))
+    SLOT(bool sendNodeInformation(quint8 _node))
     SLOT(bool replaceFailedNode(quint8 _node))
     SLOT(bool requestNetworkUpdate(quint8 _node))
 

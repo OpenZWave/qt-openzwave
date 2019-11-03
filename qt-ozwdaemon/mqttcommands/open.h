@@ -1,17 +1,17 @@
-#ifndef PING_H
-#define PING_H
+#ifndef OPEN_H
+#define OPEN_H
 
 #include "mqttcommands/mqttcommands.h"
 
-class MqttCommand_Ping : public MqttCommand {
+class MqttCommand_Open : public MqttCommand {
     Q_OBJECT
 public:
     static MqttCommand *Create(QObject *parent = nullptr);
-    static QString StaticGetCommand() { return "Ping";};
+    static QString StaticGetCommand() { return "Open";};
     QString GetCommand() override { return StaticGetCommand(); };
     bool processMessage(QJsonDocument) override;
 private: 
-    MqttCommand_Ping(QObject *parent = nullptr);
+    MqttCommand_Open(QObject *parent = nullptr);
 };
 
 #endif // PING_H

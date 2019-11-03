@@ -379,7 +379,7 @@ bool QTOZWManager_Internal::deleteAllReturnRoute(quint8 _node) {
     }
     return false;
 }
-bool QTOZWManager_Internal::sendNodeInfomation(quint8 _node) {
+bool QTOZWManager_Internal::sendNodeInformation(quint8 _node) {
     if (!this->checkHomeId() || !this->checkNodeId(_node))
         return false;
     try {

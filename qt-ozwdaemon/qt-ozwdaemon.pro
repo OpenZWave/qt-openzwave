@@ -4,7 +4,7 @@ QT += remoteobjects mqtt
 
 TARGET = ../ozwdaemon
 
-CONFIG += c++11 console
+CONFIG += c++11 console silent
 CONFIG -= app_bundle
 
 # The following define makes your compiler emit warnings if you use
@@ -20,10 +20,40 @@ DEFINES += QT_DEPRECATED_WARNINGS
 
 SOURCES += \
         main.cpp \
-        mqttcommands/ping.cpp \
         mqttpublisher.cpp \
         qtozwdaemon.cpp \
-        mqttcommands/mqttcommands.cpp
+        mqttcommands/mqttcommands.cpp \
+        mqttcommands/ping.cpp \
+        mqttcommands/open.cpp \
+        mqttcommands/refreshnodeinfo.cpp \
+        mqttcommands/requestNodeState.cpp \
+        mqttcommands/requestNodeDynamic.cpp \
+        mqttcommands/requestConfigParam.cpp \
+        mqttcommands/requestAllConfigParam.cpp \
+        mqttcommands/softResetController.cpp \
+        mqttcommands/hardResetController.cpp \
+        mqttcommands/cancelControllerCommand.cpp \
+        mqttcommands/testNetworkNode.cpp \
+        mqttcommands/testNetwork.cpp \
+        mqttcommands/healNetworkNode.cpp \
+        mqttcommands/healNetwork.cpp \
+        mqttcommands/addNode.cpp \
+        mqttcommands/addNodeSecure.cpp \
+        mqttcommands/removeNode.cpp \
+        mqttcommands/removeFailedNode.cpp \
+        mqttcommands/hasNodeFailed.cpp \
+        mqttcommands/requestNodeNeighborUpdate.cpp \
+        mqttcommands/assignReturnRoute.cpp \
+        mqttcommands/deleteAllReturnRoute.cpp \
+        mqttcommands/sendNodeInformation.cpp \
+        mqttcommands/replaceFailedNode.cpp \
+        mqttcommands/requestNetworkUpdate.cpp \
+        mqttcommands/IsNodeFailed.cpp \
+        mqttcommands/checkLatestConfigFileRevision.cpp \
+        mqttcommands/checkLatestMFSRevision.cpp \
+        mqttcommands/downloadLatestConfigFileRevision.cpp \
+        mqttcommands/downloadLatestMFSRevision.cpp
+
 
 # Default rules for deployment.
 qnx: target.path = /tmp/$${TARGET}/bin
@@ -31,10 +61,41 @@ else: unix:!android: target.path = /opt/$${TARGET}/bin
 !isEmpty(target.path): INSTALLS += target
 
 HEADERS += \
-    mqttcommands/ping.h \
     mqttpublisher.h \
     qtozwdaemon.h \
-    mqttcommands/mqttcommands.h
+    mqttcommands/mqttcommands.h \
+    mqttcommands/ping.h \
+    mqttcommands/open.h \
+    mqttcommands/refreshnodeinfo.h \
+    mqttcommands/requestNodeState.h \
+    mqttcommands/requestNodeDynamic.h \
+    mqttcommands/requestConfigParam.h \
+    mqttcommands/requestAllConfigParam.h \
+    mqttcommands/softResetController.h \
+    mqttcommands/hardResetController.h \
+    mqttcommands/cancelControllerCommand.h \
+    mqttcommands/testNetworkNode.h \
+    mqttcommands/testNetwork.h \
+    mqttcommands/healNetworkNode.h \
+    mqttcommands/healNetwork.h \
+    mqttcommands/addNode.h \
+    mqttcommands/addNodeSecure.h \
+    mqttcommands/removeNode.h \
+    mqttcommands/removeFailedNode.h \
+    mqttcommands/hasNodeFailed.h \
+    mqttcommands/requestNodeNeighborUpdate.h \
+    mqttcommands/assignReturnRoute.h \
+    mqttcommands/deleteAllReturnRoute.h \
+    mqttcommands/sendNodeInformation.h \
+    mqttcommands/replaceFailedNode.h \
+    mqttcommands/requestNetworkUpdate.h \
+    mqttcommands/IsNodeFailed.h \
+    mqttcommands/checkLatestConfigFileRevision.h \
+    mqttcommands/CheckLatestMFSRevision.h \
+    mqttcommands/downloadLatestConfigFileRevision.h \
+    mqttcommands/downloadLatestMFSRevision.h
+
+
 
 include(../qt-openzwave.pri)
 

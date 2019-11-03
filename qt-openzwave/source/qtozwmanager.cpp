@@ -344,8 +344,8 @@ bool QTOZWManager::assignReturnRoute(quint8 _node) {
 bool QTOZWManager::deleteAllReturnRoute(quint8 _node) {
     CALL_DPTR_RTN(deleteAllReturnRoute(_node), bool);
 }
-bool QTOZWManager::sendNodeInfomation(quint8 _node) {
-    CALL_DPTR_RTN(sendNodeInfomation(_node), bool);
+bool QTOZWManager::sendNodeInformation(quint8 _node) {
+    CALL_DPTR_RTN(sendNodeInformation(_node), bool);
 }
 bool QTOZWManager::replaceFailedNode(quint8 _node) {
     CALL_DPTR_RTN(replaceFailedNode(_node), bool)
