@@ -101,7 +101,8 @@ private:
     bool sendStatusUpdate();
     bool sendNodeUpdate(quint8);
     bool sendValueUpdate(quint64);
-
+    bool delNodeTopic(quint8);
+    bool delValueTopic(quint64);
 
     QJsonObject m_ozwstatus;
     QMap<quint8, QJsonObject> m_nodes;

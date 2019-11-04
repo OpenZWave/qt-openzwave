@@ -29,13 +29,13 @@ bool mqttNodeModel::populateJsonObject(QJsonObject *jsonobject, quint8 node, QTO
             }
             default: {
                 QMetaEnum metaEnum = QMetaEnum::fromType<NodeColumns>();
-                if (data.type() == QMetaType::QString) {
+                if (static_cast<QMetaType::Type>(data.type()) == QMetaType::QString) {
                     jsonobject->insert(metaEnum.valueToKey(i), data.toString());
-                } else if (data.type() == QMetaType::Bool) {
+                } else if (static_cast<QMetaType::Type>(data.type()) == QMetaType::Bool) {
                     jsonobject->insert(metaEnum.valueToKey(i), data.toBool());
-                } else if (data.type() == QMetaType::Int) {
+                } else if (static_cast<QMetaType::Type>(data.type()) == QMetaType::Int) {
                     jsonobject->insert(metaEnum.valueToKey(i), data.toInt());
-                } else if (data.type() == QMetaType::UInt) {
+                } else if (static_cast<QMetaType::Type>(data.type()) == QMetaType::UInt) {
                     jsonobject->insert(metaEnum.valueToKey(i), data.toInt());
                 } else {
                     qWarning() << "Can't Convert " << data.type() << "(" << metaEnum.valueToKey(i) << ") to store in JsonObject: " << node;
@@ -55,7 +55,7 @@ bool mqttNodeModel::populateJsonObject(QJsonObject *jsonobject, quint8 node, QTO
         metadata.insert("ProductPicBase64", QString(mgr->GetMetaDataProductPic(node).toBase64()));
         jsonobject->insert("MetaData", metadata);
     }
-    /* Neihbors */
+    /* Neighbors */
     QVector<quint8> neighbors = mgr->GetNodeNeighbors(node);
     if (neighbors.size() > 0) {
         QJsonArray N;
@@ -109,17 +109,17 @@ bool mqttValueIDModel::populateJsonObject(QJsonObject *jsonobject, quint64 vidKe
 
         default: {
             QMetaEnum metaEnum = QMetaEnum::fromType<ValueIdColumns>();
-            if (data.type() == QMetaType::QString) {
+            if (static_cast<QMetaType::Type>(data.type()) == QMetaType::QString) {
                 jsonobject->insert(metaEnum.valueToKey(i), data.toString());
-            } else if (data.type() == QMetaType::Bool) {
+            } else if (static_cast<QMetaType::Type>(data.type()) == QMetaType::Bool) {
                 jsonobject->insert(metaEnum.valueToKey(i), data.toBool());
-            } else if (data.type() == QMetaType::Int) {
+            } else if (static_cast<QMetaType::Type>(data.type()) == QMetaType::Int) {
                 jsonobject->insert(metaEnum.valueToKey(i), data.toInt());
-            } else if (data.type() == QMetaType::UInt) {
+            } else if (static_cast<QMetaType::Type>(data.type()) == QMetaType::UInt) {
                 jsonobject->insert(metaEnum.valueToKey(i), data.toInt());
-            } else if (data.type() == QMetaType::Float) {
+            } else if (static_cast<QMetaType::Type>(data.type()) == QMetaType::Float) {
                 jsonobject->insert(metaEnum.valueToKey(i), data.toDouble());
-            } else if (data.type() == QMetaType::ULongLong) {
+            } else if (static_cast<QMetaType::Type>(data.type()) == QMetaType::ULongLong) {
                 jsonobject->insert(metaEnum.valueToKey(i), static_cast<qint64>(data.toULongLong()));
             } else {
                 qWarning() << "Can't Convert " << data.type() << "(" << metaEnum.valueToKey(i) << ") to store in JsonObject: " << vidKey;
@@ -137,19 +137,19 @@ bool mqttValueIDModel::populateJsonObject(QJsonObject *jsonobject, quint64 vidKe
 QJsonValue mqttValueIDModel::encodeValue(quint64 vidKey) {
     QJsonValue value;
     QVariant data = this->getValueData(vidKey, mqttValueIDModel::ValueIdColumns::Value);
-    if (data.type() == QMetaType::QString) {
+    if (static_cast<QMetaType::Type>(data.type()) == QMetaType::QString) {
         value = data.toString();
-    } else if (data.type() == QMetaType::Bool) {
+    } else if (static_cast<QMetaType::Type>(data.type()) == QMetaType::Bool) {
         value = data.toBool();
-    } else if (data.type() == QMetaType::Int) {
+    } else if (static_cast<QMetaType::Type>(data.type()) == QMetaType::Int) {
         value = data.toInt();
-    } else if (data.type() == QMetaType::UInt) {
+    } else if (static_cast<QMetaType::Type>(data.type()) == QMetaType::UInt) {
         value = data.toInt();
-    } else if (data.type() == QMetaType::Float) {
+    } else if (static_cast<QMetaType::Type>(data.type()) == QMetaType::Float) {
         value = data.toDouble();
-    } else if (data.type() == QMetaType::ULongLong) {
+    } else if (static_cast<QMetaType::Type>(data.type()) == QMetaType::ULongLong) {
         value = static_cast<qint64>(data.toULongLong());
-    } else if (data.type()  == QMetaType::Short) {
+    } else if (static_cast<QMetaType::Type>(data.type())  == QMetaType::Short) {
         value = static_cast<qint16>(data.toInt());
     } else {
         qWarning() << "Can't Convert " << data.type() << " to store in JsonObject: " << vidKey << this->getValueData(vidKey, mqttValueIDModel::ValueIdColumns::Label).toString() << this->getValueData(vidKey, mqttValueIDModel::ValueIdColumns::Type);
@@ -333,14 +333,31 @@ bool mqttpublisher::sendNodeUpdate(quint8 node) {
 
 bool mqttpublisher::sendValueUpdate(quint64 vidKey) {
     quint8 node = this->m_valueModel->getValueData(vidKey, QTOZW_ValueIds::Node).value<quint8>();
-    if (node == 0)
+    if (node == 0) {
+        qWarning() << "sendValueUpdate: Can't find Node for Value: " << vidKey;
         return false;
+    }
     this->m_client->publish(QMqttTopicName(getValueTopic(MQTT_OZW_VID_TOPIC, node, vidKey)), QJsonDocument(this->m_values[vidKey]).toJson(), 0, true);
     return true;
 }
 void mqttpublisher::sendCommandUpdate(QString command, QJsonObject js) {
     this->m_client->publish(QMqttTopicName(getCommandResponseTopic(command.toLower())), QJsonDocument(js).toJson(), 0, false);
     return;
+}
+
+bool mqttpublisher::delNodeTopic(quint8 node) {
+    this->m_client->publish(QMqttTopicName(getNodeTopic(MQTT_OZW_NODE_TOPIC, node)), NULL, 0, false);
+    return true;
+}
+
+bool mqttpublisher::delValueTopic(quint64 vidKey) {
+    quint8 node = this->m_valueModel->getValueData(vidKey, QTOZW_ValueIds::Node).value<quint8>();
+    if (node == 0) {
+        qWarning() << "delValueTopic: Can't find Node for Value: " << vidKey;
+        return false;
+    }
+    this->m_client->publish(QMqttTopicName(getValueTopic(MQTT_OZW_VID_TOPIC, node, vidKey)), NULL, 0, false);
+    return true;
 }
 
 
@@ -357,9 +374,7 @@ void mqttpublisher::valueAdded(quint64 vidKey) {
 }
 void mqttpublisher::valueRemoved(quint64 vidKey) {
     qDebug() << "Publishing Event valueRemoved:" << vidKey;
-    this->m_values[vidKey]["Event"] = "valueRemoved";
-    this->sendValueUpdate(vidKey);
-
+    this->delValueTopic(vidKey);
 }
 void mqttpublisher::valueChanged(quint64 vidKey) {
     qDebug() << "Publishing Event valueChanged:" << vidKey;
@@ -388,13 +403,11 @@ void mqttpublisher::nodeAdded(quint8 node) {
 }
 void mqttpublisher::nodeRemoved(quint8 node) {
     qDebug() << "Publishing Event nodeRemoved:" << node;
-    this->m_nodes[node]["Event"] = "nodeRemoved";
-    this->sendNodeUpdate(node);
+    this->delNodeTopic(node);
 }
 void mqttpublisher::nodeReset(quint8 node) {
     qDebug() << "Publishing Event nodeReset:" << node;
-    this->m_nodes[node]["Event"] = "nodeReset";
-    this->sendNodeUpdate(node);
+    this->delNodeTopic(node);
 }
 void mqttpublisher::nodeNaming(quint8 node) {
     qDebug() << "Publishing Event nodeNaming:" << node;

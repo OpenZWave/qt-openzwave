@@ -104,6 +104,7 @@ INCLUDEPATH += ../qt-openzwave/include/
 unix {
     LIBS += -lresolv -L../qt-openzwave/ -lqt-openzwave -L../qt-openzwavedatabase/ -lqt-openzwavedatabase
     INCLUDEPATH += ../qt-openzwavedatabase/include/
+    QMAKE_CXXFLAGS += -g1
 }
 win32 {
     LIBS += -lDnsapi -L../qt-openzwave/$$BUILDTYPE/ -lqt-openzwave1

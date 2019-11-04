@@ -87,6 +87,7 @@ COPIES += copyrepheaders
 unix {
     target.path = /usr/local/lib
     INSTALLS += target
+    QMAKE_CXXFLAGS += -g1
 }
 #LIBS += -L../../open-zwave -lopenzwave
 

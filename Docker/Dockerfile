@@ -14,9 +14,9 @@ WORKDIR /opt
 RUN git clone https://github.com/qt/qtmqtt.git && cd qtmqtt && /opt/Qt/5.12.4/bin/qmake && make && make install
 RUN git clone https://github.com/OpenZWave/open-zwave.git && cd open-zwave && make -j4 && make install
 RUN git clone https://github.com/OpenZWave/qt-openzwave.git && cd qt-openzwave && git checkout mqtt && /opt/Qt/5.12.4/bin/qmake && make -j4 && make install
-RUN ls -lah /usr/local/lib64/
-RUN ls /opt/
-RUN ls -lah /ozwdaemon/bin/
+#RUN ls -lah /usr/local/lib64/
+#RUN ls /opt/
+#RUN ls -lah /ozwdaemon/bin/
 #RUN LD_LIBRARY_PATH="/usr/local/lib:/usr/local/lib64:$LD_LIBRARY_PATH" /ozwdaemon/bin/ozwdaemon
 RUN mkdir /opt/ozw/ && mkdir /opt/ozw/config/
 
@@ -27,5 +27,5 @@ ENV MQTT_PORT="1883"
 WORKDIR /opt/ozw/
 EXPOSE 1983
 VOLUME ["/opt/ozw/config/"]
-ENTRYPOINT /ozwdaemon/bin/ozwdaemon -s $USBPATH -c /opt/ozw/config/ -u /opt/ozw/config/ --mqtt-server $MQTT_SERVER --mqtt-port $MQTT_PORT
+ENTRYPOINT /usr/bin/catchsegv /ozwdaemon/bin/ozwdaemon -s $USBPATH -c /opt/ozw/config/ -u /opt/ozw/config/ --mqtt-server $MQTT_SERVER --mqtt-port $MQTT_PORT
 
