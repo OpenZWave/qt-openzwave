@@ -198,31 +198,72 @@ void mqttpublisher::doStats() {
     QTOZWManager *manager = this->m_qtozwdeamon->getManager();
     DriverStatistics ds = manager->GetDriverStatistics();
     QJsonObject dsjson;
-    dsjson["SOFCnt"] = static_cast<int>(ds.m_SOFCnt);
-    dsjson["ACKWaiting"] = static_cast<int>(ds.m_ACKWaiting);
-    dsjson["readAborts"] = static_cast<int>(ds.m_readAborts);
-    dsjson["badChecksum"] = static_cast<int>(ds.m_badChecksum);
-    dsjson["readCnt"] = static_cast<int>(ds.m_readCnt);
-    dsjson["writeCnt"] = static_cast<int>(ds.m_writeCnt);
-    dsjson["CANCnt"] = static_cast<int>(ds.m_CANCnt);
-    dsjson["NAKCnt"] = static_cast<int>(ds.m_NAKCnt);
-    dsjson["ACKCnt"] = static_cast<int>(ds.m_ACKCnt);
-    dsjson["OOFCnt"] = static_cast<int>(ds.m_OOFCnt);
-    dsjson["dropped"] = static_cast<int>(ds.m_dropped);
-    dsjson["retries"] = static_cast<int>(ds.m_retries);
-    dsjson["callbacks"] = static_cast<int>(ds.m_callbacks);
-    dsjson["badroutes"] = static_cast<int>(ds.m_badroutes);
-    dsjson["noack"] = static_cast<int>(ds.m_noack);
-    dsjson["netbusy"] = static_cast<int>(ds.m_netbusy);
-    dsjson["notidle"] = static_cast<int>(ds.m_notidle);
-    dsjson["txverified"] = static_cast<int>(ds.m_txverified);
-    dsjson["nondelivery"] = static_cast<int>(ds.m_nondelivery);
-    dsjson["routedbusy"] = static_cast<int>(ds.m_routedbusy);
-    dsjson["broadcastReadCnt"] = static_cast<int>(ds.m_broadcastReadCnt);
-    dsjson["broadcastWriteCnt"] = static_cast<int>(ds.m_broadcastWriteCnt);
+    dsjson["SOFCnt"] = static_cast<qint64>(ds.m_SOFCnt);
+    dsjson["ACKWaiting"] = static_cast<qint64>(ds.m_ACKWaiting);
+    dsjson["readAborts"] = static_cast<qint64>(ds.m_readAborts);
+    dsjson["badChecksum"] = static_cast<qint64>(ds.m_badChecksum);
+    dsjson["readCnt"] = static_cast<qint64>(ds.m_readCnt);
+    dsjson["writeCnt"] = static_cast<qint64>(ds.m_writeCnt);
+    dsjson["CANCnt"] = static_cast<qint64>(ds.m_CANCnt);
+    dsjson["NAKCnt"] = static_cast<qint64>(ds.m_NAKCnt);
+    dsjson["ACKCnt"] = static_cast<qint64>(ds.m_ACKCnt);
+    dsjson["OOFCnt"] = static_cast<qint64>(ds.m_OOFCnt);
+    dsjson["dropped"] = static_cast<qint64>(ds.m_dropped);
+    dsjson["retries"] = static_cast<qint64>(ds.m_retries);
+    dsjson["callbacks"] = static_cast<qint64>(ds.m_callbacks);
+    dsjson["badroutes"] = static_cast<qint64>(ds.m_badroutes);
+    dsjson["noack"] = static_cast<qint64>(ds.m_noack);
+    dsjson["netbusy"] = static_cast<qint64>(ds.m_netbusy);
+    dsjson["notidle"] = static_cast<qint64>(ds.m_notidle);
+    dsjson["txverified"] = static_cast<qint64>(ds.m_txverified);
+    dsjson["nondelivery"] = static_cast<qint64>(ds.m_nondelivery);
+    dsjson["routedbusy"] = static_cast<qint64>(ds.m_routedbusy);
+    dsjson["broadcastReadCnt"] = static_cast<qint64>(ds.m_broadcastReadCnt);
+    dsjson["broadcastWriteCnt"] = static_cast<qint64>(ds.m_broadcastWriteCnt);
 
     stats["Network"] = dsjson;
+    QJsonObject nodes;
 
+    for (int i = 0; i < this->m_nodeModel->rowCount(QModelIndex()); i++) {
+        QJsonObject nsjson;
+        int NodeID = this->m_nodeModel->data(this->m_nodeModel->index(i, mqttNodeModel::NodeColumns::NodeID), Qt::DisplayRole).toInt();
+        NodeStatistics ns = manager->GetNodeStatistics(NodeID);
+        nsjson["sendCount"] = static_cast<qint64>(ns.sentCount); /**< Number of Packets Sent to the Node */
+        nsjson["sentFailed"] = static_cast<qint64>(ns.sentFailed); /**< Number of Packets that Failed to be acknowledged by the Node or Controller */
+        nsjson["retries"] = static_cast<qint64>(ns.retries); /**< Number of times we have had to Retry sending packets to the Node */
+        nsjson["receivedPackets"] = static_cast<qint64>(ns.receivedPackets); /**< Number of received Packets from the Node */
+        nsjson["receivedDupPackets"] = static_cast<qint64>(ns.receivedDupPackets); /**< Number of Duplicate Packets received from the Node */
+        nsjson["receivedUnsolicited"] = static_cast<qint64>(ns.receivedUnsolicited); /**< Number of Unsolicited Packets received from the Node */
+        nsjson["lastSentTimeStamp"] = ns.lastSentTimeStamp; /**< TimeStamp of the Last time we sent a packet to the Node */
+        nsjson["lastRecievedTimeStamp"] = ns.lastReceivedTimeStamp; /**< Timestamp of the last time we received a packet from the Node */
+        nsjson["lastRequestRTT"] = static_cast<qint64>(ns.lastRequestRTT); /**<  Last Round-Trip Time when we made a request to the Node */
+        nsjson["averageRequestRTT"] = static_cast<qint64>(ns.averageRequestRTT); /**< Average Round-Trip Time when we make requests to a Node */
+        nsjson["lastResponseRTT"] = static_cast<qint64>(ns.lastResponseRTT); /**< Last Round-Trip Time when we got a Response from a Node */
+        nsjson["averageResponseRTT"] = static_cast<qint64>(ns.averageResponseRTT); /**< Average Round-Trip Time when got a Response from a Node */
+        nsjson["quality"] = ns.quality; /**< The Quality of the Signal from the Node, as Reported by the Controller */
+        nsjson["extendedTXSupported"] = ns.extendedTXSupported; /**< If these statistics support Extended TX Reporting (Controller Dependent) */
+        nsjson["txTime"] = ns.txTime; /**< The Time it took to Transmit the last packet to the Node */
+        nsjson["hops"] = ns.hops; /**< The Number of hops the packet traversed to reach the node */
+        nsjson["rssi_1"] = ns.rssi_1; /**< The RSSI Strength of the first hop */
+        nsjson["rssi_2"] = ns.rssi_2; /**< The RSSI Strength of the second hop */
+        nsjson["rssi_3"] = ns.rssi_3; /**< The RSSI Strength of the third hop */
+        nsjson["rssi_4"] = ns.rssi_4; /**< The RSSI Strength of the fourth hop */
+        nsjson["rssi_5"] = ns.rssi_5; /**< The RSSI Strength of the final hop */
+        nsjson["route_1"] = ns.route_1; /**< The NodeId of the First Hop */
+        nsjson["route_2"] = ns.route_2; /**< The NodeId of the Second Hop */
+        nsjson["route_3"] = ns.route_3; /**< The NodeId of the third Hop */
+        nsjson["route_4"] = ns.route_4; /**< The NodeId of the Fourth Hop */
+        nsjson["ackChannel"] = ns.ackChannel; /**< The Channel that recieved the ACK From the Node */
+        nsjson["lastTXChannel"] = ns.lastTXChannel; /**< The last Channel we used to communicate with the Node */
+        nsjson["routeScheme"] = ns.routeScheme; /**< How the Route was calculated when we last communicated with the Node */
+        nsjson["routeUsed"] = ns.routeUsed; /**< The Route last used to communicate with the Node */
+        nsjson["routeSpeed"] = ns.routeSpeed; /**< The Speed that was used when we last communicated with the node */
+        nsjson["routeTries"] = ns.routeTries; /**< The Number of attempts the Controller made to route the packet to the Node */
+        nsjson["lastFailedLinkFrom"] = ns.lastFailedLinkFrom; /**< The Last Failed Link From */
+        nsjson["lastFailedLinkTo"] = ns.lastFailedLinkTo; /**< The Last Failed Link To */
+        nodes[QString(NodeID)] = nsjson;
+    }
+    stats["Nodes"] = nodes;
     this->m_client->publish(QMqttTopicName(getTopic(MQTT_OZW_STATS_TOPIC)), QJsonDocument(stats).toJson(), 0, false);
 
 }
