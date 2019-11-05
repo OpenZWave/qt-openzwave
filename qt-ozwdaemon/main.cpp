@@ -6,9 +6,12 @@
 #include <QCoreApplication>
 #include <QLoggingCategory>
 #include <QCommandLineParser>
-#include "qtozwdaemon.h"
-#include "mqttpublisher.h"
 #include <qt-openzwave/qt-openzwavedatabase.h>
+#include "qtozwdaemon.h"
+#ifdef HAVE_MQTT
+#include "mqttpublisher.h"
+#warning "MQTT Enabled"
+#endif
 
 void handler(int sig) {
   void *array[10];
@@ -59,6 +62,7 @@ int main(int argc, char *argv[])
 
     parser.addOption(userDir);
 
+#ifdef HAVE_MQTT
     QCommandLineOption MQTTServer(QStringList() << "mqtt-server",
         "MQTT Server Hostname/IP Address",
         "IP/Hostname"
@@ -71,9 +75,8 @@ int main(int argc, char *argv[])
         "Port"
     );
 
-
     parser.addOption(MQTTPort);
-
+#endif
 
     parser.process(a);
     if (!parser.isSet(serialPort)) {
@@ -83,12 +86,14 @@ int main(int argc, char *argv[])
         exit(-1);
     }
     QSettings settings;
+#ifdef HAVE_MQTT
     if (parser.isSet(MQTTServer)) {
         settings.setValue("MQTTServer", parser.value(MQTTServer));
     }
     if (parser.isSet(MQTTPort)) {
         settings.setValue("MQTTPort", parser.value(MQTTPort).toInt());
     }
+#endif
 
 #if 0
     QLoggingCategory::setFilterRules("qt.remoteobjects.debug=true\n"
@@ -161,8 +166,10 @@ int main(int argc, char *argv[])
 
 
     qtozwdaemon daemon;
+#ifdef HAVE_MQTT
     mqttpublisher mqttpublisher;
     mqttpublisher.setOZWDaemon(&daemon);
+#endif
     daemon.setSerialPort(parser.value(serialPort));
     daemon.startOZW();
     return a.exec();
