@@ -17,7 +17,7 @@ class MqttCommands;
 #define MQTT_OZW_STATS_TOPIC "statistics/"
 #define MQTT_OZW_STATUS_TOPIC "status/"
 #define MQTT_OZW_NODE_TOPIC "node/%1/"
-#define MQTT_OZW_VID_TOPIC "node/%1/%2/"
+#define MQTT_OZW_VID_TOPIC "node/%1/values/%2/"
 #define MQTT_OZW_COMMAND_TOPIC "command/%1/"
 #define MQTT_OZW_RESPONSE_TOPIC "event/%1/"
 

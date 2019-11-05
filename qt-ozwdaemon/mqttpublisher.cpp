@@ -261,7 +261,7 @@ void mqttpublisher::doStats() {
         nsjson["routeTries"] = ns.routeTries; /**< The Number of attempts the Controller made to route the packet to the Node */
         nsjson["lastFailedLinkFrom"] = ns.lastFailedLinkFrom; /**< The Last Failed Link From */
         nsjson["lastFailedLinkTo"] = ns.lastFailedLinkTo; /**< The Last Failed Link To */
-        nodes[QString(NodeID)] = nsjson;
+        nodes[QString::number(NodeID)] = nsjson;
     }
     stats["Nodes"] = nodes;
     this->m_client->publish(QMqttTopicName(getTopic(MQTT_OZW_STATS_TOPIC)), QJsonDocument(stats).toJson(), 0, false);
