@@ -160,7 +160,7 @@ void OZWNotification::processNotification
 
         case OpenZWave::Notification::Type_ControllerCommand:
         {
-            emit Get()->controllerCommand(_notification->GetEvent());
+            emit Get()->controllerCommand(_notification->GetNodeId(), static_cast<OpenZWave::Driver::ControllerCommand>(_notification->GetCommand()), static_cast<OpenZWave::Driver::ControllerState>(_notification->GetEvent()), static_cast<OpenZWave::Driver::ControllerError>(_notification->GetNotification()));
             break;
         }
 
@@ -190,7 +190,7 @@ void OZWNotification::processNotification
 
         case OpenZWave::Notification::Type_Notification:
         {
-            //emit Get()->ozwNotification(_notification->GetNotification());
+            emit Get()->ozwNotification(_notification->GetNodeId(), static_cast<OpenZWave::Notification::NotificationCode>(_notification->GetNotification()));
             break;
         }
 
@@ -214,7 +214,7 @@ void OZWNotification::processNotification
 
         case OpenZWave::Notification::Type_UserAlerts:
         {
-
+            emit Get()->ozwUserAlert(_notification->GetNodeId(), static_cast<OpenZWave::Notification::UserAlertNotification>(_notification->GetUserAlertType()), _notification->GetRetry());
             break;
         }
 

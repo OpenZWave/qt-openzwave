@@ -329,14 +329,14 @@ void mqttpublisher::setOZWDaemon(qtozwdaemon *ozwdaemon) {
     connect(manager, &QTOZWManager::driverAwakeNodesQueried, this, &mqttpublisher::driverAwakeNodesQueried);
     connect(manager, &QTOZWManager::driverAllNodesQueriedSomeDead, this, &mqttpublisher::driverAllNodesQueriedSomeDead);
     connect(manager, &QTOZWManager::controllerCommand, this, &mqttpublisher::controllerCommand);
+    connect(manager, &QTOZWManager::ozwNotification, this, &mqttpublisher::ozwNotification);
+    connect(manager, &QTOZWManager::ozwUserAlert, this, &mqttpublisher::ozwUserAlert);
     connect(manager, &QTOZWManager::manufacturerSpecificDBReady, this, &mqttpublisher::manufacturerSpecificDBReady);
     connect(manager, &QTOZWManager::starting, this, &mqttpublisher::starting);
     connect(manager, &QTOZWManager::started, this, &mqttpublisher::started);
     connect(manager, &QTOZWManager::stopped, this, &mqttpublisher::stopped);
 
     this->m_client->connectToHost();
-    this->m_statsTimer.start(10000);
-
 }
 
 void mqttpublisher::updateLogStateChange()
@@ -456,9 +456,11 @@ void mqttpublisher::nodeNaming(quint8 node) {
     this->sendNodeUpdate(node);
 }
 void mqttpublisher::nodeEvent(quint8 node, quint8 event) {
-    qDebug() << "Publishing Event nodeEvent:" << node;
-    this->m_nodes[node]["Event"] = "nodeEvent";
-    this->sendNodeUpdate(node);
+    Q_UNUSED(node);
+    Q_UNUSED(event);
+    /* we dont do anything here, as NodeEvent is just a BASIC message 
+     * which should be handled via the normal ValueID/ValueChanged Events 
+     */
 }
 void mqttpublisher::nodeProtocolInfo(quint8 node) {
     qDebug() << "Publishing Event nodeProtocolInfo:" << node;
@@ -517,29 +519,53 @@ void mqttpublisher::driverAwakeNodesQueried() {
     this->m_ozwstatus["Status"] = "driverAwakeNodesQueried";
     this->sendStatusUpdate();
 }
-void mqttpublisher::controllerCommand(quint8 command) {
+void mqttpublisher::controllerCommand(quint8 node, NotificationTypes::QTOZW_Notification_Controller_Cmd command, NotificationTypes::QTOZW_Notification_Controller_State state, NotificationTypes::QTOZW_Notification_Controller_Error error) {
+    qDebug() << "Publishing Event controllerCommand" << node << command << state << error;
 
 }
-//void ozwNotification(OpenZWave::Notification::NotificationCode event);
-//void ozwUserAlert(OpenZWave::Notification::UserAlertNotification event);
+void mqttpublisher::ozwNotification(quint8 node, NotificationTypes::QTOZW_Notification_Code event) {
+    qDebug() << "Publishing Event ozwNotification";
+    QJsonObject js;
+    QMetaEnum metaEnum = QMetaEnum::fromType<NotificationTypes::QTOZW_Notification_Code>();
+    js["Node"] = node;
+    js["Event"] = metaEnum.valueToKey(event);
+    this->sendCommandUpdate("Notification", js);
+}
+void mqttpublisher::ozwUserAlert(quint8 node, NotificationTypes::QTOZW_Notification_User event, quint8 retry) {
+    qDebug() << "Publishing Event ozwNotification";
+    QJsonObject js;
+    QMetaEnum metaEnum = QMetaEnum::fromType<NotificationTypes::QTOZW_Notification_User>();
+    js["Node"] = node;
+    js["Event"] = metaEnum.valueToKey(event);
+    if (event == NotificationTypes::QTOZW_Notification_User::Notification_User_ApplicationStatus_Retry) {
+        js["Retry"] = static_cast<int>(retry);
+    }
+    this->sendCommandUpdate("UserAlert", js);
+}
 void mqttpublisher::manufacturerSpecificDBReady() {
-
+    qDebug() << "Publishing Event manufacturerSpecificDBReady";
+    this->m_ozwstatus["ManufacturerSpecificDBReady"] = true;
+    this->sendStatusUpdate();
 }
 
 void mqttpublisher::starting() {
+    qDebug() << "Publishing Event starting";
     this->m_ozwstatus["Status"] = "starting";
-    qDebug() << QJsonDocument(this->m_ozwstatus).toJson();
     this->sendStatusUpdate();
 }
 void mqttpublisher::started(quint32 homeID) {
+    qDebug() << "Publishing Event started";
     this->m_ozwstatus["Status"] = "started";
     this->m_ozwstatus["homeID"] = QJsonValue(static_cast<int>(homeID));
     this->sendStatusUpdate();
+    this->m_statsTimer.start(10000);
 }
 void mqttpublisher::stopped(quint32 homeID) {
+    qDebug() << "Publishing Event stopped";
     this->m_ozwstatus["Status"] = "stopped";
     this->m_ozwstatus["homeID"] = QJsonValue(static_cast<int>(homeID));
     this->sendStatusUpdate();
+    this->m_statsTimer.stop();
 }
 //void error(QTOZWErrorCodes errorcode);
 

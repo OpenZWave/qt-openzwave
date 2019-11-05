@@ -139,9 +139,9 @@ public Q_SLOTS:
     void pvt_driverAllNodesQueriedSomeDead();
     void pvt_driverAllNodesQueried();
     void pvt_driverAwakeNodesQueried();
-    void pvt_controllerCommand(quint8 command);
-    void pvt_ozwNotification(OpenZWave::Notification::NotificationCode event);
-    void pvt_ozwUserAlert(OpenZWave::Notification::UserAlertNotification event);
+    void pvt_controllerCommand(quint8 node, OpenZWave::Driver::ControllerCommand cmd, OpenZWave::Driver::ControllerState state, OpenZWave::Driver::ControllerError error);
+    void pvt_ozwNotification(quint8 node, OpenZWave::Notification::NotificationCode event);
+    void pvt_ozwUserAlert(quint8 node, OpenZWave::Notification::UserAlertNotification event, quint8 retry);
     void pvt_manufacturerSpecificDBReady();
 
     void pvt_nodeModelDataChanged(const QModelIndex &topLeft, const QModelIndex &bottomRight, const QVector<int> &roles);

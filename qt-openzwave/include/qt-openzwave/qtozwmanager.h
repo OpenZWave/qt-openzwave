@@ -148,9 +148,9 @@ Q_SIGNALS:
     void driverAllNodesQueriedSomeDead();
     void driverAllNodesQueried();
     void driverAwakeNodesQueried();
-    void controllerCommand(quint8 command);
-//    void ozwNotification(OpenZWave::Notification::NotificationCode event);
-// void ozwUserAlert(OpenZWave::Notification::UserAlertNotification event);
+    void controllerCommand(quint8 node, NotificationTypes::QTOZW_Notification_Controller_Cmd command, NotificationTypes::QTOZW_Notification_Controller_State state, NotificationTypes::QTOZW_Notification_Controller_Error error);
+    void ozwNotification(quint8 node, NotificationTypes::QTOZW_Notification_Code event);
+    void ozwUserAlert(quint8 node, NotificationTypes::QTOZW_Notification_User event, quint8 retry);
     void manufacturerSpecificDBReady();
 
     void starting();

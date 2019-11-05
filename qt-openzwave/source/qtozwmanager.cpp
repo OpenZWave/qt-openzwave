@@ -257,8 +257,8 @@ void QTOZWManager::connectSignals() {
     CONNECT_DPTR(driverAllNodesQueried);
     CONNECT_DPTR(driverAwakeNodesQueried);
     CONNECT_DPTR(controllerCommand);
-//        CONNECT_DPTR(ozwNotification);
-//        CONNECT_DPTR(ozwUserAlert);
+    CONNECT_DPTR(ozwNotification);
+    CONNECT_DPTR(ozwUserAlert);
     CONNECT_DPTR(manufacturerSpecificDBReady);
     CONNECT_DPTR(starting);
     CONNECT_DPTR(started);

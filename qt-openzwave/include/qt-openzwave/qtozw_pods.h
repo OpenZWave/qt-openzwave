@@ -350,5 +350,153 @@ inline QDataStream &operator>>(QDataStream &ds, OptionList &obj) {
 /** \endcond
  */
 
+    class NotificationTypes : public QObject { 
+        Q_OBJECT;
+        public:
+        enum QTOZW_Notification_Code {
+            Notification_Code_MsgComplete = 0,
+            Notification_Code_MsgTimeout = 1,
+            Notification_Code_NoOperation = 2,
+            Notification_Code_NodeAwake = 3,
+            Notification_Code_NodeAsleep = 4,
+            Notification_Code_NodeDead = 5,
+            Notification_Code_NodeAlive = 6,
+            Notification_Code_count 
+        };
+        Q_ENUM(QTOZW_Notification_Code);
+
+        enum QTOZW_Notification_User {
+            Notification_User_None = 0,
+            Notification_User_ConfigOutOfDate = 1,
+            Notification_User_MFSOutOfDate = 2,
+            Notification_User_ConfigFileDownloadFailed = 3,
+            Notification_User_DNSError = 4,
+            Notification_User_NodeReloadRequired = 5,
+            Notification_User_UnsupportedController = 6,
+            Notification_User_ApplicationStatus_Retry = 7,
+            Notification_User_ApplicationStatus_Queued = 8,
+            Notification_User_ApplicationStatus_Rejected = 9,
+            Notification_User_count
+        };
+        Q_ENUM(QTOZW_Notification_User);
+
+        enum QTOZW_Notification_Controller_Error {
+            Ctrl_Error_None = 0,
+            Ctrl_Error_ButtonNotFound = 1,
+            Ctrl_Error_NodeNotFound = 2,
+            Ctrl_Error_NotBridge = 3,
+            Ctrl_Error_NotSUC = 4,
+            Ctrl_Error_NotSecondary = 5,
+            Ctrl_Error_NotPrimary = 6,
+            Ctrl_Error_IsPrimary = 7,
+            Ctrl_Error_NotFound = 8,
+            Ctrl_Error_Busy = 9,
+            Ctrl_Error_Failed = 10,
+            Ctrl_Error_Disabled = 11,
+            Ctrl_Error_OverFlow = 12,
+            Ctrl_Error_count
+        };
+        Q_ENUM(QTOZW_Notification_Controller_Error);
+        
+        enum QTOZW_Notification_Controller_State {
+            Ctrl_State_Normal = 0,
+            Ctrl_State_Starting = 1,
+            Ctrl_State_Cancel = 2,
+            Ctrl_State_Error = 3,
+            Ctrl_State_Waiting = 4,
+            Ctrl_State_Sleeping = 5,
+            Ctrl_State_InProgress = 6,
+            Ctrl_State_Completed = 7,
+            Ctrl_State_Failed = 8,
+            Ctrl_State_NodeOk = 9,
+            Ctrl_State_NodeFailed = 10,
+            Ctrl_State_count
+        };
+        Q_ENUM(QTOZW_Notification_Controller_State);
+
+        enum QTOZW_Notification_Controller_Cmd {
+            Ctrl_Cmd_None = 0,
+            Ctrl_Cmd_AddNode = 1,
+            Ctrl_Cmd_CreateNewPrimary = 2,
+            Ctrl_Cmd_ReceiveConfiguration = 3,
+            Ctrl_Cmd_RemoveNode = 4,
+            Ctrl_Cmd_RemoveFailedNode = 5,
+            Ctrl_Cmd_HasNodeFailed = 6,
+            Ctrl_Cmd_ReplaceFailedNode = 7,
+            Ctrl_Cmd_TransferPrimaryRole = 8,
+            Ctrl_Cmd_RequestNetworkUpdate = 9,
+            Ctrl_Cmd_RequestNodeNeighborUpdate = 10,
+            Ctrl_Cmd_AssignReturnRoute = 11,
+            Ctrl_Cmd_DeleteAllReturnRoute = 12,
+            Ctrl_Cmd_SendNodeInformation = 13,
+            Ctrl_Cmd_ReplicationSend = 14,
+            Ctrl_Cmd_CreateButton = 15,
+            Ctrl_Cmd_DeleteButton = 16,
+            Ctrl_Cmd_count
+        };
+        Q_ENUM(QTOZW_Notification_Controller_Cmd);
+    };
+
+Q_DECLARE_METATYPE(NotificationTypes::QTOZW_Notification_Code)
+
+inline QDataStream &operator<<(QDataStream &ds, const NotificationTypes::QTOZW_Notification_Code &obj) {
+    ds << static_cast<qint32>(obj);
+    return ds;
+}
+
+inline QDataStream &operator>>(QDataStream &ds, NotificationTypes::QTOZW_Notification_Code &obj) {
+    ds >> obj;
+    return ds;
+}
+
+Q_DECLARE_METATYPE(NotificationTypes::QTOZW_Notification_User)
+
+inline QDataStream &operator<<(QDataStream &ds, const NotificationTypes::QTOZW_Notification_User &obj) {
+    ds << static_cast<qint32>(obj);
+    return ds;
+}
+
+inline QDataStream &operator>>(QDataStream &ds, NotificationTypes::QTOZW_Notification_User &obj) {
+    ds >> obj;
+    return ds;
+}
+
+Q_DECLARE_METATYPE(NotificationTypes::QTOZW_Notification_Controller_Error)
+
+
+inline QDataStream &operator<<(QDataStream &ds, const NotificationTypes::QTOZW_Notification_Controller_Error &obj) {
+    ds << static_cast<qint32>(obj);
+    return ds;
+}
+
+inline QDataStream &operator>>(QDataStream &ds, NotificationTypes::QTOZW_Notification_Controller_Error &obj) {
+    ds >> obj;
+    return ds;
+}
+
+Q_DECLARE_METATYPE(NotificationTypes::QTOZW_Notification_Controller_State)
+
+inline QDataStream &operator<<(QDataStream &ds, const NotificationTypes::QTOZW_Notification_Controller_State &obj) {
+    ds << static_cast<qint32>(obj);
+    return ds;
+}
+
+inline QDataStream &operator>>(QDataStream &ds, NotificationTypes::QTOZW_Notification_Controller_State &obj) {
+    ds >> obj;
+    return ds;
+}
+
+Q_DECLARE_METATYPE(NotificationTypes::QTOZW_Notification_Controller_Cmd)
+
+inline QDataStream &operator<<(QDataStream &ds, const NotificationTypes::QTOZW_Notification_Controller_Cmd &obj) {
+    ds << static_cast<qint32>(obj);
+    return ds;
+}
+
+inline QDataStream &operator>>(QDataStream &ds, NotificationTypes::QTOZW_Notification_Controller_Cmd &obj) {
+    ds >> obj;
+    return ds;
+}
+
 
 #endif // QTOZW_PODS_H

@@ -82,9 +82,9 @@ class QTOZWManager {
     SIGNAL(driverAllNodesQueriedSomeDead())
     SIGNAL(driverAllNodesQueried())
     SIGNAL(driverAwakeNodesQueried())
-    SIGNAL(controllerCommand(quint8 command))
-//    SIGNAL(ozwNotification(OpenZWave::Notification::NotificationCode event))
-// SIGNAL(ozwUserAlert(OpenZWave::Notification::UserAlertNotification event))
+    SIGNAL(controllerCommand(quint8 node, NotificationTypes::QTOZW_Notification_Controller_Cmd command, NotificationTypes::QTOZW_Notification_Controller_State state, NotificationTypes::QTOZW_Notification_Controller_Error error))
+    SIGNAL(ozwNotification(quint8 node, NotificationTypes::QTOZW_Notification_Code event))
+    SIGNAL(ozwUserAlert(quint8 node, NotificationTypes::QTOZW_Notification_User event, quint8 retry))
     SIGNAL(manufacturerSpecificDBReady())
 
     SIGNAL(starting());

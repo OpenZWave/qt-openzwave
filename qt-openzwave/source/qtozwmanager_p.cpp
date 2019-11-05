@@ -1363,19 +1363,25 @@ void QTOZWManager_Internal::pvt_driverAwakeNodesQueried()
     qCDebug(notifications) << "Notification pvt_driverAwakeNodesQueried";
     emit this->driverAllNodesQueried();
 }
-void QTOZWManager_Internal::pvt_controllerCommand(quint8 command)
+void QTOZWManager_Internal::pvt_controllerCommand(quint8 node, OpenZWave::Driver::ControllerCommand cmd, OpenZWave::Driver::ControllerState state, OpenZWave::Driver::ControllerError error)
 {
-    qCDebug(notifications) << "Notification pvt_controllerCommand " << command;
-    emit this->controllerCommand(command);
+    NotificationTypes::QTOZW_Notification_Controller_Cmd qtozwcmd = static_cast<NotificationTypes::QTOZW_Notification_Controller_Cmd>(cmd);
+    NotificationTypes::QTOZW_Notification_Controller_State qtozwstate = static_cast<NotificationTypes::QTOZW_Notification_Controller_State>(state);
+    NotificationTypes::QTOZW_Notification_Controller_Error qtozwerror = static_cast<NotificationTypes::QTOZW_Notification_Controller_Error>(error);
+    qCDebug(notifications) << "Notification pvt_controllerCommand " << cmd << state << error;
+    emit this->controllerCommand(node, qtozwcmd, qtozwstate, qtozwerror );
 }
-void QTOZWManager_Internal::pvt_ozwNotification(OpenZWave::Notification::NotificationCode event)
+void QTOZWManager_Internal::pvt_ozwNotification(quint8 node, OpenZWave::Notification::NotificationCode event)
 {
-    qCDebug(notifications) << "Notification pvt_ozwNotification" << event;
-
+    NotificationTypes::QTOZW_Notification_Code qtozwevent = static_cast<NotificationTypes::QTOZW_Notification_Code>(event);
+    qCDebug(notifications) << "Notification pvt_ozwNotification" << qtozwevent;
+    emit this->ozwNotification(node, qtozwevent);
 }
-void QTOZWManager_Internal::pvt_ozwUserAlert(OpenZWave::Notification::UserAlertNotification event)
+void QTOZWManager_Internal::pvt_ozwUserAlert(quint8 node, OpenZWave::Notification::UserAlertNotification event, quint8 retry)
 {
-    qCDebug(notifications) << "Notification pvt_ozwUserAlert"  << event;
+    NotificationTypes::QTOZW_Notification_User qtozwuser = static_cast<NotificationTypes::QTOZW_Notification_User>(event);
+    qCDebug(notifications) << "Notification pvt_ozwUserAlert"  << qtozwuser;
+    emit this->ozwUserAlert(node, qtozwuser, retry);
 
 }
 void QTOZWManager_Internal::pvt_manufacturerSpecificDBReady()
