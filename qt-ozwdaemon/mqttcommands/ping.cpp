@@ -3,7 +3,7 @@
 MqttCommand_Ping::MqttCommand_Ping(QObject *parent) :
     MqttCommand(parent)
 {
-    this->m_requiredFields << "ping";
+    this->m_requiredStringFields << "ping";
 }
 MqttCommand* MqttCommand_Ping::Create(QObject *parent) {
     return new MqttCommand_Ping(parent);

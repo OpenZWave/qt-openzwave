@@ -11,7 +11,7 @@ CONFIG -= app_bundle
 # any Qt feature that has been marked deprecated (the exact warnings
 # depend on your compiler). Please consult the documentation of the
 # deprecated API in order to know how to port your code away from it.
-DEFINES += QT_DEPRECATED_WARNINGS
+DEFINES += QT_DEPRECATED_WARNINGS QT_MESSAGELOGCONTEXT 
 
 # You can also make your code fail to compile if it uses deprecated APIs.
 # In order to do so, uncomment the following line.
@@ -38,7 +38,6 @@ qtHaveModule(mqtt) {
         	mqttcommands/healNetworkNode.cpp \
 	        mqttcommands/healNetwork.cpp \
         	mqttcommands/addNode.cpp \
-	        mqttcommands/addNodeSecure.cpp \
         	mqttcommands/removeNode.cpp \
 	        mqttcommands/removeFailedNode.cpp \
         	mqttcommands/hasNodeFailed.cpp \
@@ -71,7 +70,6 @@ qtHaveModule(mqtt) {
     		mqttcommands/healNetworkNode.h \
     		mqttcommands/healNetwork.h \
     		mqttcommands/addNode.h \
-    		mqttcommands/addNodeSecure.h \
     		mqttcommands/removeNode.h \
     		mqttcommands/removeFailedNode.h \
     		mqttcommands/hasNodeFailed.h \
@@ -113,6 +111,7 @@ unix {
     LIBS += -lresolv -L../qt-openzwave/ -lqt-openzwave -L../qt-openzwavedatabase/ -lqt-openzwavedatabase
     INCLUDEPATH += ../qt-openzwavedatabase/include/
     QMAKE_CXXFLAGS += -g1
+    QMAKE_LFLAGS += -rdynamic
 }
 win32 {
     LIBS += -lDnsapi -L../qt-openzwave/$$BUILDTYPE/ -lqt-openzwave1

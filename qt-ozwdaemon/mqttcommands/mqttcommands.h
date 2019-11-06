@@ -28,7 +28,10 @@ protected:
     MqttCommand(QObject *parent = nullptr);
     QTOZWManager *getOZWManager();
     mqttpublisher *getMqttPublisher();
-    QVector<QString> m_requiredFields;
+    bool checkNode(QJsonDocument, QString);
+    QVector<QString> m_requiredStringFields;
+    QVector<QString> m_requiredIntFields;
+    QVector<QString> m_requiredBoolFields;
 
 private:
     QMqttSubscription *m_subscription;

@@ -10,7 +10,6 @@
 #include "qtozwdaemon.h"
 #ifdef HAVE_MQTT
 #include "mqttpublisher.h"
-#warning "MQTT Enabled"
 #endif
 
 void handler(int sig) {

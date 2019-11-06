@@ -14,7 +14,6 @@
 #include "mqttcommands/healNetworkNode.h"
 #include "mqttcommands/healNetwork.h"
 #include "mqttcommands/addNode.h"
-#include "mqttcommands/addNodeSecure.h"
 #include "mqttcommands/removeNode.h"
 #include "mqttcommands/removeFailedNode.h"
 #include "mqttcommands/hasNodeFailed.h"
@@ -30,6 +29,7 @@
 #include "mqttcommands/downloadLatestConfigFileRevision.h"
 #include "mqttcommands/downloadLatestMFSRevision.h"
 
+Q_LOGGING_CATEGORY(ozwmc, "ozw.mqtt.commands");
 
 MqttCommand::MqttCommand(QObject *parent) :
     QObject(parent)
@@ -38,7 +38,7 @@ MqttCommand::MqttCommand(QObject *parent) :
 
 void MqttCommand::Setup(QMqttSubscription *subscription) {
     this->m_subscription = subscription;
-    qDebug() << "Subscription Setup for " << this->m_subscription->topic();
+    qCDebug(ozwmc) << "Subscription Setup for " << this->m_subscription->topic();
     connect(this->m_subscription, &QMqttSubscription::messageReceived, this, &MqttCommand::messageReceived);
     connect(this, &MqttCommand::sendCommandUpdate, getMqttPublisher(), &mqttpublisher::sendCommandUpdate);
 }
@@ -59,33 +59,87 @@ mqttpublisher *MqttCommand::getMqttPublisher() {
 }
 
 void MqttCommand::messageReceived(QMqttMessage msg) {
-    qDebug() << "Got "<< msg.topic().name()<< " Message: " << msg.payload();
+    qCDebug(ozwmc) << "Got "<< msg.topic().name()<< " Message: " << msg.payload();
     QJsonParseError jerrormsg;
     QJsonDocument jmsg = QJsonDocument::fromJson(msg.payload(), &jerrormsg);
     if (jmsg.isNull()) {
         QJsonObject js;
         js["Error"] = jerrormsg.errorString();
         emit sendCommandUpdate(GetCommand(), js);
-        qWarning() << "Json Parse Error for " << GetCommand() << ": " << jerrormsg.errorString() << ": " << msg.payload();
+        qCWarning(ozwmc) << "Json Parse Error for " << GetCommand() << ": " << jerrormsg.errorString() << ": " << msg.payload();
         return;     
     }
     QString field;
-    foreach (field, this->m_requiredFields) {
+    foreach (field, this->m_requiredIntFields) {
         if (jmsg[field].isUndefined()) {
             QJsonObject js;
             js["Error"]  = QString("Missing Field ").append(field);
             emit sendCommandUpdate(GetCommand(), js);
-            qWarning() << "Missing Field for " << GetCommand() << ": " << field << ": " << msg.payload();
+            qCWarning(ozwmc) << "Missing Field for " << GetCommand() << ": " << field << ": " << msg.payload();
+            return;
+        }
+        if (!jmsg[field].isDouble()) {
+            QJsonObject js;
+            js["Error"]  = QString("Incorrect Field Type: ").append(field).append(": Not Integer");
+            emit sendCommandUpdate(GetCommand(), js);
+            qCWarning(ozwmc) << "Incorrect Field Type (Int) for " << GetCommand() << ": " << field << ": " << jmsg[field].type() << msg.payload();
             return;
         }
     }
+    foreach (field, this->m_requiredStringFields) {
+        if (jmsg[field].isUndefined()) {
+            QJsonObject js;
+            js["Error"]  = QString("Missing Field ").append(field);
+            emit sendCommandUpdate(GetCommand(), js);
+            qCWarning(ozwmc) << "Missing Field for " << GetCommand() << ": " << field << ": " << msg.payload();
+            return;
+        }
+        if (!jmsg[field].isString()) {
+            QJsonObject js;
+            js["Error"]  = QString("Incorrect Field Type: ").append(field).append(": Not String");
+            emit sendCommandUpdate(GetCommand(), js);
+            qCWarning(ozwmc) << "Incorrect Field Type (String) for " << GetCommand() << ": " << field << ": " << jmsg[field].type() << msg.payload();
+            return;
+        }
+    }
+    foreach (field, this->m_requiredBoolFields) {
+        if (jmsg[field].isUndefined()) {
+            QJsonObject js;
+            js["Error"]  = QString("Missing Field ").append(field);
+            emit sendCommandUpdate(GetCommand(), js);
+            qCWarning(ozwmc) << "Missing Field for " << GetCommand() << ": " << field << ": " << msg.payload();
+            return;
+        }
+        if (!jmsg[field].isBool()) {
+            QJsonObject js;
+            js["Error"]  = QString("Incorrect Field Type: ").append(field).append(": Not Bool");
+            emit sendCommandUpdate(GetCommand(), js);
+            qCWarning(ozwmc) << "Incorrect Field Type (Bool) for " << GetCommand() << ": " << field << ": " << jmsg[field].type() << msg.payload();
+            return;
+        }
+    }
+
     if (this->processMessage(jmsg)) {
-        qInfo() << "Processed Message for " << GetCommand() << ": " << msg.payload();
+        qCInfo(ozwmc) << "Processed Message for " << GetCommand() << ": " << msg.payload();
         return;
     } else {
-        qWarning() << "Message Processing for " << GetCommand() << " failed: " << msg.payload();
+        qCWarning(ozwmc) << "Message Processing for " << GetCommand() << " failed: " << msg.payload();
     }
 }
+
+bool MqttCommand::checkNode(QJsonDocument jmsg, QString field) {
+    quint8 node = jmsg[field].toInt();
+    if (node == 0 || node == 255) {
+        qCWarning(ozwmc) << "Invalid Node in field " << field << " for message " << jmsg.toJson();
+        return false;
+    }
+    if (this->getMqttPublisher()->isValidNode(node)) {
+        return true;
+    }
+    qCWarning(ozwmc) << "Invalid Node in field " << field << " for message " << jmsg.toJson();
+    return false;
+}
+
 
 
 
@@ -96,7 +150,7 @@ MqttCommands::MqttCommands(QObject *parent) :
 }
 
 void MqttCommands::Register(QString command, pfnCreateCommand_t _create) {
-    qDebug() << "Registering Command " << command;
+    qCDebug(ozwmc) << "Registering Command " << command;
     this->m_commands.insert(command, _create);
 }
 
@@ -116,7 +170,6 @@ void MqttCommands::setupCommands() {
     this->Register(MqttCommand_HealNetworkNode::StaticGetCommand(), &MqttCommand_HealNetworkNode::Create);
     this->Register(MqttCommand_HealNetwork::StaticGetCommand(), &MqttCommand_HealNetwork::Create);
     this->Register(MqttCommand_AddNode::StaticGetCommand(), &MqttCommand_AddNode::Create);
-    this->Register(MqttCommand_AddNodeSecure::StaticGetCommand(), &MqttCommand_AddNodeSecure::Create);
     this->Register(MqttCommand_RemoveNode::StaticGetCommand(), &MqttCommand_RemoveNode::Create);
     this->Register(MqttCommand_RemoveFailedNode::StaticGetCommand(), &MqttCommand_RemoveFailedNode::Create);
     this->Register(MqttCommand_HasNodeFailed::StaticGetCommand(), &MqttCommand_HasNodeFailed::Create);
@@ -136,7 +189,7 @@ void MqttCommands::setupCommands() {
 void MqttCommands::setupSubscriptions(QMqttClient *mqttclient, QString topTopic) {
     QMap<QString, pfnCreateCommand_t>::iterator it;
     for (it = this->m_commands.begin(); it != this->m_commands.end(); it++) {
-        qDebug() << "Creating Subscription for " << it.key();
+        qCDebug(ozwmc) << "Creating Subscription for " << it.key();
         pfnCreateCommand_t cmd = it.value();
         MqttCommand *command = cmd(this->parent());
         QMqttSubscription *subscription = mqttclient->subscribe(QMqttTopicFilter(topTopic.arg(it.key().toLower())));

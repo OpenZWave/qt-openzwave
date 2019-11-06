@@ -21,13 +21,14 @@ class MqttCommands;
 #define MQTT_OZW_COMMAND_TOPIC "command/%1/"
 #define MQTT_OZW_RESPONSE_TOPIC "event/%1/"
 
+
 class mqttNodeModel : public QTOZW_Nodes {
     Q_OBJECT
 public:
     explicit mqttNodeModel(QObject *parent = nullptr);
-
     QVariant getNodeData(quint8, NodeColumns);
     bool populateJsonObject(QJsonObject *, quint8, QTOZWManager *);
+    bool isValidNode(quint8);
 };
 
 class mqttValueIDModel : public QTOZW_ValueIds {
@@ -45,7 +46,9 @@ class mqttpublisher : public QObject
 public:
     explicit mqttpublisher(QObject *parent = nullptr);
     void setOZWDaemon(qtozwdaemon *ozwdaemon);
-
+    QTOZWManager *getQTOZWManager();
+    void sendCommandUpdate(QString, QJsonObject);
+    bool isValidNode(quint8 node);
 signals:
 
 public slots:
@@ -79,11 +82,6 @@ public slots:
     void started(quint32 homeID);
     void stopped(quint32 homeID);
 //    void error(QTOZWErrorCodes errorcode);
-
-
-    QTOZWManager *getQTOZWManager();
-    void sendCommandUpdate(QString, QJsonObject);
-
 
 private slots:
     void updateLogStateChange();

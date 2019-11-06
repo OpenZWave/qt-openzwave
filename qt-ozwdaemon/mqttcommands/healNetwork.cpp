@@ -3,7 +3,7 @@
 MqttCommand_HealNetwork::MqttCommand_HealNetwork(QObject *parent) :
     MqttCommand(parent)
 {
-    this->m_requiredFields << "doreturnroute";
+    this->m_requiredBoolFields << "doreturnroute";
 }
 MqttCommand* MqttCommand_HealNetwork::Create(QObject *parent) {
     return new MqttCommand_HealNetwork(parent);

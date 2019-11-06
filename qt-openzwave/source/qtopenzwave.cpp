@@ -53,7 +53,8 @@ QTOpenZwave::QTOpenZwave
     qRegisterMetaTypeStreamOperators<NotificationTypes::QTOZW_Notification_Controller_Cmd>("NotificationTypes::QTOZW_Notification_Controller_Cmd");
 
 
-    qSetMessagePattern("%{category} %{message}");
+//    qSetMessagePattern("[%{time yyyyMMdd h:mm:ss.zzz t}] %{category} %{file}:%{line}:%{function}: %{message}");
+    qSetMessagePattern("[%{time yyyyMMdd h:mm:ss.zzz t}] [%{category}] [%{type}]: %{message}");
 }
 
 QTOZWManager *QTOpenZwave::GetManager

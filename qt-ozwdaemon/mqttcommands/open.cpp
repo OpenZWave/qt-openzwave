@@ -3,7 +3,7 @@
 MqttCommand_Open::MqttCommand_Open(QObject *parent) :
     MqttCommand(parent)
 {
-    this->m_requiredFields << "serialport";
+    this->m_requiredStringFields << "serialport";
 }
 MqttCommand* MqttCommand_Open::Create(QObject *parent) {
     return new MqttCommand_Open(parent);

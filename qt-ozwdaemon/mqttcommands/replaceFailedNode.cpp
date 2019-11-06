@@ -3,13 +3,20 @@
 MqttCommand_ReplaceFailedNode::MqttCommand_ReplaceFailedNode(QObject *parent) :
     MqttCommand(parent)
 {
-    this->m_requiredFields << "node";
+    this->m_requiredIntFields << "node";
 }
 MqttCommand* MqttCommand_ReplaceFailedNode::Create(QObject *parent) {
     return new MqttCommand_ReplaceFailedNode(parent);
 }
 
 bool MqttCommand_ReplaceFailedNode::processMessage(QJsonDocument msg) {
+    if (!this->checkNode(msg, "node")) {
+        QJsonObject js;
+        js["status"] = "failed";
+        js["Error"] = "Invalid Node Number";
+        emit sendCommandUpdate(GetCommand(), js);
+        return false;
+    }
     QTOZWManager *mgr = getOZWManager();
     if (mgr->replaceFailedNode(msg["node"].toInt())) {
         QJsonObject js;

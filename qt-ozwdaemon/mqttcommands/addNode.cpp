@@ -3,6 +3,7 @@
 MqttCommand_AddNode::MqttCommand_AddNode(QObject *parent) :
     MqttCommand(parent)
 {
+    this->m_requiredBoolFields << "secure";
 }
 MqttCommand* MqttCommand_AddNode::Create(QObject *parent) {
     return new MqttCommand_AddNode(parent);
@@ -11,7 +12,7 @@ MqttCommand* MqttCommand_AddNode::Create(QObject *parent) {
 bool MqttCommand_AddNode::processMessage(QJsonDocument msg) {
     Q_UNUSED(msg);
     QTOZWManager *mgr = getOZWManager();
-    if (mgr->addNode(false)) {
+    if (mgr->addNode(msg["secure"].toBool())) {
         QJsonObject js;
         js["status"] = "ok";
         emit sendCommandUpdate(GetCommand(), js);

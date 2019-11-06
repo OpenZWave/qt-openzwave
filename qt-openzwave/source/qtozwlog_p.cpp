@@ -92,12 +92,12 @@ void QTOZW_Log_Internal::Write(OpenZWave::LogLevel _level, uint8 const _nodeId, 
         }
         case OpenZWave::LogLevel_Warning: {
             qtozwlevel = LogLevels::Warning;
-            qCCritical(libopenzwave) << "Warning - Node:" << _nodeId << lineBuf;
+            qCWarning(libopenzwave) << "Warning - Node:" << _nodeId << lineBuf;
             break;
         }
         case OpenZWave::LogLevel_Alert: {
             qtozwlevel = LogLevels::Alert;
-            qCCritical(libopenzwave) << "Alert - Node:" << _nodeId << lineBuf;
+            qCWarning(libopenzwave) << "Alert - Node:" << _nodeId << lineBuf;
             break;
         }
         case OpenZWave::LogLevel_Info: {

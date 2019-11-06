@@ -3,7 +3,7 @@
 MqttCommand_TestNetwork::MqttCommand_TestNetwork(QObject *parent) :
     MqttCommand(parent)
 {
-    this->m_requiredFields << "count";
+    this->m_requiredIntFields << "count";
 }
 MqttCommand* MqttCommand_TestNetwork::Create(QObject *parent) {
     return new MqttCommand_TestNetwork(parent);
