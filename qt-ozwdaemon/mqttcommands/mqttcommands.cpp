@@ -28,6 +28,7 @@
 #include "mqttcommands/checkLatestMFSRevision.h"
 #include "mqttcommands/downloadLatestConfigFileRevision.h"
 #include "mqttcommands/downloadLatestMFSRevision.h"
+#include "mqttcommands/setValue.h"
 
 Q_LOGGING_CATEGORY(ozwmc, "ozw.mqtt.commands");
 
@@ -140,7 +141,26 @@ bool MqttCommand::checkNode(QJsonDocument jmsg, QString field) {
     return false;
 }
 
+bool MqttCommand::checkValue(QJsonDocument jmsg, QString field) {
+    quint64 vidKey = jmsg[field].toInt();
+    if (vidKey == 0) {
+        qCWarning(ozwmc) << "Invalid VidKey in field " << field << " for message " << jmsg.toJson();
+        return false;
+    }
+    if (this->getMqttPublisher()->isValidValueID(vidKey)) {
+        return true;
+    }
+    qCWarning(ozwmc) << "Invalid VidKey in field " << field << " for message " << jmsg.toJson();
+    return false;
+}
 
+QVariant MqttCommand::getValueData(quint64 vidKey, QTOZW_ValueIds::ValueIdColumns col) {
+    return this->getMqttPublisher()->getValueData(vidKey, col);
+}
+
+bool MqttCommand::setValue(quint64 vidKey, QVariant data) {
+    return this->getMqttPublisher()->setValue(vidKey, data);
+}
 
 
 MqttCommands::MqttCommands(QObject *parent) :
@@ -184,6 +204,7 @@ void MqttCommands::setupCommands() {
     this->Register(MqttCommand_CheckLatestMFSRevision::StaticGetCommand(), &MqttCommand_CheckLatestMFSRevision::Create);
     this->Register(MqttCommand_DownloadLatestConfigFileRevision::StaticGetCommand(), &MqttCommand_DownloadLatestConfigFileRevision::Create);
     this->Register(MqttCommand_DownloadLatestMFSRevision::StaticGetCommand(), &MqttCommand_DownloadLatestMFSRevision::Create);
+    this->Register(MqttCommand_SetValue::StaticGetCommand(), &MqttCommand_SetValue::Create);
 }
 
 void MqttCommands::setupSubscriptions(QMqttClient *mqttclient, QString topTopic) {

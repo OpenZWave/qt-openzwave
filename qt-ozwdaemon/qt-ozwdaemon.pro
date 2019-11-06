@@ -51,12 +51,13 @@ qtHaveModule(mqtt) {
         	mqttcommands/checkLatestConfigFileRevision.cpp \
 	        mqttcommands/checkLatestMFSRevision.cpp \
         	mqttcommands/downloadLatestConfigFileRevision.cpp \
-	        mqttcommands/downloadLatestMFSRevision.cpp
+	        mqttcommands/downloadLatestMFSRevision.cpp \
+			mqttcommands/setValue.cpp
 
 	HEADERS += mqttpublisher.h \
-		mqttcommands/mqttcommands.h \
-		mqttcommands/ping.h \
-		mqttcommands/open.h \
+			mqttcommands/mqttcommands.h \
+			mqttcommands/ping.h \
+			mqttcommands/open.h \
     		mqttcommands/refreshnodeinfo.h \
     		mqttcommands/requestNodeState.h \
     		mqttcommands/requestNodeDynamic.h \
@@ -74,7 +75,7 @@ qtHaveModule(mqtt) {
     		mqttcommands/removeFailedNode.h \
     		mqttcommands/hasNodeFailed.h \
     		mqttcommands/requestNodeNeighborUpdate.h \
- 		mqttcommands/assignReturnRoute.h \
+ 			mqttcommands/assignReturnRoute.h \
     		mqttcommands/deleteAllReturnRoute.h \
     		mqttcommands/sendNodeInformation.h \
     		mqttcommands/replaceFailedNode.h \
@@ -83,7 +84,8 @@ qtHaveModule(mqtt) {
     		mqttcommands/checkLatestConfigFileRevision.h \
     		mqttcommands/CheckLatestMFSRevision.h \
     		mqttcommands/downloadLatestConfigFileRevision.h \
-    		mqttcommands/downloadLatestMFSRevision.h
+    		mqttcommands/downloadLatestMFSRevision.h \
+			mqttcommands/setValue.h
 } else {
 	warning("MQTT Qt Module Not Found. Not Building MQTT Client Capabilities")
 }

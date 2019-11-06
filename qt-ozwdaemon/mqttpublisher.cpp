@@ -89,6 +89,12 @@ QVariant mqttValueIDModel::getValueData(quint64 vidKey, ValueIdColumns col) {
     return this->data(this->index(row, col), Qt::DisplayRole);
 }
 
+bool mqttValueIDModel::isValidValueID(quint64 vidKey) {
+    if (this->getValueRow(vidKey) == -1) 
+        return false;
+    return true;
+}
+
 
 bool mqttValueIDModel::populateJsonObject(QJsonObject *jsonobject, quint64 vidKey, QTOZWManager *mgr) {
     for (int i = 0; i < ValueIdColumns::ValueIdCount; i++) {
@@ -143,8 +149,6 @@ bool mqttValueIDModel::populateJsonObject(QJsonObject *jsonobject, quint64 vidKe
 
         }
     }
-
-
     return true;
 }
 
@@ -228,6 +232,10 @@ QJsonValue mqttValueIDModel::encodeValue(quint64 vidKey) {
         }
     }
     return value;
+}
+
+bool mqttValueIDModel::setData(quint64 vidKey, QVariant data) {
+    return QTOZW_ValueIds::setData(this->index(this->getValueRow(vidKey), QTOZW_ValueIds::ValueIdColumns::Value), data, Qt::EditRole);
 }
 
 
@@ -343,6 +351,16 @@ void mqttpublisher::doStats() {
 
 bool mqttpublisher::isValidNode(quint8 node) {
     return this->m_nodeModel->isValidNode(node);
+}
+bool mqttpublisher::isValidValueID(quint64 vidKey) {
+    return this->m_valueModel->isValidValueID(vidKey);
+}
+QVariant mqttpublisher::getValueData(quint64 vidKey, mqttValueIDModel::ValueIdColumns col) {
+    return this->m_valueModel->getValueData(vidKey, col);
+}
+
+bool mqttpublisher::setValue(quint64 vidKey, QVariant data) {
+    return this->m_valueModel->setData(vidKey, data);
 }
 
 

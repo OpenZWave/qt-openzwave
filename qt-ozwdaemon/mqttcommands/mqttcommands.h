@@ -9,6 +9,7 @@
 
 #include <qt-openzwave/qtopenzwave.h>
 #include <qt-openzwave/qtozwmanager.h>
+#include <qt-openzwave/qtozwvalueidmodel.h>
 #include "mqttpublisher.h"
 
 
@@ -29,6 +30,9 @@ protected:
     QTOZWManager *getOZWManager();
     mqttpublisher *getMqttPublisher();
     bool checkNode(QJsonDocument, QString);
+    bool checkValue(QJsonDocument, QString);
+    QVariant getValueData(quint64, QTOZW_ValueIds::ValueIdColumns);
+    bool setValue(quint64, QVariant);
     QVector<QString> m_requiredStringFields;
     QVector<QString> m_requiredIntFields;
     QVector<QString> m_requiredBoolFields;

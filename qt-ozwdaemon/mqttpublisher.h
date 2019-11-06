@@ -38,6 +38,8 @@ public:
     QVariant getValueData(quint64, ValueIdColumns);
     bool populateJsonObject(QJsonObject *, quint64, QTOZWManager *);
     QJsonValue encodeValue(quint64);
+    bool isValidValueID(quint64);
+    bool setData(quint64, QVariant);
 };
 
 class mqttpublisher : public QObject
@@ -49,6 +51,9 @@ public:
     QTOZWManager *getQTOZWManager();
     void sendCommandUpdate(QString, QJsonObject);
     bool isValidNode(quint8 node);
+    bool isValidValueID(quint64 vidKey);
+    QVariant getValueData(quint64, mqttValueIDModel::ValueIdColumns);
+    bool setValue(quint64, QVariant);
 signals:
 
 public slots:
