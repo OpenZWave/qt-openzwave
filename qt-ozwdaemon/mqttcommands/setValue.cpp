@@ -161,6 +161,14 @@ bool MqttCommand_SetValue::processMessage(QJsonDocument msg) {
             break;
         }
     }
+    if (data.isNull()) {
+        qCWarning(ozwmcsv) << "Data is undefined for setValue... Json Conversion Failed?";
+        QJsonObject js;
+        js["status"] = "failed";
+        js["Error"] = "JSON Conversion Failed";
+        emit sendCommandUpdate(GetCommand(), js);
+        return false;
+    }
     if (this->setValue(vidKey, data)) {
         QJsonObject js;
         js["status"] = "ok";
