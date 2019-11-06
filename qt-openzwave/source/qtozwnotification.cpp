@@ -214,7 +214,10 @@ void OZWNotification::processNotification
 
         case OpenZWave::Notification::Type_UserAlerts:
         {
-            emit Get()->ozwUserAlert(_notification->GetNodeId(), static_cast<OpenZWave::Notification::UserAlertNotification>(_notification->GetUserAlertType()), _notification->GetRetry());
+            quint8 retry = 0;
+            if (static_cast<OpenZWave::Notification::UserAlertNotification>(_notification->GetUserAlertType()) == OpenZWave::Notification::Alert_ApplicationStatus_Retry)
+                retry = _notification->GetRetry();
+            emit Get()->ozwUserAlert(_notification->GetNodeId(), static_cast<OpenZWave::Notification::UserAlertNotification>(_notification->GetUserAlertType()), retry);
             break;
         }
 
