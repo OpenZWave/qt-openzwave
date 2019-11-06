@@ -7,7 +7,7 @@ class MqttCommand_HasNodeFailed : public MqttCommand {
     Q_OBJECT
 public:
     static MqttCommand *Create(QObject *parent = nullptr);
-    static QString StaticGetCommand() { return "HadNodeFailed";};
+    static QString StaticGetCommand() { return "HasNodeFailed";};
     QString GetCommand() override { return StaticGetCommand(); };
     bool processMessage(QJsonDocument) override;
 private: 

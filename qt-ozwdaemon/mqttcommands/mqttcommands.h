@@ -12,6 +12,7 @@
 #include "mqttpublisher.h"
 
 
+
 class mqttpublisher;
 
 class MqttCommand : public QObject {

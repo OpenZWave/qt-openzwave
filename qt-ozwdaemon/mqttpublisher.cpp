@@ -1,6 +1,7 @@
 #include <QDateTime>
 
 #include "mqttpublisher.h"
+#include "mqttcommands/mqttcommands.h"
 
 mqttNodeModel::mqttNodeModel(QObject *parent)
 {
@@ -122,7 +123,7 @@ bool mqttValueIDModel::populateJsonObject(QJsonObject *jsonobject, quint64 vidKe
             } else if (static_cast<QMetaType::Type>(data.type()) == QMetaType::ULongLong) {
                 jsonobject->insert(metaEnum.valueToKey(i), static_cast<qint64>(data.toULongLong()));
             } else {
-                qWarning() << "Can't Convert " << data.type() << "(" << metaEnum.valueToKey(i) << ") to store in JsonObject: " << vidKey;
+                qWarning() << "mqttValueIDModel::populateJsonObject: Can't Convert " << data.type() << "(" << metaEnum.valueToKey(i) << ") to store in JsonObject: " << vidKey;
             }
             break;
         }
@@ -137,22 +138,81 @@ bool mqttValueIDModel::populateJsonObject(QJsonObject *jsonobject, quint64 vidKe
 QJsonValue mqttValueIDModel::encodeValue(quint64 vidKey) {
     QJsonValue value;
     QVariant data = this->getValueData(vidKey, mqttValueIDModel::ValueIdColumns::Value);
-    if (static_cast<QMetaType::Type>(data.type()) == QMetaType::QString) {
-        value = data.toString();
-    } else if (static_cast<QMetaType::Type>(data.type()) == QMetaType::Bool) {
-        value = data.toBool();
-    } else if (static_cast<QMetaType::Type>(data.type()) == QMetaType::Int) {
-        value = data.toInt();
-    } else if (static_cast<QMetaType::Type>(data.type()) == QMetaType::UInt) {
-        value = data.toInt();
-    } else if (static_cast<QMetaType::Type>(data.type()) == QMetaType::Float) {
-        value = data.toDouble();
-    } else if (static_cast<QMetaType::Type>(data.type()) == QMetaType::ULongLong) {
-        value = static_cast<qint64>(data.toULongLong());
-    } else if (static_cast<QMetaType::Type>(data.type())  == QMetaType::Short) {
-        value = static_cast<qint16>(data.toInt());
-    } else {
-        qWarning() << "Can't Convert " << data.type() << " to store in JsonObject: " << vidKey << this->getValueData(vidKey, mqttValueIDModel::ValueIdColumns::Label).toString() << this->getValueData(vidKey, mqttValueIDModel::ValueIdColumns::Type);
+    QTOZW_ValueIds::ValueIdTypes type = this->getValueData(vidKey, mqttValueIDModel::ValueIdColumns::Type).value<QTOZW_ValueIds::ValueIdTypes>();
+    switch (type) {
+        case QTOZW_ValueIds::ValueIdTypes::BitSet: {
+            QJsonArray bitsets;
+            QTOZW_ValueIDBitSet vidbs = data.value<QTOZW_ValueIDBitSet>();
+            int size = vidbs.mask.size();
+            for (int i = 0; i < size; i++) {
+                if (vidbs.mask[i] == 1) {
+                    QJsonObject bitset;
+                    bitset["Label"] = vidbs.label[i];
+                    bitset["Help"] = vidbs.help[i];
+                    bitset["Value"] = static_cast<bool>(vidbs.values[i]);
+                    bitset["Position"] = i;
+                    bitsets.push_back(bitset);
+                }
+            }
+            value = bitsets;
+            break;
+        }
+        case QTOZW_ValueIds::ValueIdTypes::Bool: {
+            value = data.toBool();
+            break;
+        }
+        case QTOZW_ValueIds::ValueIdTypes::Button: {
+            value = data.toBool();
+            break;
+        }
+        case QTOZW_ValueIds::ValueIdTypes::Byte: {
+            value = data.toInt();
+            break;
+        }
+        case QTOZW_ValueIds::ValueIdTypes::Decimal: {
+            value = data.toFloat();
+            break;
+        }
+        case QTOZW_ValueIds::ValueIdTypes::Int:{
+            value = data.toInt();
+            break;
+        }
+        case QTOZW_ValueIds::ValueIdTypes::List: {
+            QTOZW_ValueIDList vidlist = data.value<QTOZW_ValueIDList>();
+            int size = vidlist.values.count();
+            QJsonArray list;
+            for (int i = 0; i < size; i++) {
+                QJsonObject entry;
+                entry["Value"] = static_cast<int>(vidlist.values[i]);
+                entry["Label"] = vidlist.labels[i];
+                list.push_back(entry);
+            }
+            QJsonObject var;
+            var["List"] = list;
+            var["Selected"] = vidlist.selectedItem;
+            value = var;
+            break;
+        }
+        case QTOZW_ValueIds::ValueIdTypes::Raw: {
+            qWarning() << "Raw ValueType not handled in mqttValueIdModel::encodeValue yet";
+            break;
+        }
+        case QTOZW_ValueIds::ValueIdTypes::Schedule: {
+            qWarning() << "Raw ValueType not handled in mqttValueIdModel::encodeValue yet";
+            break;
+        }
+        case QTOZW_ValueIds::ValueIdTypes::Short: {
+            value = data.toInt();
+            break;
+        }
+        case QTOZW_ValueIds::ValueIdTypes::String: {
+            value = data.toString();
+            break;
+        }
+        case QTOZW_ValueIds::ValueIdTypes::TypeCount: {
+            qWarning() << "Unhandled ValueID Type" << type << "in mqttValueIdModel::encodeValue" << vidKey << this->getValueData(vidKey, mqttValueIDModel::ValueIdColumns::Label).toString();
+            break;
+        }
     }
     return value;
 }
@@ -521,7 +581,96 @@ void mqttpublisher::driverAwakeNodesQueried() {
 }
 void mqttpublisher::controllerCommand(quint8 node, NotificationTypes::QTOZW_Notification_Controller_Cmd command, NotificationTypes::QTOZW_Notification_Controller_State state, NotificationTypes::QTOZW_Notification_Controller_Error error) {
     qDebug() << "Publishing Event controllerCommand" << node << command << state << error;
-
+    QJsonObject js;
+    if (node > 0)
+        js["Node"] = node;
+    QMetaEnum metaEnum = QMetaEnum::fromType<NotificationTypes::QTOZW_Notification_Controller_State>();
+    js["State"] = metaEnum.valueToKey(state);
+    if (error != NotificationTypes::QTOZW_Notification_Controller_Error::Ctrl_Error_None) {
+        metaEnum = QMetaEnum::fromType<NotificationTypes::QTOZW_Notification_Controller_Error>();
+        js["Error"] = metaEnum.valueToKey(error);
+    }
+        
+    switch(command) {
+        case NotificationTypes::Ctrl_Cmd_None: {
+            qWarning() << "Got a controllerCommand Event with no Controller Command" << command << state << error;
+            break;
+        }
+        case NotificationTypes::Ctrl_Cmd_AddNode: {
+            this->sendCommandUpdate("AddNode", js);
+            break;
+        }
+        case NotificationTypes::Ctrl_Cmd_AssignReturnRoute: {
+            this->sendCommandUpdate("AssignReturnRoute", js);
+            break;
+        }
+        case NotificationTypes::Ctrl_Cmd_CreateButton: {
+            js["Command"] = QMetaEnum::fromType<NotificationTypes::QTOZW_Notification_Controller_Cmd>().valueToKey(command);
+            this->sendCommandUpdate("ControllerCommand", js);
+            break;
+        }
+        case NotificationTypes::Ctrl_Cmd_CreateNewPrimary: {
+            js["Command"] = QMetaEnum::fromType<NotificationTypes::QTOZW_Notification_Controller_Cmd>().valueToKey(command);
+            this->sendCommandUpdate("ControllerCommand", js);
+            break;
+        }
+        case NotificationTypes::Ctrl_Cmd_DeleteAllReturnRoute: {
+            this->sendCommandUpdate("DeleteAllReturnRoute", js);
+            break;
+        }
+        case NotificationTypes::Ctrl_Cmd_DeleteButton: {
+            js["Command"] = QMetaEnum::fromType<NotificationTypes::QTOZW_Notification_Controller_Cmd>().valueToKey(command);
+            this->sendCommandUpdate("ControllerCommand", js);
+            break;
+        }
+        case NotificationTypes::Ctrl_Cmd_HasNodeFailed: {
+            this->sendCommandUpdate("HasNodeFailed", js);
+            break;
+        }
+        case NotificationTypes::Ctrl_Cmd_ReceiveConfiguration: {
+            js["Command"] = QMetaEnum::fromType<NotificationTypes::QTOZW_Notification_Controller_Cmd>().valueToKey(command);
+            this->sendCommandUpdate("ControllerCommand", js);
+            break;
+        }
+        case NotificationTypes::Ctrl_Cmd_RemoveFailedNode: {
+            this->sendCommandUpdate("RemoveFailedNode", js);
+            break;
+        }
+        case NotificationTypes::Ctrl_Cmd_RemoveNode: {
+            this->sendCommandUpdate("RemoveNode", js);
+            break;
+        }
+        case NotificationTypes::Ctrl_Cmd_ReplaceFailedNode: {
+            this->sendCommandUpdate("ReplaceFailedNode", js);
+            break;
+        }
+        case NotificationTypes::Ctrl_Cmd_ReplicationSend: {
+            js["Command"] = QMetaEnum::fromType<NotificationTypes::QTOZW_Notification_Controller_Cmd>().valueToKey(command);
+            this->sendCommandUpdate("ControllerCommand", js);
+            break;
+        }
+        case NotificationTypes::Ctrl_Cmd_RequestNetworkUpdate: {
+            this->sendCommandUpdate("RequestNetworkUpdate", js);
+            break;
+        }
+        case NotificationTypes::Ctrl_Cmd_RequestNodeNeighborUpdate: {
+            this->sendCommandUpdate("RequestNodeNeighborUpdate", js);
+            break;
+        }
+        case NotificationTypes::Ctrl_Cmd_SendNodeInformation: {
+            this->sendCommandUpdate("SendNodeInformation", js);
+            break;
+        }
+        case NotificationTypes::Ctrl_Cmd_TransferPrimaryRole: {
+            js["Command"] = QMetaEnum::fromType<NotificationTypes::QTOZW_Notification_Controller_Cmd>().valueToKey(command);
+            this->sendCommandUpdate("ControllerCommand", js);
+            break;
+        }
+        case NotificationTypes::Ctrl_Cmd_count: {
+            qWarning() << "Recieved controllerCommand for a unknown Command:" << command;
+            return;
+        }
+    };
 }
 void mqttpublisher::ozwNotification(quint8 node, NotificationTypes::QTOZW_Notification_Code event) {
     qDebug() << "Publishing Event ozwNotification";
