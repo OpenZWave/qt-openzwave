@@ -315,8 +315,8 @@ void mqttpublisher::doStats() {
         nsjson["receivedPackets"] = static_cast<qint64>(ns.receivedPackets); /**< Number of received Packets from the Node */
         nsjson["receivedDupPackets"] = static_cast<qint64>(ns.receivedDupPackets); /**< Number of Duplicate Packets received from the Node */
         nsjson["receivedUnsolicited"] = static_cast<qint64>(ns.receivedUnsolicited); /**< Number of Unsolicited Packets received from the Node */
-        nsjson["lastSentTimeStamp"] = ns.lastSentTimeStamp; /**< TimeStamp of the Last time we sent a packet to the Node */
-        nsjson["lastRecievedTimeStamp"] = ns.lastReceivedTimeStamp; /**< Timestamp of the last time we received a packet from the Node */
+        nsjson["lastSentTimeStamp"] = ns.lastSentTimeStamp.toSecsSinceEpoch(); /**< TimeStamp of the Last time we sent a packet to the Node */
+        nsjson["lastRecievedTimeStamp"] = ns.lastReceivedTimeStamp.toSecsSinceEpoch(); /**< Timestamp of the last time we received a packet from the Node */
         nsjson["lastRequestRTT"] = static_cast<qint64>(ns.lastRequestRTT); /**<  Last Round-Trip Time when we made a request to the Node */
         nsjson["averageRequestRTT"] = static_cast<qint64>(ns.averageRequestRTT); /**< Average Round-Trip Time when we make requests to a Node */
         nsjson["lastResponseRTT"] = static_cast<qint64>(ns.lastResponseRTT); /**< Last Round-Trip Time when we got a Response from a Node */

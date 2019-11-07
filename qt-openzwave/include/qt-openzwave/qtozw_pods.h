@@ -52,8 +52,8 @@ struct NodeStatistics {
         quint32 receivedPackets; /**< Number of received Packets from the Node */
         quint32 receivedDupPackets; /**< Number of Duplicate Packets received from the Node */
         quint32 receivedUnsolicited; /**< Number of Unsolicited Packets received from the Node */
-        QString lastSentTimeStamp; /**< TimeStamp of the Last time we sent a packet to the Node */
-        QString lastReceivedTimeStamp; /**< Timestamp of the last time we received a packet from the Node */
+        QDateTime lastSentTimeStamp; /**< TimeStamp of the Last time we sent a packet to the Node */
+        QDateTime lastReceivedTimeStamp; /**< Timestamp of the last time we received a packet from the Node */
         quint32 lastRequestRTT; /**<  Last Round-Trip Time when we made a request to the Node */
         quint32 averageRequestRTT; /**< Average Round-Trip Time when we make requests to a Node */
         quint32 lastResponseRTT; /**< Last Round-Trip Time when we got a Response from a Node */

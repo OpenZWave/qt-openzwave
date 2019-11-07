@@ -494,13 +494,14 @@ NodeStatistics QTOZWManager_Internal::GetNodeStatistics(quint8 const _node) {
         ns.receivedPackets = nd.m_receivedCnt;
         ns.lastFailedLinkTo = nd.m_lastFailedLinkTo;
         ns.averageRequestRTT = nd.m_averageRequestRTT;
-        ns.lastSentTimeStamp = nd.m_sentTS.c_str();
+        /*                                                                 2019-11-06 21:11:02:549  */
+        ns.lastSentTimeStamp = QDateTime::fromString(nd.m_sentTS.c_str(), "YYYY-MM-DD HH:mm:ss:zzz");
+        ns.lastReceivedTimeStamp = QDateTime::fromString(nd.m_receivedTS.c_str(), "YYYY-MM-DD HH:mm:ss:zzz");
         ns.averageResponseRTT = nd.m_averageResponseRTT;
         ns.lastFailedLinkFrom = nd.m_lastFailedLinkFrom;
         ns.receivedDupPackets = nd.m_receivedDups;
         ns.extendedTXSupported = nd.m_txStatusReportSupported;
         ns.receivedUnsolicited = nd.m_receivedUnsolicited;
-        ns.lastReceivedTimeStamp = nd.m_receivedTS.c_str();
         return ns;
     } catch (OpenZWave::OZWException &e) {
         emit this->error(QTOZWManagerErrorCodes::OZWException);
