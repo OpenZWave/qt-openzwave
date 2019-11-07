@@ -340,7 +340,7 @@ void mqttpublisher::doStats() {
     dsjson["broadcastWriteCnt"] = static_cast<qint64>(ds.m_broadcastWriteCnt);
 
     stats["Network"] = dsjson;
-    QJsonObject nodes;
+    this->m_client->publish(QMqttTopicName(getTopic(MQTT_OZW_STATS_TOPIC)), QJsonDocument(stats).toJson(), 0, false);
 
     for (int i = 0; i < this->m_nodeModel->rowCount(QModelIndex()); i++) {
         QJsonObject nsjson;
@@ -379,10 +379,8 @@ void mqttpublisher::doStats() {
         nsjson["routeTries"] = ns.routeTries; /**< The Number of attempts the Controller made to route the packet to the Node */
         nsjson["lastFailedLinkFrom"] = ns.lastFailedLinkFrom; /**< The Last Failed Link From */
         nsjson["lastFailedLinkTo"] = ns.lastFailedLinkTo; /**< The Last Failed Link To */
-        nodes[QString::number(NodeID)] = nsjson;
+        this->m_client->publish(QMqttTopicName(getNodeTopic(MQTT_OZW_STATS_NODE_TOPIC, NodeID)), QJsonDocument(nsjson).toJson(), 0, false);
     }
-    stats["Nodes"] = nodes;
-    this->m_client->publish(QMqttTopicName(getTopic(MQTT_OZW_STATS_TOPIC)), QJsonDocument(stats).toJson(), 0, false);
 
 }
 
@@ -478,8 +476,6 @@ void mqttpublisher::setOZWDaemon(qtozwdaemon *ozwdaemon) {
         this->m_client->connectToHost();
     }
 }
-
-#include <QSslSocket>
 
 void mqttpublisher::updateLogStateChange()
 {
