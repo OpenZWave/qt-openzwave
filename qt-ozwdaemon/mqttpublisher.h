@@ -93,6 +93,8 @@ private slots:
     void brokerDisconnected();
     void handleMessage(const QByteArray &message, const QMqttTopicName &topic = QMqttTopicName());
     void doStats();
+    void cleanTopics(QMqttMessage msg);
+    void brokerError(QMqttClient::ClientError error);
 
 private:
 
@@ -118,6 +120,8 @@ private:
     QSettings settings;
     QTimer m_statsTimer;
     MqttCommands *m_commands;
+    QMqttSubscription *m_cleanTopicSubscription;
+    QDateTime m_currentStartTime;
 };
 
 #endif // MQTTPUBLISHER_H

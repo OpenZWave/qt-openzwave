@@ -65,9 +65,9 @@ signals:
     void driverAllNodesQueriedSomeDead();
     void driverAwakeNodesQueried();
     void driverAllNodesQueried();
-    void controllerCommand(quint8 node, OpenZWave::Driver::ControllerCommand cmd, OpenZWave::Driver::ControllerState state, OpenZWave::Driver::ControllerError error);
-    void ozwNotification(quint8 node, OpenZWave::Notification::NotificationCode event);
-    void ozwUserAlert(quint8 node, OpenZWave::Notification::UserAlertNotification event, quint8 retry);
+    void controllerCommand(quint8 node, quint32 cmd, quint32 state, quint32 error);
+    void ozwNotification(quint8 node, quint32 event);
+    void ozwUserAlert(quint8 node, quint32 event, quint8 retry);
     void manufacturerSpecificDBReady();
     //-----------------------------------------------------------------------------
     // <OZWNotification::processNotification>

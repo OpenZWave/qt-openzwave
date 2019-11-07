@@ -254,6 +254,7 @@ mqttpublisher::mqttpublisher(QObject *parent) : QObject(parent)
 
     connect(this->m_client, &QMqttClient::stateChanged, this, &mqttpublisher::updateLogStateChange);
     connect(this->m_client, &QMqttClient::disconnected, this, &mqttpublisher::brokerDisconnected);
+    connect(this->m_client, &QMqttClient::errorChanged, this, &mqttpublisher::brokerError);
 
     connect(this->m_client, &QMqttClient::messageReceived, this, &mqttpublisher::handleMessage);
     connect(m_client, &QMqttClient::pingResponseReceived, this, [this]() {
@@ -270,6 +271,36 @@ mqttpublisher::mqttpublisher(QObject *parent) : QObject(parent)
     this->m_client->setWillRetain(true);
     connect(&this->m_statsTimer, &QTimer::timeout, this, &mqttpublisher::doStats);
 }
+
+void mqttpublisher::cleanTopics(QMqttMessage msg) {
+    if (msg.retain() == true) { 
+        qCDebug(ozwmp) << "Topics: " << msg.topic().name();
+        QJsonDocument jsmsg = QJsonDocument::fromJson(msg.payload());
+        if (msg.topic().name() == getTopic("status")) {
+            /* when our status message is anything other than Offline, drop the Subscription */
+            if (jsmsg["Status"].toString() != "Offline") {
+                qCDebug(ozwmp) << "Unsubscribing from Topic Cleanup";
+                this->m_cleanTopicSubscription->unsubscribe();
+            }
+            return;
+        }
+        if (!jsmsg["TimeStamp"].isUndefined()) {
+            QDateTime ts = QDateTime::fromSecsSinceEpoch(jsmsg["TimeStamp"].toInt());
+            if (ts < this->m_currentStartTime) {
+                qCDebug(ozwmp) << "Removing Stale Topic/Msg: " << msg.topic().name();
+                this->m_client->publish(msg.topic(), "", 0, true);
+            }
+        } else {
+            qCWarning(ozwmp) << "MQTT Message on Topic " << msg.topic().name() << "Does not have TimeStamp - Not Cleaning: " << jsmsg.toJson();
+        }
+    }
+}
+
+void mqttpublisher::brokerError(QMqttClient::ClientError error) {
+    qCWarning(ozwmp) << "Broker Error" << error;
+}
+
+
 
 void mqttpublisher::doStats() {
     QJsonObject stats;
@@ -365,6 +396,8 @@ bool mqttpublisher::setValue(quint64 vidKey, QVariant data) {
 
 
 QString mqttpublisher::getTopic(QString topic) {
+        if (!topic.endsWith('#') && !topic.endsWith('/'))
+            topic = topic.append("/");
         return QString(MQTT_OZW_TOP_TOPIC).arg(settings.value("Instance", 1).toInt()).append(topic);
 }
 
@@ -431,7 +464,8 @@ void mqttpublisher::setOZWDaemon(qtozwdaemon *ozwdaemon) {
     connect(manager, &QTOZWManager::starting, this, &mqttpublisher::starting);
     connect(manager, &QTOZWManager::started, this, &mqttpublisher::started);
     connect(manager, &QTOZWManager::stopped, this, &mqttpublisher::stopped);
-
+    
+    this->m_currentStartTime = QDateTime::currentDateTime();
     this->m_client->connectToHost();
 }
 
@@ -442,7 +476,8 @@ void mqttpublisher::updateLogStateChange()
                     + QString::number(m_client->state());
     qCDebug(ozwmp) << content;
     if (this->m_client->state() == QMqttClient::ClientState::Connected) {
-        this->m_client->subscribe(QMqttTopicFilter("/OpenZWave/commands"));
+        this->m_cleanTopicSubscription = this->m_client->subscribe(QMqttTopicFilter(getTopic("#")));
+        connect(this->m_cleanTopicSubscription, &QMqttSubscription::messageReceived, this, &mqttpublisher::cleanTopics);
         this->m_commands->setupSubscriptions(this->m_client, this->getCommandTopic());
     }
 
@@ -454,7 +489,7 @@ void mqttpublisher::brokerDisconnected()
 }
 
 void mqttpublisher::handleMessage(const QByteArray &message, const QMqttTopicName &topic) {
-    qCDebug(ozwmp) << "Received: " << topic.name() << ":" << message;
+//    qCDebug(ozwmp) << "Received: " << topic.name() << ":" << message;
 }
 
 

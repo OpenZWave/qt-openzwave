@@ -160,7 +160,7 @@ void OZWNotification::processNotification
 
         case OpenZWave::Notification::Type_ControllerCommand:
         {
-            emit Get()->controllerCommand(_notification->GetNodeId(), static_cast<OpenZWave::Driver::ControllerCommand>(_notification->GetCommand()), static_cast<OpenZWave::Driver::ControllerState>(_notification->GetEvent()), static_cast<OpenZWave::Driver::ControllerError>(_notification->GetNotification()));
+            emit Get()->controllerCommand(_notification->GetNodeId(), _notification->GetCommand(), _notification->GetEvent(), _notification->GetNotification());
             break;
         }
 
@@ -190,7 +190,7 @@ void OZWNotification::processNotification
 
         case OpenZWave::Notification::Type_Notification:
         {
-            emit Get()->ozwNotification(_notification->GetNodeId(), static_cast<OpenZWave::Notification::NotificationCode>(_notification->GetNotification()));
+            emit Get()->ozwNotification(_notification->GetNodeId(), _notification->GetNotification());
             break;
         }
 
@@ -217,7 +217,7 @@ void OZWNotification::processNotification
             quint8 retry = 0;
             if (static_cast<OpenZWave::Notification::UserAlertNotification>(_notification->GetUserAlertType()) == OpenZWave::Notification::Alert_ApplicationStatus_Retry)
                 retry = _notification->GetRetry();
-            emit Get()->ozwUserAlert(_notification->GetNodeId(), static_cast<OpenZWave::Notification::UserAlertNotification>(_notification->GetUserAlertType()), retry);
+            emit Get()->ozwUserAlert(_notification->GetNodeId(), _notification->GetUserAlertType(), retry);
             break;
         }
 

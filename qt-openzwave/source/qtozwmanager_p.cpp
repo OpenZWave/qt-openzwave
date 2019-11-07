@@ -1364,7 +1364,7 @@ void QTOZWManager_Internal::pvt_driverAwakeNodesQueried()
     qCDebug(notifications) << "Notification pvt_driverAwakeNodesQueried";
     emit this->driverAllNodesQueried();
 }
-void QTOZWManager_Internal::pvt_controllerCommand(quint8 node, OpenZWave::Driver::ControllerCommand cmd, OpenZWave::Driver::ControllerState state, OpenZWave::Driver::ControllerError error)
+void QTOZWManager_Internal::pvt_controllerCommand(quint8 node, quint32 cmd, quint32 state, quint32 error)
 {
     NotificationTypes::QTOZW_Notification_Controller_Cmd qtozwcmd = static_cast<NotificationTypes::QTOZW_Notification_Controller_Cmd>(cmd);
     NotificationTypes::QTOZW_Notification_Controller_State qtozwstate = static_cast<NotificationTypes::QTOZW_Notification_Controller_State>(state);
@@ -1372,13 +1372,13 @@ void QTOZWManager_Internal::pvt_controllerCommand(quint8 node, OpenZWave::Driver
     qCDebug(notifications) << "Notification pvt_controllerCommand " << cmd << state << error;
     emit this->controllerCommand(node, qtozwcmd, qtozwstate, qtozwerror );
 }
-void QTOZWManager_Internal::pvt_ozwNotification(quint8 node, OpenZWave::Notification::NotificationCode event)
+void QTOZWManager_Internal::pvt_ozwNotification(quint8 node, quint32 event)
 {
     NotificationTypes::QTOZW_Notification_Code qtozwevent = static_cast<NotificationTypes::QTOZW_Notification_Code>(event);
     qCDebug(notifications) << "Notification pvt_ozwNotification" << qtozwevent;
     emit this->ozwNotification(node, qtozwevent);
 }
-void QTOZWManager_Internal::pvt_ozwUserAlert(quint8 node, OpenZWave::Notification::UserAlertNotification event, quint8 retry)
+void QTOZWManager_Internal::pvt_ozwUserAlert(quint8 node, quint32 event, quint8 retry)
 {
     NotificationTypes::QTOZW_Notification_User qtozwuser = static_cast<NotificationTypes::QTOZW_Notification_User>(event);
     qCDebug(notifications) << "Notification pvt_ozwUserAlert"  << qtozwuser;
