@@ -459,11 +459,13 @@ void mqttpublisher::handleMessage(const QByteArray &message, const QMqttTopicNam
 
 
 bool mqttpublisher::sendStatusUpdate() {
+    this->m_ozwstatus["TimeStamp"] = QDateTime::currentSecsSinceEpoch();
     this->m_client->publish(QMqttTopicName(getTopic(MQTT_OZW_STATUS_TOPIC)), QJsonDocument(this->m_ozwstatus).toJson(), 0, true);
     return true;
 }
 
 bool mqttpublisher::sendNodeUpdate(quint8 node) {
+    this->m_nodes[node]["TimeStamp"] = QDateTime::currentSecsSinceEpoch();
     this->m_client->publish(QMqttTopicName(getNodeTopic(MQTT_OZW_NODE_TOPIC, node)), QJsonDocument(this->m_nodes[node]).toJson(), 0, true);
     return true;
 }
@@ -474,10 +476,12 @@ bool mqttpublisher::sendValueUpdate(quint64 vidKey) {
         qCWarning(ozwmp) << "sendValueUpdate: Can't find Node for Value: " << vidKey;
         return false;
     }
+    this->m_values[vidKey]["TimeStamp"] = QDateTime::currentSecsSinceEpoch(); 
     this->m_client->publish(QMqttTopicName(getValueTopic(MQTT_OZW_VID_TOPIC, node, vidKey)), QJsonDocument(this->m_values[vidKey]).toJson(), 0, true);
     return true;
 }
 void mqttpublisher::sendCommandUpdate(QString command, QJsonObject js) {
+    js["TimeStamp"] = QDateTime::currentSecsSinceEpoch();
     this->m_client->publish(QMqttTopicName(getCommandResponseTopic(command.toLower())), QJsonDocument(js).toJson(), 0, false);
     return;
 }
