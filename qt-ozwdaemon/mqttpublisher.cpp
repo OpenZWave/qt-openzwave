@@ -240,12 +240,13 @@ bool mqttValueIDModel::setData(quint64 vidKey, QVariant data) {
 
 
 
-mqttpublisher::mqttpublisher(QObject *parent) : QObject(parent)
+mqttpublisher::mqttpublisher(QSettings *settings, QObject *parent) : QObject(parent)
 {
-
+    this->settings = settings;
     this->m_client = new QMqttClient(this);
-    this->m_client->setHostname(settings.value("MQTTServer", "127.0.0.1").toString());
-    this->m_client->setPort(static_cast<quint16>(settings.value("MQTTPort", 1883).toInt()));
+    this->m_client->setHostname(settings->value("MQTTServer", "127.0.0.1").toString());
+    this->m_client->setPort(static_cast<quint16>(settings->value("MQTTPort", 1883).toInt()));
+
 
     /* setup the Commands */
     this->m_commands =  new MqttCommands(this);
@@ -277,6 +278,7 @@ void mqttpublisher::cleanTopics(QMqttMessage msg) {
         qCDebug(ozwmp) << "Topics: " << msg.topic().name();
         QJsonDocument jsmsg = QJsonDocument::fromJson(msg.payload());
         if (msg.topic().name() == getTopic("status")) {
+            qCDebug(ozwmp) << jsmsg.toJson();
             /* when our status message is anything other than Offline, drop the Subscription */
             if (jsmsg["Status"].toString() != "Offline") {
                 qCDebug(ozwmp) << "Unsubscribing from Topic Cleanup";
@@ -298,6 +300,10 @@ void mqttpublisher::cleanTopics(QMqttMessage msg) {
 
 void mqttpublisher::brokerError(QMqttClient::ClientError error) {
     qCWarning(ozwmp) << "Broker Error" << error;
+    if (settings->value("MQTTTLS").toBool() == true) {
+        qCWarning(ozwmp) << qobject_cast<QSslSocket *>(this->m_client->transport())->errorString();
+    }
+
 }
 
 
@@ -398,32 +404,32 @@ bool mqttpublisher::setValue(quint64 vidKey, QVariant data) {
 QString mqttpublisher::getTopic(QString topic) {
         if (!topic.endsWith('#') && !topic.endsWith('/'))
             topic = topic.append("/");
-        return QString(MQTT_OZW_TOP_TOPIC).arg(settings.value("Instance", 1).toInt()).append(topic);
+        return QString(MQTT_OZW_TOP_TOPIC).arg(settings->value("Instance", 1).toInt()).append(topic);
 }
 
 QString mqttpublisher::getNodeTopic(QString topic, quint8 node) {
     QString t(MQTT_OZW_TOP_TOPIC);
-    t = t.arg(settings.value("Instance", 1).toInt());
+    t = t.arg(settings->value("Instance", 1).toInt());
     t.append(topic.arg(static_cast<quint8>(node)));
     return t;
 }
 QString mqttpublisher::getValueTopic(QString topic, quint8 node, quint64 vid) {
     QString t(MQTT_OZW_TOP_TOPIC);
-    t = t.arg(settings.value("Instance", 1).toInt());
+    t = t.arg(settings->value("Instance", 1).toInt());
     t.append(topic.arg(static_cast<quint8>(node)).arg(static_cast<quint64>(vid)));
     return t;
 }
 
 QString mqttpublisher::getCommandTopic() {
     QString t(MQTT_OZW_TOP_TOPIC);
-    t = t.arg(settings.value("Instance", 1).toInt());
+    t = t.arg(settings->value("Instance", 1).toInt());
     t.append(QString(MQTT_OZW_COMMAND_TOPIC));
     return t;
 }
 
 QString mqttpublisher::getCommandResponseTopic(QString cmd) {
     QString t(MQTT_OZW_TOP_TOPIC);
-    t = t.arg(settings.value("Instance", 1).toInt());
+    t = t.arg(settings->value("Instance", 1).toInt());
     t.append(QString(MQTT_OZW_RESPONSE_TOPIC).arg(cmd));
     return t;
 }
@@ -466,15 +472,22 @@ void mqttpublisher::setOZWDaemon(qtozwdaemon *ozwdaemon) {
     connect(manager, &QTOZWManager::stopped, this, &mqttpublisher::stopped);
     
     this->m_currentStartTime = QDateTime::currentDateTime();
-    this->m_client->connectToHost();
+    if (settings->value("MQTTTLS").toBool() == true) {
+        this->m_client->connectToHostEncrypted();   
+    } else { 
+        this->m_client->connectToHost();
+    }
 }
+
+#include <QSslSocket>
 
 void mqttpublisher::updateLogStateChange()
 {
-    const QString content = QDateTime::currentDateTime().toString()
-                    + QLatin1String(": State Change: " )
-                    + QString::number(m_client->state());
-    qCDebug(ozwmp) << content;
+    qCDebug(ozwmp) << "State Change" << m_client->state();
+    if (settings->value("MQTTTLS").toBool() == true && this->m_client->state() == QMqttClient::ClientState::Connecting) {
+        QSslSocket *socket = qobject_cast<QSslSocket *>(this->m_client->transport());
+        socket->setPeerVerifyMode(QSslSocket::PeerVerifyMode::VerifyNone);
+    }
     if (this->m_client->state() == QMqttClient::ClientState::Connected) {
         this->m_cleanTopicSubscription = this->m_client->subscribe(QMqttTopicFilter(getTopic("#")));
         connect(this->m_cleanTopicSubscription, &QMqttSubscription::messageReceived, this, &mqttpublisher::cleanTopics);

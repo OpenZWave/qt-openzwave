@@ -46,7 +46,7 @@ class mqttpublisher : public QObject
 {
     Q_OBJECT
 public:
-    explicit mqttpublisher(QObject *parent = nullptr);
+    explicit mqttpublisher(QSettings *setting, QObject *parent = nullptr);
     void setOZWDaemon(qtozwdaemon *ozwdaemon);
     QTOZWManager *getQTOZWManager();
     void sendCommandUpdate(QString, QJsonObject);
@@ -117,7 +117,7 @@ private:
 
     QMqttClient *m_client;
     qtozwdaemon *m_qtozwdeamon;
-    QSettings settings;
+    QSettings *settings;
     QTimer m_statsTimer;
     MqttCommands *m_commands;
     QMqttSubscription *m_cleanTopicSubscription;

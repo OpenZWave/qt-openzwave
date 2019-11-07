@@ -75,7 +75,23 @@ int main(int argc, char *argv[])
     );
 
     parser.addOption(MQTTPort);
+
+    QCommandLineOption MQTTInstance(QStringList() << "mqtt-instance",
+        "OpenZWave Instance Number - Defaults to 1",
+        "Number"
+    );
+
+    parser.addOption(MQTTInstance);
+
+    QCommandLineOption MQTTTLS(QStringList() << "mqtt-tls",
+        "Enable TLS Encryption to MQTT Server"
+    );
+
+    parser.addOption(MQTTTLS);
+
 #endif
+
+
 
     parser.process(a);
     if (!parser.isSet(serialPort)) {
@@ -84,15 +100,6 @@ int main(int argc, char *argv[])
         fputs(qPrintable(parser.helpText()), stderr);
         exit(-1);
     }
-    QSettings settings;
-#ifdef HAVE_MQTT
-    if (parser.isSet(MQTTServer)) {
-        settings.setValue("MQTTServer", parser.value(MQTTServer));
-    }
-    if (parser.isSet(MQTTPort)) {
-        settings.setValue("MQTTPort", parser.value(MQTTPort).toInt());
-    }
-#endif
 
 #if 0
     QLoggingCategory::setFilterRules("qt.remoteobjects.debug=true\n"
@@ -109,7 +116,8 @@ int main(int argc, char *argv[])
     if (parser.isSet(configDir))
         PossibleDBPaths << parser.value(configDir);
     PossibleDBPaths << "./config/";
-    PossibleDBPaths << settings.value("openzwave/ConfigPath", QDir::toNativeSeparators("../../../config/")).toString().append("/");
+    PossibleDBPaths << QDir::toNativeSeparators("../../../config/");
+    //PossibleDBPaths << settings.value("openzwave/ConfigPath", QDir::toNativeSeparators("../../../config/")).toString().append("/");
     PossibleDBPaths << QStandardPaths::standardLocations(QStandardPaths::AppDataLocation);
 
     QString path, dbPath, userPath;
@@ -129,7 +137,8 @@ int main(int argc, char *argv[])
     if (parser.isSet(userDir))
         PossibleDBPaths << parser.value(userDir);
     PossibleDBPaths << "./config/";
-    PossibleDBPaths << settings.value("openzwave/UserPath", QDir::toNativeSeparators("../../../config/")).toString().append("/");
+    PossibleDBPaths <<  QDir::toNativeSeparators("../../../config/");
+//    PossibleDBPaths << settings.value("openzwave/UserPath", QDir::toNativeSeparators("../../../config/")).toString().append("/");
     PossibleDBPaths << QStandardPaths::standardLocations(QStandardPaths::AppDataLocation);
 
     foreach(path, PossibleDBPaths) {
@@ -157,6 +166,28 @@ int main(int argc, char *argv[])
     qDebug() << "DBPath: " << dbPath;
     qDebug() << "userPath: " << userPath;
 
+    QSettings settings(userPath.append("/ozwdaemon.ini"), QSettings::IniFormat);
+
+
+#ifdef HAVE_MQTT
+    if (parser.isSet(MQTTServer)) {
+        settings.setValue("MQTTServer", parser.value(MQTTServer));
+    }
+    if (parser.isSet(MQTTPort)) {
+        settings.setValue("MQTTPort", parser.value(MQTTPort).toInt());
+    }
+    if (parser.isSet(MQTTInstance)) {
+        settings.setValue("Instance", parser.value(MQTTInstance).toInt());
+    }
+    if (parser.isSet(MQTTTLS)) {
+        qDebug() << "mqtt tls set";
+        settings.setValue("MQTTTLS", true);
+    } else {
+        settings.setValue("MQTTTLS", false);
+    }
+#endif
+
+
 
     QTOZWOptions options(QTOZWOptions::Local);
     options.setUserPath(userPath);
@@ -166,7 +197,7 @@ int main(int argc, char *argv[])
 
     qtozwdaemon daemon;
 #ifdef HAVE_MQTT
-    mqttpublisher mqttpublisher;
+    mqttpublisher mqttpublisher(&settings);
     mqttpublisher.setOZWDaemon(&daemon);
 #endif
     daemon.setSerialPort(parser.value(serialPort));
