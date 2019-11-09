@@ -8,12 +8,9 @@ MqttCommand* MqttCommand_HardResetController::Create(QObject *parent) {
     return new MqttCommand_HardResetController(parent);
 }
 
-bool MqttCommand_HardResetController::processMessage(QJsonDocument msg) {
+bool MqttCommand_HardResetController::processMessage(rapidjson::Document &msg) {
     Q_UNUSED(msg);
     QTOZWManager *mgr = getOZWManager();
     mgr->hardResetController();
-    QJsonObject js;
-    js["status"] = "ok";
-    emit sendCommandUpdate(GetCommand(), js);
-    return true;
+    return this->sendSimpleStatus(true);
 }

@@ -9,11 +9,8 @@ MqttCommand* MqttCommand_HealNetwork::Create(QObject *parent) {
     return new MqttCommand_HealNetwork(parent);
 }
 
-bool MqttCommand_HealNetwork::processMessage(QJsonDocument msg) {
+bool MqttCommand_HealNetwork::processMessage(rapidjson::Document &msg) {
     QTOZWManager *mgr = getOZWManager();
-    mgr->healNetwork(msg["doreturnroute"].toBool());
-    QJsonObject js;
-    js["status"] = "ok";
-    emit sendCommandUpdate(GetCommand(), js);
-    return true;
+    mgr->healNetwork(msg["doreturnroute"].GetBool());
+    return this->sendSimpleStatus(true);
 }

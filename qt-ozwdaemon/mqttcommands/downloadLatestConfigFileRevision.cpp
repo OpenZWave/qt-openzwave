@@ -9,23 +9,10 @@ MqttCommand* MqttCommand_DownloadLatestConfigFileRevision::Create(QObject *paren
     return new MqttCommand_DownloadLatestConfigFileRevision(parent);
 }
 
-bool MqttCommand_DownloadLatestConfigFileRevision::processMessage(QJsonDocument msg) {
+bool MqttCommand_DownloadLatestConfigFileRevision::processMessage(rapidjson::Document &msg) {
     if (!this->checkNode(msg, "node")) {
-        QJsonObject js;
-        js["status"] = "failed";
-        js["Error"] = "Invalid Node Number";
-        emit sendCommandUpdate(GetCommand(), js);
-        return false;
+        return this->sendSimpleStatus(false, "Invalid Node Number");
     }
     QTOZWManager *mgr = getOZWManager();
-    if (mgr->downloadLatestConfigFileRevision(msg["node"].toInt())) {
-        QJsonObject js;
-        js["status"] = "ok";
-        emit sendCommandUpdate(GetCommand(), js);
-        return true;
-    }
-    QJsonObject js;
-    js["status"] = "failed";
-    emit sendCommandUpdate(GetCommand(), js);
-    return false;
+    return this->sendSimpleStatus(mgr->downloadLatestConfigFileRevision(msg["node"].GetUint()));
 }

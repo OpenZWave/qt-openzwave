@@ -8,12 +8,9 @@ MqttCommand* MqttCommand_RemoveNode::Create(QObject *parent) {
     return new MqttCommand_RemoveNode(parent);
 }
 
-bool MqttCommand_RemoveNode::processMessage(QJsonDocument msg) {
+bool MqttCommand_RemoveNode::processMessage(rapidjson::Document &msg) {
     Q_UNUSED(msg);
     QTOZWManager *mgr = getOZWManager();
     mgr->removeNode();
-    QJsonObject js;
-    js["status"] = "ok";
-    emit sendCommandUpdate(GetCommand(), js);
-    return true;
+    return this->sendSimpleStatus(true);
 }

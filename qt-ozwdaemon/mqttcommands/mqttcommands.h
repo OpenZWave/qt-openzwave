@@ -11,6 +11,7 @@
 #include <qt-openzwave/qtozwmanager.h>
 #include <qt-openzwave/qtozwvalueidmodel.h>
 #include "mqttpublisher.h"
+#include "qtrj.h"
 
 
 
@@ -21,21 +22,22 @@ class MqttCommand : public QObject {
 public:
     void Setup(QMqttSubscription *);
     void messageReceived(QMqttMessage msg);
-    virtual bool processMessage(QJsonDocument) = 0;
+    virtual bool processMessage(rapidjson::Document &) = 0;
     virtual QString GetCommand() = 0;
 signals:
-    void sendCommandUpdate(QString, QJsonObject);
+    void sendCommandUpdate(QString, rapidjson::Document &);
 protected:
     MqttCommand(QObject *parent = nullptr);
     QTOZWManager *getOZWManager();
     mqttpublisher *getMqttPublisher();
-    bool checkNode(QJsonDocument, QString);
-    bool checkValue(QJsonDocument, QString);
+    bool checkNode(rapidjson::Document &, QString);
+    bool checkValue(rapidjson::Document &, QString);
     QVariant getValueData(quint64, QTOZW_ValueIds::ValueIdColumns);
     bool setValue(quint64, QVariant);
     QVector<QString> m_requiredStringFields;
     QVector<QString> m_requiredIntFields;
     QVector<QString> m_requiredBoolFields;
+    bool sendSimpleStatus(bool, QString error = QString());
 
 private:
     QMqttSubscription *m_subscription;

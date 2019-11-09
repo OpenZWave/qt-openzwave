@@ -9,11 +9,8 @@ MqttCommand* MqttCommand_TestNetwork::Create(QObject *parent) {
     return new MqttCommand_TestNetwork(parent);
 }
 
-bool MqttCommand_TestNetwork::processMessage(QJsonDocument msg) {
+bool MqttCommand_TestNetwork::processMessage(rapidjson::Document &msg) {
     QTOZWManager *mgr = getOZWManager();
-    mgr->testNetwork(msg["count"].toInt());
-    QJsonObject js;
-    js["status"] = "ok";
-    emit sendCommandUpdate(GetCommand(), js);
-    return true;
+    mgr->testNetwork(msg["count"].GetUint());
+    return this->sendSimpleStatus(true);
 }

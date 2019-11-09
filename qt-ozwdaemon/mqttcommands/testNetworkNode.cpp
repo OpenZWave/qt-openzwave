@@ -9,18 +9,11 @@ MqttCommand* MqttCommand_TestNetworkNode::Create(QObject *parent) {
     return new MqttCommand_TestNetworkNode(parent);
 }
 
-bool MqttCommand_TestNetworkNode::processMessage(QJsonDocument msg) {
+bool MqttCommand_TestNetworkNode::processMessage(rapidjson::Document &msg) {
     if (!this->checkNode(msg, "node")) {
-        QJsonObject js;
-        js["status"] = "failed";
-        js["Error"] = "Invalid Node Number";
-        emit sendCommandUpdate(GetCommand(), js);
-        return false;
+        return this->sendSimpleStatus(false, "Invalid Node Number");
     }
     QTOZWManager *mgr = getOZWManager();
-    mgr->testNetworkNode(msg["node"].toInt(), msg["count"].toInt());
-    QJsonObject js;
-    js["status"] = "ok";
-    emit sendCommandUpdate(GetCommand(), js);
-    return true;
+    mgr->testNetworkNode(msg["node"].GetUint64(), msg["count"].GetUint());
+    return this->sendSimpleStatus(true);
 }

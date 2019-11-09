@@ -10,18 +10,11 @@ MqttCommand* MqttCommand_HealNetworkNode::Create(QObject *parent) {
     return new MqttCommand_HealNetworkNode(parent);
 }
 
-bool MqttCommand_HealNetworkNode::processMessage(QJsonDocument msg) {
+bool MqttCommand_HealNetworkNode::processMessage(rapidjson::Document &msg) {
     if (!this->checkNode(msg, "node")) {
-        QJsonObject js;
-        js["status"] = "failed";
-        js["Error"] = "Invalid Node Number";
-        emit sendCommandUpdate(GetCommand(), js);
-        return false;
+        return this->sendSimpleStatus(false, "Invalid Node Number");
     }
     QTOZWManager *mgr = getOZWManager();
-    mgr->healNetworkNode(msg["node"].toInt(), msg["doreturnroute"].toBool());
-    QJsonObject js;
-    js["status"] = "ok";
-    emit sendCommandUpdate(GetCommand(), js);
-    return true;
+    mgr->healNetworkNode(msg["node"].GetUint(), msg["doreturnroute"].GetBool());
+    return this->sendSimpleStatus(true);
 }

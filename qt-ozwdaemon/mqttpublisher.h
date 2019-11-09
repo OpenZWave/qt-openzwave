@@ -7,6 +7,7 @@
 #include <QJsonDocument>
 #include <QJsonObject>
 #include <QTimer>
+#include <rapidjson/document.h>
 
 #include "qtozwdaemon.h"
 #include "mqttcommands/mqttcommands.h"
@@ -28,7 +29,7 @@ class mqttNodeModel : public QTOZW_Nodes {
 public:
     explicit mqttNodeModel(QObject *parent = nullptr);
     QVariant getNodeData(quint8, NodeColumns);
-    bool populateJsonObject(QJsonObject *, quint8, QTOZWManager *);
+    bool populateJsonObject(rapidjson::Document &, quint8, QTOZWManager *);
     bool isValidNode(quint8);
 };
 
@@ -50,7 +51,7 @@ public:
     explicit mqttpublisher(QSettings *setting, QObject *parent = nullptr);
     void setOZWDaemon(qtozwdaemon *ozwdaemon);
     QTOZWManager *getQTOZWManager();
-    void sendCommandUpdate(QString, QJsonObject);
+    void sendCommandUpdate(QString, rapidjson::Document &);
     bool isValidNode(quint8 node);
     bool isValidValueID(quint64 vidKey);
     QVariant getValueData(quint64, mqttValueIDModel::ValueIdColumns);
@@ -110,8 +111,8 @@ private:
     bool delNodeTopic(quint8);
     bool delValueTopic(quint64);
 
-    QJsonObject m_ozwstatus;
-    QMap<quint8, QJsonObject> m_nodes;
+    rapidjson::Document m_ozwstatus;
+    QMap<quint8, rapidjson::Document *> m_nodes;
     mqttNodeModel *m_nodeModel;
     QMap<quint64, QJsonObject> m_values;
     mqttValueIDModel *m_valueModel;

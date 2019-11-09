@@ -4,7 +4,7 @@ QT += remoteobjects
 
 TARGET = ../ozwdaemon
 
-CONFIG += c++11 console silent
+CONFIG += c++11 console link_pkgconfig silent
 CONFIG -= app_bundle
 
 # The following define makes your compiler emit warnings if you use
@@ -19,9 +19,11 @@ DEFINES += QT_DEPRECATED_WARNINGS QT_MESSAGELOGCONTEXT
 #DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0x060000    # disables all the APIs deprecated before Qt 6.0.0
 
 qtHaveModule(mqtt) {
+	PKGCONFIG += RapidJSON
 	QT += mqtt
 	DEFINES += HAVE_MQTT
 	SOURCES += mqttpublisher.cpp \
+			qtrj.cpp \
         	mqttcommands/mqttcommands.cpp \
 	        mqttcommands/ping.cpp \
 	        mqttcommands/open.cpp \
@@ -55,6 +57,7 @@ qtHaveModule(mqtt) {
 			mqttcommands/setValue.cpp
 
 	HEADERS += mqttpublisher.h \
+			qtrj.h \
 			mqttcommands/mqttcommands.h \
 			mqttcommands/ping.h \
 			mqttcommands/open.h \

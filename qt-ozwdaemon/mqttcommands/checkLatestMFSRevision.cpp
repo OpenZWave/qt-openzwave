@@ -8,12 +8,9 @@ MqttCommand* MqttCommand_CheckLatestMFSRevision::Create(QObject *parent) {
     return new MqttCommand_CheckLatestMFSRevision(parent);
 }
 
-bool MqttCommand_CheckLatestMFSRevision::processMessage(QJsonDocument msg) {
+bool MqttCommand_CheckLatestMFSRevision::processMessage(rapidjson::Document &msg) {
     Q_UNUSED(msg);
     QTOZWManager *mgr = getOZWManager();
     mgr->checkLatestMFSRevision();
-    QJsonObject js;
-    js["status"] = "ok";
-    emit sendCommandUpdate(GetCommand(), js);
-    return true;
+    return this->sendSimpleStatus(true);
 }

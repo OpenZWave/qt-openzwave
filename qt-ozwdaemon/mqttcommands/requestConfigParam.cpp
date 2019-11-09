@@ -9,18 +9,11 @@ MqttCommand* MqttCommand_RequestConfigParam::Create(QObject *parent) {
     return new MqttCommand_RequestConfigParam(parent);
 }
 
-bool MqttCommand_RequestConfigParam::processMessage(QJsonDocument msg) {
+bool MqttCommand_RequestConfigParam::processMessage(rapidjson::Document &msg) {
     if (!this->checkNode(msg, "node")) {
-        QJsonObject js;
-        js["status"] = "failed";
-        js["Error"] = "Invalid Node Number";
-        emit sendCommandUpdate(GetCommand(), js);
-        return false;
+        return this->sendSimpleStatus(false, "Invalid Node Number");
     }
     QTOZWManager *mgr = getOZWManager();
-    mgr->requestConfigParam(msg["node"].toInt(), msg["param"].toInt());
-    QJsonObject js;
-    js["status"] = "ok";
-    emit sendCommandUpdate(GetCommand(), js);
-    return true;
+    mgr->requestConfigParam(msg["node"].GetUint(), msg["param"].GetUint());
+    return this->sendSimpleStatus(true);
 }

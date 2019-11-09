@@ -9,7 +9,7 @@ public:
     static MqttCommand *Create(QObject *parent = nullptr);
     static QString StaticGetCommand() { return "HealNetworkNode";};
     QString GetCommand() override { return StaticGetCommand(); };
-    bool processMessage(QJsonDocument) override;
+    bool processMessage(rapidjson::Document &) override;
 private: 
     MqttCommand_HealNetworkNode(QObject *parent = nullptr);
 };

@@ -1,3 +1,6 @@
+#include <rapidjson/error/en.h>
+
+
 #include "mqttcommands/mqttcommands.h"
 #include "mqttcommands/ping.h"
 #include "mqttcommands/open.h"
@@ -61,61 +64,61 @@ mqttpublisher *MqttCommand::getMqttPublisher() {
 
 void MqttCommand::messageReceived(QMqttMessage msg) {
     qCDebug(ozwmc) << "Got "<< msg.topic().name()<< " Message: " << msg.payload();
-    QJsonParseError jerrormsg;
-    QJsonDocument jmsg = QJsonDocument::fromJson(msg.payload(), &jerrormsg);
-    if (jmsg.isNull()) {
-        QJsonObject js;
-        js["Error"] = jerrormsg.errorString();
+    rapidjson::Document jmsg;
+    jmsg.Parse(msg.payload());
+    if (jmsg.HasParseError()) {
+        rapidjson::Document js;
+        QT2JS::SetString(js, "Error", rapidjson::GetParseError_En(jmsg.GetParseError()));
         emit sendCommandUpdate(GetCommand(), js);
-        qCWarning(ozwmc) << "Json Parse Error for " << GetCommand() << ": " << jerrormsg.errorString() << ": " << msg.payload();
+        qCWarning(ozwmc) << "Json Parse Error for " << GetCommand() << ": " << rapidjson::GetParseError_En(jmsg.GetParseError()) << ": " << msg.payload();
         return;     
     }
     QString field;
     foreach (field, this->m_requiredIntFields) {
-        if (jmsg[field].isUndefined()) {
-            QJsonObject js;
-            js["Error"]  = QString("Missing Field ").append(field);
+        if (!jmsg.HasMember(field.toStdString().c_str())) {
+            rapidjson::Document js;
+            QT2JS::SetString(js, "Error", QString("Missing Field ").append(field).toStdString().c_str());
             emit sendCommandUpdate(GetCommand(), js);
             qCWarning(ozwmc) << "Missing Field for " << GetCommand() << ": " << field << ": " << msg.payload();
             return;
         }
-        if (!jmsg[field].isDouble()) {
-            QJsonObject js;
-            js["Error"]  = QString("Incorrect Field Type: ").append(field).append(": Not Integer");
+        if (!jmsg[field.toStdString().c_str()].IsNumber()) {
+            rapidjson::Document js;
+            QT2JS::SetString(js, "Error", QString("Incorrect Field Type: ").append(field).append(": Not Integer").toStdString().c_str());
             emit sendCommandUpdate(GetCommand(), js);
-            qCWarning(ozwmc) << "Incorrect Field Type (Int) for " << GetCommand() << ": " << field << ": " << jmsg[field].type() << msg.payload();
+            qCWarning(ozwmc) << "Incorrect Field Type (Int) for " << GetCommand() << ": " << field << ": " << jmsg[field.toStdString().c_str()].GetType() << msg.payload();
             return;
         }
     }
     foreach (field, this->m_requiredStringFields) {
-        if (jmsg[field].isUndefined()) {
-            QJsonObject js;
-            js["Error"]  = QString("Missing Field ").append(field);
+        if (!jmsg.HasMember(field.toStdString().c_str())) {
+            rapidjson::Document js;
+            QT2JS::SetString(js, "Error", QString("Missing Field ").append(field).toStdString().c_str());
             emit sendCommandUpdate(GetCommand(), js);
             qCWarning(ozwmc) << "Missing Field for " << GetCommand() << ": " << field << ": " << msg.payload();
             return;
         }
-        if (!jmsg[field].isString()) {
-            QJsonObject js;
-            js["Error"]  = QString("Incorrect Field Type: ").append(field).append(": Not String");
+        if (!jmsg[field.toStdString().c_str()].IsString()) {
+            rapidjson::Document js;
+            QT2JS::SetString(js, "Error", QString("Incorrect Field Type: ").append(field).append(": Not String").toStdString().c_str());
             emit sendCommandUpdate(GetCommand(), js);
-            qCWarning(ozwmc) << "Incorrect Field Type (String) for " << GetCommand() << ": " << field << ": " << jmsg[field].type() << msg.payload();
+            qCWarning(ozwmc) << "Incorrect Field Type (String) for " << GetCommand() << ": " << field << ": " << jmsg[field.toStdString().c_str()].GetType() << msg.payload();
             return;
         }
     }
     foreach (field, this->m_requiredBoolFields) {
-        if (jmsg[field].isUndefined()) {
-            QJsonObject js;
-            js["Error"]  = QString("Missing Field ").append(field);
+        if (!jmsg.HasMember(field.toStdString().c_str())) {
+            rapidjson::Document js;
+            QT2JS::SetString(js, "Error", QString("Missing Field ").append(field).toStdString().c_str());
             emit sendCommandUpdate(GetCommand(), js);
             qCWarning(ozwmc) << "Missing Field for " << GetCommand() << ": " << field << ": " << msg.payload();
             return;
         }
-        if (!jmsg[field].isBool()) {
-            QJsonObject js;
-            js["Error"]  = QString("Incorrect Field Type: ").append(field).append(": Not Bool");
+        if (!jmsg[field.toStdString().c_str()].IsBool()) {
+            rapidjson::Document js;
+            QT2JS::SetString(js, "Error", QString("Incorrect Field Type: ").append(field).append(": Not Bool").toStdString().c_str());
             emit sendCommandUpdate(GetCommand(), js);
-            qCWarning(ozwmc) << "Incorrect Field Type (Bool) for " << GetCommand() << ": " << field << ": " << jmsg[field].type() << msg.payload();
+            qCWarning(ozwmc) << "Incorrect Field Type (Bool) for " << GetCommand() << ": " << field << ": " << jmsg[field.toStdString().c_str()].GetType() << msg.payload();
             return;
         }
     }
@@ -128,29 +131,47 @@ void MqttCommand::messageReceived(QMqttMessage msg) {
     }
 }
 
-bool MqttCommand::checkNode(QJsonDocument jmsg, QString field) {
-    quint8 node = jmsg[field].toInt();
+bool MqttCommand::checkNode(rapidjson::Document &jmsg, QString field) {
+    if (!jmsg.HasMember(field.toStdString().c_str())) {
+        qCWarning(ozwmc) << "Node " << field <<" Is Missing from Message";
+        return false;
+    }
+    if (!jmsg[field.toStdString().c_str()].IsUint()) {
+        qCWarning(ozwmc) << "Node " << field << "is not a Uint32";
+        return false;
+    }
+    quint8 node = jmsg[field.toStdString().c_str()].GetInt();
     if (node == 0 || node == 255) {
-        qCWarning(ozwmc) << "Invalid Node in field " << field << " for message " << jmsg.toJson();
+        qCWarning(ozwmc) << "Invalid Node in field " << field << " for message";
         return false;
     }
     if (this->getMqttPublisher()->isValidNode(node)) {
         return true;
     }
-    qCWarning(ozwmc) << "Invalid Node in field " << field << " for message " << jmsg.toJson();
+    qCWarning(ozwmc) << "Invalid Node in field " << field << " for message ";
     return false;
 }
 
-bool MqttCommand::checkValue(QJsonDocument jmsg, QString field) {
-    quint64 vidKey = jmsg[field].toInt();
+bool MqttCommand::checkValue(rapidjson::Document &jmsg, QString field) {
+    if (!jmsg.HasMember(field.toStdString().c_str())) {
+        qCWarning(ozwmc) << "ValueIDKey " << field <<" Is Missing from Message";
+        return false;
+    }
+    if (!jmsg[field.toStdString().c_str()].IsUint64()) {
+        qCWarning(ozwmc) << "ValueIDKey " << field << " Is not a uint64";
+        return false;
+    }
+
+
+    quint64 vidKey = jmsg[field.toStdString().c_str()].GetUint64();
     if (vidKey == 0) {
-        qCWarning(ozwmc) << "Invalid VidKey in field " << field << " for message " << jmsg.toJson();
+        qCWarning(ozwmc) << "Invalid VidKey in field " << field << " for message ";
         return false;
     }
     if (this->getMqttPublisher()->isValidValueID(vidKey)) {
         return true;
     }
-    qCWarning(ozwmc) << "Invalid VidKey in field " << field << " for message " << jmsg.toJson();
+    qCWarning(ozwmc) << "Invalid VidKey in field " << field << " for message ";
     return false;
 }
 
@@ -160,6 +181,19 @@ QVariant MqttCommand::getValueData(quint64 vidKey, QTOZW_ValueIds::ValueIdColumn
 
 bool MqttCommand::setValue(quint64 vidKey, QVariant data) {
     return this->getMqttPublisher()->setValue(vidKey, data);
+}
+
+bool MqttCommand::sendSimpleStatus(bool status, QString error) {
+    rapidjson::Document js;
+    if (status == true) {
+        QT2JS::SetString(js, "status", "ok");
+    } else {
+        QT2JS::SetString(js, "status", "failed");
+        if (!error.isEmpty())
+            QT2JS::SetString(js, "error", error);
+    }
+    emit sendCommandUpdate(GetCommand(), js);
+    return status;
 }
 
 
