@@ -11,6 +11,7 @@ MAINTAINER Justin Hammond
 
 WORKDIR /opt
 
+RUN dnf install rapidjson-devel
 RUN git clone https://github.com/qt/qtmqtt.git && cd qtmqtt && git checkout 5.12 && /opt/Qt/5.12.4/bin/qmake && make && make install
 RUN git clone https://github.com/OpenZWave/open-zwave.git && cd open-zwave && make -j4 && make install
 RUN git clone https://github.com/OpenZWave/qt-openzwave.git && cd qt-openzwave && git checkout mqtt && /opt/Qt/5.12.4/bin/qmake && make -j4 && make install
