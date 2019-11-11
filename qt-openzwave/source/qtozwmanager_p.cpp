@@ -495,8 +495,8 @@ NodeStatistics QTOZWManager_Internal::GetNodeStatistics(quint8 const _node) {
         ns.lastFailedLinkTo = nd.m_lastFailedLinkTo;
         ns.averageRequestRTT = nd.m_averageRequestRTT;
         /*                                                                 2019-11-06 21:11:02:549  */
-        ns.lastSentTimeStamp = QDateTime::fromString(nd.m_sentTS.c_str(), "YYYY-MM-DD HH:mm:ss:zzz");
-        ns.lastReceivedTimeStamp = QDateTime::fromString(nd.m_receivedTS.c_str(), "YYYY-MM-DD HH:mm:ss:zzz");
+        ns.lastSentTimeStamp = QDateTime::fromString(QString::fromStdString(nd.m_sentTS).trimmed(), "yyyy-MM-dd HH:mm:ss:zzz");
+        ns.lastReceivedTimeStamp = QDateTime::fromString(QString::fromStdString(nd.m_receivedTS).trimmed(), "yyyy-MM-dd HH:mm:ss:zzz");
         ns.averageResponseRTT = nd.m_averageResponseRTT;
         ns.lastFailedLinkFrom = nd.m_lastFailedLinkFrom;
         ns.receivedDupPackets = nd.m_receivedDups;
