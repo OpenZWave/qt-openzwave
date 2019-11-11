@@ -319,8 +319,6 @@ mqttpublisher::mqttpublisher(QSettings *settings, QObject *parent) : QObject(par
     connect(this->m_client, &QMqttClient::stateChanged, this, &mqttpublisher::updateLogStateChange);
     connect(this->m_client, &QMqttClient::disconnected, this, &mqttpublisher::brokerDisconnected);
     connect(this->m_client, &QMqttClient::errorChanged, this, &mqttpublisher::brokerError);
-
-    connect(this->m_client, &QMqttClient::messageReceived, this, &mqttpublisher::handleMessage);
     connect(m_client, &QMqttClient::pingResponseReceived, this, [this]() {
         const QString content = QDateTime::currentDateTime().toString()
                     + QLatin1String(" PingResponse")
@@ -329,9 +327,9 @@ mqttpublisher::mqttpublisher(QSettings *settings, QObject *parent) : QObject(par
     });
 
     this->m_client->setWillTopic(getTopic(MQTT_OZW_STATUS_TOPIC));
-    QJsonObject willMsg;
-    willMsg["Status"] = "Offline";
-    this->m_client->setWillMessage(QJsonDocument(willMsg).toJson());
+    rapidjson::Document willMsg(rapidjson::kObjectType);
+    QT2JS::SetString(willMsg, "Status", "Offline");
+    this->m_client->setWillMessage(QT2JS::getJSON(willMsg));
     this->m_client->setWillRetain(true);
     connect(&this->m_statsTimer, &QTimer::timeout, this, &mqttpublisher::doStats);
 }
@@ -339,24 +337,25 @@ mqttpublisher::mqttpublisher(QSettings *settings, QObject *parent) : QObject(par
 void mqttpublisher::cleanTopics(QMqttMessage msg) {
     if (msg.retain() == true) { 
         qCDebug(ozwmp) << "Topics: " << msg.topic().name();
-        QJsonDocument jsmsg = QJsonDocument::fromJson(msg.payload());
+        rapidjson::Document jsmsg;
+        jsmsg.Parse(msg.payload());
         if (msg.topic().name() == getTopic("status")) {
-            qCDebug(ozwmp) << jsmsg.toJson();
+            qCDebug(ozwmp) << msg.payload();
             /* when our status message is anything other than Offline, drop the Subscription */
-            if (jsmsg["Status"].toString() != "Offline") {
+            if (jsmsg.HasMember("Status") && (QString::fromStdString(jsmsg["Status"].GetString()) != "Offline")) {
                 qCDebug(ozwmp) << "Unsubscribing from Topic Cleanup";
                 this->m_cleanTopicSubscription->unsubscribe();
             }
             return;
         }
-        if (!jsmsg["TimeStamp"].isUndefined()) {
-            QDateTime ts = QDateTime::fromSecsSinceEpoch(jsmsg["TimeStamp"].toInt());
+        if (jsmsg.HasMember("TimeStamp")) {
+            QDateTime ts = QDateTime::fromSecsSinceEpoch(jsmsg["TimeStamp"].GetUint64());
             if (ts < this->m_currentStartTime) {
                 qCDebug(ozwmp) << "Removing Stale Topic/Msg: " << msg.topic().name();
                 this->m_client->publish(msg.topic(), "", 0, true);
             }
         } else {
-            qCWarning(ozwmp) << "MQTT Message on Topic " << msg.topic().name() << "Does not have TimeStamp - Not Cleaning: " << jsmsg.toJson();
+            qCWarning(ozwmp) << "MQTT Message on Topic " << msg.topic().name() << "Does not have TimeStamp - Not Cleaning: " << msg.payload();
         }
     }
 }
@@ -556,10 +555,6 @@ void mqttpublisher::updateLogStateChange()
 void mqttpublisher::brokerDisconnected()
 {
     qCDebug(ozwmp) << "Disconnnected";
-}
-
-void mqttpublisher::handleMessage(const QByteArray &message, const QMqttTopicName &topic) {
-//    qCDebug(ozwmp) << "Received: " << topic.name() << ":" << message;
 }
 
 bool mqttpublisher::sendStatusUpdate() {

@@ -4,8 +4,6 @@
 #include <QObject>
 
 #include <QtMqtt/QMqttClient>
-#include <QJsonDocument>
-#include <QJsonObject>
 #include <QTimer>
 #include <rapidjson/document.h>
 
@@ -93,7 +91,6 @@ public slots:
 private slots:
     void updateLogStateChange();
     void brokerDisconnected();
-    void handleMessage(const QByteArray &message, const QMqttTopicName &topic = QMqttTopicName());
     void doStats();
     void cleanTopics(QMqttMessage msg);
     void brokerError(QMqttClient::ClientError error);
