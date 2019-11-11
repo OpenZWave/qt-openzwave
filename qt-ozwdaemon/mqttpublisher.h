@@ -38,8 +38,8 @@ class mqttValueIDModel : public QTOZW_ValueIds {
 public:
     explicit mqttValueIDModel(QObject *parent = nullptr);
     QVariant getValueData(quint64, ValueIdColumns);
-    bool populateJsonObject(QJsonObject *, quint64, QTOZWManager *);
-    QJsonValue encodeValue(quint64);
+    bool populateJsonObject(rapidjson::Document &, quint64, QTOZWManager *);
+    bool encodeValue(rapidjson::Document &, quint64);
     bool isValidValueID(quint64);
     bool setData(quint64, QVariant);
 };
@@ -114,7 +114,7 @@ private:
     rapidjson::Document m_ozwstatus;
     QMap<quint8, rapidjson::Document *> m_nodes;
     mqttNodeModel *m_nodeModel;
-    QMap<quint64, QJsonObject> m_values;
+    QMap<quint64, rapidjson::Document *> m_values;
     mqttValueIDModel *m_valueModel;
 
     QMqttClient *m_client;
