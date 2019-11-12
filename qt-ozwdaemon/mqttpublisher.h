@@ -113,6 +113,8 @@ private:
     bool sendCommandClassUpdate(quint8, quint8, quint8);
     bool delNodeTopic(quint8);
     bool delValueTopic(quint64);
+    bool delInstanceTopic(quint8, quint8);
+    bool delCommandClassTopic(quint8, quint8, quint8);
     rapidjson::Document *getInstanceJSON(quint8, quint8);
     rapidjson::Document *getCommandClassJSON(quint8, quint8, quint8);
 

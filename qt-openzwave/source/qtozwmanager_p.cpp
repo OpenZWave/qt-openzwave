@@ -144,7 +144,24 @@ bool QTOZWManager_Internal::open(QString SerialPort)
         return false;
     }
     qCDebug(manager) << "AddDriver Completed";
+    this->m_SerialPort = SerialPort;
+    return true;
+}
 
+bool QTOZWManager_Internal::close() {
+    try {
+        if (this->m_manager->RemoveDriver(this->m_SerialPort.toStdString())) {
+            qCDebug(manager) << "Driver Removed for " << this->m_SerialPort;
+        } else {
+            qCWarning(manager) << "Couldn't Remove Driver for " << this->m_SerialPort;
+        }
+    } catch (OpenZWave::OZWException &e) {
+        emit this->error(QTOZWManagerErrorCodes::OZWException);
+        this->setErrorString(e.GetMsg().c_str());
+        qCWarning(manager) << "Failed to Remove Driver: " << QString(e.GetMsg().c_str());
+        return false;
+    }
+    this->m_SerialPort = QString();
     return true;
 }
 
@@ -876,10 +893,10 @@ void QTOZWManager_Internal::pvt_valueAdded(quint64 vidKey)
 void QTOZWManager_Internal::pvt_valueRemoved(quint64 vidKey)
 {
     qCDebug(notifications) << "Notification pvt_valueRemoved: " << vidKey;
+    emit this->valueRemoved(vidKey);
     if (this->m_validValues.contains(vidKey))
         this->m_validValues.removeAll(vidKey);
     this->m_valueModel->delValue(vidKey);
-    emit this->valueRemoved(vidKey);
 }
 void QTOZWManager_Internal::pvt_valueChanged(quint64 vidKey)
 {
@@ -1322,6 +1339,13 @@ void QTOZWManager_Internal::pvt_driverReady(quint32 _homeID)
 void QTOZWManager_Internal::pvt_driverFailed(quint32 _homeID)
 {
     qCDebug(notifications) << "Notification pvt_driverFailed " << _homeID;
+    QVector<quint64> valueList(this->m_validValues);
+    for (QVector<quint64>::Iterator it = valueList.begin(); it != valueList.end(); it++)
+        this->pvt_valueRemoved(*it);
+    QVector<quint8> nodeList(this->m_validNodes);
+    for (QVector<quint8>::iterator it = nodeList.begin(); it != nodeList.end(); it++) 
+        this->pvt_nodeRemoved(*it);
+
     this->m_associationsModel->resetModel();
     this->m_valueModel->resetModel();
     this->m_nodeModel->resetModel();
@@ -1332,6 +1356,13 @@ void QTOZWManager_Internal::pvt_driverFailed(quint32 _homeID)
 void QTOZWManager_Internal::pvt_driverReset(quint32 _homeID)
 {
     qCDebug(notifications) << "Notification pvt_driverReset " << _homeID;
+     QVector<quint64> valueList(this->m_validValues);
+    for (QVector<quint64>::Iterator it = valueList.begin(); it != valueList.end(); it++)
+        this->pvt_valueRemoved(*it);
+    QVector<quint8> nodeList(this->m_validNodes);
+    for (QVector<quint8>::iterator it = nodeList.begin(); it != nodeList.end(); it++) 
+        this->pvt_nodeRemoved(*it);
+
     this->m_associationsModel->resetModel();
     this->m_valueModel->resetModel();
     this->m_nodeModel->resetModel();
@@ -1342,6 +1373,13 @@ void QTOZWManager_Internal::pvt_driverReset(quint32 _homeID)
 void QTOZWManager_Internal::pvt_driverRemoved(quint32 _homeID)
 {
     qCDebug(notifications) << "Notification pvt_driverRemoved " << _homeID;
+    QVector<quint64> valueList(this->m_validValues);
+    for (QVector<quint64>::Iterator it = valueList.begin(); it != valueList.end(); it++)
+        this->pvt_valueRemoved(*it);
+    QVector<quint8> nodeList(this->m_validNodes);
+    for (QVector<quint8>::iterator it = nodeList.begin(); it != nodeList.end(); it++) 
+        this->pvt_nodeRemoved(*it);
+
     this->m_associationsModel->resetModel();
     this->m_valueModel->resetModel();
     this->m_nodeModel->resetModel();

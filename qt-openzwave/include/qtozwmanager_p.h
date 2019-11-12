@@ -69,6 +69,7 @@ public:
 
 public Q_SLOTS:
     bool open(QString serialPort);
+    bool close();
     bool refreshNodeInfo(quint8 _node);
     bool requestNodeState(quint8 _node);
     bool requestNodeDynamic(quint8 _node);
@@ -164,7 +165,7 @@ private:
     QVector<quint8> m_validNodes;
     QVector<quint64> m_validValues;
     QMap<quint8, QMap<quint8, bool > > m_associationDefaultsSet;
-
+    QString m_SerialPort;
 };
 
 

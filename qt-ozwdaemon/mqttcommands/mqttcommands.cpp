@@ -4,6 +4,7 @@
 #include "mqttcommands/mqttcommands.h"
 #include "mqttcommands/ping.h"
 #include "mqttcommands/open.h"
+#include "mqttcommands/close.h"
 #include "mqttcommands/refreshnodeinfo.h"
 #include "mqttcommands/requestNodeState.h"
 #include "mqttcommands/requestNodeDynamic.h"
@@ -211,6 +212,7 @@ void MqttCommands::Register(QString command, pfnCreateCommand_t _create) {
 void MqttCommands::setupCommands() {
     this->Register(MqttCommand_Ping::StaticGetCommand(), &MqttCommand_Ping::Create);
     this->Register(MqttCommand_Open::StaticGetCommand(), &MqttCommand_Open::Create);
+    this->Register(MqttCommand_Close::StaticGetCommand(), &MqttCommand_Close::Create);
     this->Register(MqttCommand_RefreshNodeInfo::StaticGetCommand(), &MqttCommand_RefreshNodeInfo::Create);
     this->Register(MqttCommand_RequestNodeState::StaticGetCommand(), &MqttCommand_RequestNodeState::Create);
     this->Register(MqttCommand_RequestNodeDynamic::StaticGetCommand(), &MqttCommand_RequestNodeDynamic::Create);

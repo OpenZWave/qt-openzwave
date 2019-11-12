@@ -378,6 +378,7 @@ void mqttpublisher::cleanTopics(QMqttMessage msg) {
             if (jsmsg.HasMember("Status") && (QString::fromStdString(jsmsg["Status"].GetString()) != "Offline")) {
                 qCDebug(ozwmp) << "Unsubscribing from Topic Cleanup";
                 this->m_cleanTopicSubscription->unsubscribe();
+                exit(-1);
             }
             return;
         }
@@ -658,7 +659,6 @@ bool mqttpublisher::sendCommandClassUpdate(quint8 node, quint8 instance, quint8 
     return true;
 }
 
-
 void mqttpublisher::sendCommandUpdate(QString command, rapidjson::Document &js) {
     QT2JS::SetUInt64(js, "TimeStamp", QDateTime::currentSecsSinceEpoch());
     this->m_client->publish(QMqttTopicName(getCommandResponseTopic(command.toLower())), QT2JS::getJSON(js), 0, false);
@@ -666,7 +666,7 @@ void mqttpublisher::sendCommandUpdate(QString command, rapidjson::Document &js) 
 }
 
 bool mqttpublisher::delNodeTopic(quint8 node) {
-    this->m_client->publish(QMqttTopicName(getNodeTopic(MQTT_OZW_NODE_TOPIC, node)), NULL, 0, false);
+    this->m_client->publish(QMqttTopicName(getNodeTopic(MQTT_OZW_NODE_TOPIC, node)), NULL, 0, true);
     return true;
 }
 
@@ -686,13 +686,22 @@ bool mqttpublisher::delValueTopic(quint64 vidKey) {
         qCWarning(ozwmp) << "sendValueUpdate: Can't find CC for Value: " << vidKey;
         return false;
     }
-    this->m_client->publish(QMqttTopicName(getValueTopic(MQTT_OZW_VID_TOPIC, node, instance, cc, vidKey)), NULL, 0, false);
+    this->m_client->publish(QMqttTopicName(getValueTopic(MQTT_OZW_VID_TOPIC, node, instance, cc, vidKey)), NULL, 0, true);
     /* XXX TODO: Scan though remaining Values, and see if any other Values are under the same CC or instance
      * if not - Then we should delete the CC/instance topic as well 
      */
     return true;
 }
 
+bool mqttpublisher::delInstanceTopic(quint8 node, quint8 instance) {
+    this->m_client->publish(QMqttTopicName(getInstanceTopic(MQTT_OZW_INSTANCE_TOPIC, node, instance)), NULL, 0, true);
+    return true;
+}
+
+bool mqttpublisher::delCommandClassTopic(quint8 node, quint8 instance, quint8 cc) {
+    this->m_client->publish(QMqttTopicName(getCommandClassTopic(MQTT_OZW_COMMANDCLASS_TOPIC, node, instance, cc)), NULL, 0, true);
+    return true;
+}
 
 void mqttpublisher::ready() {
     qCDebug(ozwmp) << "Publishing Event ready:";

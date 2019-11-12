@@ -27,6 +27,7 @@ qtHaveModule(mqtt) {
         	mqttcommands/mqttcommands.cpp \
 	        mqttcommands/ping.cpp \
 	        mqttcommands/open.cpp \
+			mqttcommands/close.cpp \
         	mqttcommands/refreshnodeinfo.cpp \
 	        mqttcommands/requestNodeState.cpp \
         	mqttcommands/requestNodeDynamic.cpp \
@@ -61,6 +62,7 @@ qtHaveModule(mqtt) {
 			mqttcommands/mqttcommands.h \
 			mqttcommands/ping.h \
 			mqttcommands/open.h \
+			mqttcommands/close.h \
     		mqttcommands/refreshnodeinfo.h \
     		mqttcommands/requestNodeState.h \
     		mqttcommands/requestNodeDynamic.h \

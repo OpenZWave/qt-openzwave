@@ -76,6 +76,7 @@ public:
 
     /* OpenZWave::Manager methods */
     bool open(QString serialPort);
+    bool close();
     bool refreshNodeInfo(quint8 _node);
     bool requestNodeState(quint8 _node);
     bool requestNodeDynamic(quint8 _node);

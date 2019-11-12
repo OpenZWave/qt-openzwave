@@ -93,6 +93,7 @@ class QTOZWManager {
     SIGNAL(error(QTOZWManagerErrorCodes errorcode))
 
     SLOT(bool open(QString serialPort))
+    SLOT(bool close())
     SLOT(bool refreshNodeInfo(quint8 _node))
     SLOT(bool requestNodeState(quint8 _node))
     SLOT(bool requestNodeDynamic(quint8 _node))

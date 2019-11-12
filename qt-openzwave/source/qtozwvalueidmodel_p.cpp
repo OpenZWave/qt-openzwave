@@ -85,39 +85,32 @@ void QTOZW_ValueIds_internal::setValueFlags(quint64 _vidKey, QTOZW_ValueIds::Val
 void QTOZW_ValueIds_internal::delValue(quint64 _vidKey) {
     QMap<int32_t, QMap<ValueIdColumns, QVariant> >::iterator it;
     QMap<int32_t, QMap<ValueIdColumns, QVariant> > newValueMap;
-    int32_t newrow = 0;
-    for (it = this->m_valueData.begin(); it != this->m_valueData.end(); ++it) {
+    for (it = this->m_valueData.begin(); it != this->m_valueData.end();) {
         if (it.value()[QTOZW_ValueIds::ValueIdColumns::ValueIDKey] == _vidKey) {
             qCDebug(valueModel) << "Removing Value " << it.value()[QTOZW_ValueIds::ValueIdColumns::Label] << it.key();
             this->beginRemoveRows(QModelIndex(), it.key(), it.key());
-            this->m_valueData.erase(it);
+            it = this->m_valueData.erase(it);
             this->endRemoveRows();
             continue;
         } else {
-            newValueMap[newrow] = it.value();
-            newrow++;
+            it++;
         }
     }
-    this->m_valueData.swap(newValueMap);
 }
 
 void QTOZW_ValueIds_internal::delNodeValues(quint8 _node) {
     QMap<int32_t, QMap<ValueIdColumns, QVariant> >::iterator it;
     QMap<int32_t, QMap<ValueIdColumns, QVariant> > newValueMap;
-    qint32 newrow = 0;
-    for (it = this->m_valueData.begin(); it != this->m_valueData.end(); ++it) {
+    for (it = this->m_valueData.begin(); it != this->m_valueData.end();) {
         if (it.value()[QTOZW_ValueIds::ValueIdColumns::Node] == _node) {
             qCDebug(valueModel) << "Removing Value " << it.value()[QTOZW_ValueIds::ValueIdColumns::Label] << it.key();
             this->beginRemoveRows(QModelIndex(), it.key(), it.key());
-            this->m_valueData.erase(it);
+            it = this->m_valueData.erase(it);
             this->endRemoveRows();
-            continue;
         } else {
-            newValueMap[newrow] = it.value();
-            newrow++;
+            it++;
         }
     }
-    this->m_valueData.swap(newValueMap);
 }
 
 void QTOZW_ValueIds_internal::resetModel() {

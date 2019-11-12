@@ -284,6 +284,9 @@ void QTOZWManager::connectSignals() {
 bool QTOZWManager::open(QString serialPort) {
     CALL_DPTR_RTN(open(serialPort), bool);
 }
+bool QTOZWManager::close() {
+    CALL_DPTR_RTN(close(), bool);
+}
 bool QTOZWManager::refreshNodeInfo(quint8 _node) {
     CALL_DPTR_RTN(refreshNodeInfo(_node), bool);
 }

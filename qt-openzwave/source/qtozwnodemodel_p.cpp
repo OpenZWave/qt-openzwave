@@ -88,21 +88,17 @@ void QTOZW_Nodes_internal::setNodeFlags(quint8 _nodeID, QTOZW_Nodes::nodeFlags _
 }
 void QTOZW_Nodes_internal::delNode(quint8 _nodeID) {
     QMap<int32_t, QMap<NodeColumns, QVariant> >::iterator it;
-    QMap<int32_t, QMap<NodeColumns, QVariant> > newNodeMap;
-    int32_t newrow = 0;
-    for (it = this->m_nodeData.begin(); it != this->m_nodeData.end(); ++it) {
+    for (it = this->m_nodeData.begin(); it != this->m_nodeData.end();) {
         if (it.value()[QTOZW_Nodes::NodeColumns::NodeID] == _nodeID) {
             qCDebug(nodeModel) << "Removing Node " << it.value()[QTOZW_Nodes::NodeColumns::NodeID] << it.key();
             this->beginRemoveRows(QModelIndex(), it.key(), it.key());
-            this->m_nodeData.erase(it);
+            it = this->m_nodeData.erase(it);
             this->endRemoveRows();
             continue;
         } else {
-            newNodeMap[newrow] = it.value();
-            newrow++;
+            it++;
         }
     }
-    this->m_nodeData.swap(newNodeMap);
 }
 
 void QTOZW_Nodes_internal::resetModel() {

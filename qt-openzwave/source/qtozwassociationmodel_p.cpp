@@ -94,17 +94,15 @@ void QTOZW_Associations_internal::setGroupFlags(quint8 _nodeID, quint8 _groupIDX
 };
 
 void QTOZW_Associations_internal::delNode(quint8 _nodeID) {
-    for (int i = 0; i <= rowCount(QModelIndex()); i++) {
-        if (this->m_associationData[i][associationColumns::NodeID] == _nodeID) {
-            qCDebug(associationModel) << "Removing Node " << this->m_associationData[i][associationColumns::NodeID] << i;
-            this->beginRemoveRows(QModelIndex(), i, i);
-            this->m_associationData.remove(i);
-            for (int j = i+1; i <= rowCount(QModelIndex()); j++) {
-                this->m_associationData[i] = this->m_associationData[j];
-            }
-            this->m_associationData.remove(rowCount(QModelIndex()));
+    QMap<qint32, QMap<QTOZW_Associations::associationColumns, QVariant> >::Iterator it;
+    for (it = this->m_associationData.begin(); it != this->m_associationData.end();) {
+        if (it.value()[associationColumns::NodeID] == _nodeID) {
+            qCDebug(associationModel) << "Removing Node " << it.value()[associationColumns::NodeID] << it.key();
+            this->beginRemoveRows(QModelIndex(), it.key(), it.key());
+            it = this->m_associationData.erase(it);
             this->endRemoveRows();
-            continue;
+        } else {
+            it++;
         }
     }
 }
