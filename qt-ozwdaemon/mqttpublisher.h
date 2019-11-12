@@ -17,7 +17,9 @@ class MqttCommands;
 #define MQTT_OZW_STATS_NODE_TOPIC "node/%1/statistics/"
 #define MQTT_OZW_STATUS_TOPIC "status/"
 #define MQTT_OZW_NODE_TOPIC "node/%1/"
-#define MQTT_OZW_VID_TOPIC "node/%1/value/%2/"
+#define MQTT_OZW_INSTANCE_TOPIC "node/%1/%2/"
+#define MQTT_OZW_VID_TOPIC "node/%1/%2/value/%3/%4/"
+#define MQTT_OZW_COMMANDCLASS_TOPIC "node/%1/%2/value/%3/"
 #define MQTT_OZW_COMMAND_TOPIC "command/%1/"
 #define MQTT_OZW_RESPONSE_TOPIC "event/%1/"
 
@@ -99,17 +101,25 @@ private:
 
     QString getTopic(QString);
     QString getNodeTopic(QString, quint8);
-    QString getValueTopic(QString, quint8, quint64);
+    QString getInstanceTopic(QString, quint8, quint8);
+    QString getCommandClassTopic(QString, quint8, quint8, quint8);
+    QString getValueTopic(QString, quint8, quint8, quint8, quint64);
     QString getCommandTopic();
     QString getCommandResponseTopic(QString);
     bool sendStatusUpdate();
     bool sendNodeUpdate(quint8);
     bool sendValueUpdate(quint64);
+    bool sendInstanceUpdate(quint8, quint8);
+    bool sendCommandClassUpdate(quint8, quint8, quint8);
     bool delNodeTopic(quint8);
     bool delValueTopic(quint64);
+    rapidjson::Document *getInstanceJSON(quint8, quint8);
+    rapidjson::Document *getCommandClassJSON(quint8, quint8, quint8);
 
     rapidjson::Document m_ozwstatus;
     QMap<quint8, rapidjson::Document *> m_nodes;
+    QMap<quint8, QMap<quint8, rapidjson::Document *> > m_instances;
+    QMap<quint8, QMap<quint8, QMap <quint8, rapidjson::Document *> > > m_CommandClasses;
     mqttNodeModel *m_nodeModel;
     QMap<quint64, rapidjson::Document *> m_values;
     mqttValueIDModel *m_valueModel;

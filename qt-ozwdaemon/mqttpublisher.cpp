@@ -504,10 +504,25 @@ QString mqttpublisher::getNodeTopic(QString topic, quint8 node) {
     t.append(topic.arg(static_cast<quint8>(node)));
     return t;
 }
-QString mqttpublisher::getValueTopic(QString topic, quint8 node, quint64 vid) {
+
+QString mqttpublisher::getInstanceTopic(QString topic, quint8 node, quint8 instance) {
     QString t(MQTT_OZW_TOP_TOPIC);
     t = t.arg(settings->value("Instance", 1).toInt());
-    t.append(topic.arg(static_cast<quint8>(node)).arg(static_cast<quint64>(vid)));
+    t.append(topic.arg(static_cast<quint8>(node)).arg(static_cast<quint8>(instance)));
+    return t;
+}
+
+QString mqttpublisher::getCommandClassTopic(QString topic, quint8 node, quint8 instance, quint8 cc) {
+    QString t(MQTT_OZW_TOP_TOPIC);
+    t = t.arg(settings->value("Instance", 1).toInt());
+    t.append(topic.arg(static_cast<quint8>(node)).arg(static_cast<quint8>(instance)).arg(static_cast<quint8>(cc)));
+    return t;
+}
+
+QString mqttpublisher::getValueTopic(QString topic, quint8 node, quint8 instance, quint8 cc, quint64 vid) {
+    QString t(MQTT_OZW_TOP_TOPIC);
+    t = t.arg(settings->value("Instance", 1).toInt());
+    t.append(topic.arg(static_cast<quint8>(node)).arg(static_cast<quint8>(instance)).arg(static_cast<quint8>(cc)).arg(static_cast<quint64>(vid)));
     return t;
 }
 
@@ -604,14 +619,46 @@ bool mqttpublisher::sendNodeUpdate(quint8 node) {
 
 bool mqttpublisher::sendValueUpdate(quint64 vidKey) {
     quint8 node = this->m_valueModel->getValueData(vidKey, QTOZW_ValueIds::Node).value<quint8>();
+    quint8 instance = this->m_valueModel->getValueData(vidKey, QTOZW_ValueIds::Instance).value<quint8>();
+    quint8 cc = this->m_valueModel->getValueData(vidKey, QTOZW_ValueIds::CommandClass).value<quint8>();
     if (node == 0) {
         qCWarning(ozwmp) << "sendValueUpdate: Can't find Node for Value: " << vidKey;
         return false;
     }
+    if (instance == 0) {
+        qCWarning(ozwmp) << "sendValueUpdate: Can't find instance for Value: " << vidKey;
+        return false;
+    }
+    if (cc == 0) {
+        qCWarning(ozwmp) << "sendValueUpdate: Can't find CC for Value: " << vidKey;
+        return false;
+    }
     QT2JS::SetUInt64(*this->m_values[vidKey], "TimeStamp", QDateTime::currentSecsSinceEpoch()); 
-    this->m_client->publish(QMqttTopicName(getValueTopic(MQTT_OZW_VID_TOPIC, node, vidKey)), QT2JS::getJSON(*this->m_values[vidKey]), 0, true);
+    this->m_client->publish(QMqttTopicName(getValueTopic(MQTT_OZW_VID_TOPIC, node, instance, cc, vidKey)), QT2JS::getJSON(*this->m_values[vidKey]), 0, true);
     return true;
 }
+
+bool mqttpublisher::sendInstanceUpdate(quint8 node, quint8 instance) {
+    rapidjson::Document *jsinstance = nullptr;
+    if (!(jsinstance = this->getInstanceJSON(node, instance))) {
+        return false;
+    }
+    QT2JS::SetUInt64(*jsinstance, "TimeStamp", QDateTime::currentSecsSinceEpoch());
+    this->m_client->publish(QMqttTopicName(getInstanceTopic(MQTT_OZW_INSTANCE_TOPIC, node, instance)), QT2JS::getJSON(*jsinstance), 0, true);
+    return true;
+}
+
+bool mqttpublisher::sendCommandClassUpdate(quint8 node, quint8 instance, quint8 cc) {
+    rapidjson::Document *jsCommandClass = nullptr;
+    if (!(jsCommandClass = this->getCommandClassJSON(node, instance, cc))) {
+        return false;
+    }
+    QT2JS::SetUInt64(*jsCommandClass, "TimeStamp", QDateTime::currentSecsSinceEpoch());
+    this->m_client->publish(QMqttTopicName(getCommandClassTopic(MQTT_OZW_COMMANDCLASS_TOPIC, node, instance, cc)), QT2JS::getJSON(*jsCommandClass), 0, true);
+    return true;
+}
+
+
 void mqttpublisher::sendCommandUpdate(QString command, rapidjson::Document &js) {
     QT2JS::SetUInt64(js, "TimeStamp", QDateTime::currentSecsSinceEpoch());
     this->m_client->publish(QMqttTopicName(getCommandResponseTopic(command.toLower())), QT2JS::getJSON(js), 0, false);
@@ -625,11 +672,24 @@ bool mqttpublisher::delNodeTopic(quint8 node) {
 
 bool mqttpublisher::delValueTopic(quint64 vidKey) {
     quint8 node = this->m_valueModel->getValueData(vidKey, QTOZW_ValueIds::Node).value<quint8>();
+    quint8 instance = this->m_valueModel->getValueData(vidKey, QTOZW_ValueIds::Instance).value<quint8>();
+    quint8 cc = this->m_valueModel->getValueData(vidKey, QTOZW_ValueIds::CommandClass).value<quint8>();
     if (node == 0) {
         qCWarning(ozwmp) << "delValueTopic: Can't find Node for Value: " << vidKey;
         return false;
     }
-    this->m_client->publish(QMqttTopicName(getValueTopic(MQTT_OZW_VID_TOPIC, node, vidKey)), NULL, 0, false);
+    if (instance == 0) {
+        qCWarning(ozwmp) << "sendValueUpdate: Can't find instance for Value: " << vidKey;
+        return false;
+    }
+    if (cc == 0) {
+        qCWarning(ozwmp) << "sendValueUpdate: Can't find CC for Value: " << vidKey;
+        return false;
+    }
+    this->m_client->publish(QMqttTopicName(getValueTopic(MQTT_OZW_VID_TOPIC, node, instance, cc, vidKey)), NULL, 0, false);
+    /* XXX TODO: Scan though remaining Values, and see if any other Values are under the same CC or instance
+     * if not - Then we should delete the CC/instance topic as well 
+     */
     return true;
 }
 
@@ -641,6 +701,29 @@ void mqttpublisher::ready() {
 }
 void mqttpublisher::valueAdded(quint64 vidKey) {
     qCDebug(ozwmp) << "Publishing Event valueAdded:" << vidKey;
+    /* create instance and CC Topics if necessary */
+    rapidjson::Document *jsinstance = nullptr;
+    quint8 node = this->m_valueModel->getValueData(vidKey, QTOZW_ValueIds::Node).value<quint8>();
+    quint8 instance = this->m_valueModel->getValueData(vidKey, QTOZW_ValueIds::Instance).value<quint8>();
+    quint8 cc = this->m_valueModel->getValueData(vidKey, QTOZW_ValueIds::CommandClass).value<quint8>();
+
+    if (!(jsinstance = this->getInstanceJSON(node, instance))) {
+        jsinstance = new rapidjson::Document(rapidjson::kObjectType);
+        QT2JS::SetInt(*jsinstance, "Instance", instance);
+        this->m_instances[node][instance] = jsinstance;            
+    }
+    this->sendInstanceUpdate(node, instance);
+
+    rapidjson::Document *jsCommandClass = nullptr;
+    if (!(jsCommandClass = this->getCommandClassJSON(node, instance, cc))) {
+        jsCommandClass = new rapidjson::Document(rapidjson::kObjectType);
+        QT2JS::SetInt(*jsCommandClass, "Instance", instance);
+        QT2JS::SetInt(*jsCommandClass, "CommandClassId", cc);
+        QT2JS::SetString(*jsCommandClass, "CommandClass", this->getQTOZWManager()->getCommandClassString(cc));
+        this->m_CommandClasses[node][instance][cc] = jsCommandClass;
+    }
+    this->sendCommandClassUpdate(node, instance, cc);
+
     if (this->m_values.find(vidKey) == this->m_values.end()) {
         this->m_values.insert(vidKey, new rapidjson::Document());
     }
@@ -693,14 +776,20 @@ void mqttpublisher::nodeRemoved(quint8 node) {
     this->delNodeTopic(node);
     if (this->m_nodes.find(node) == this->m_nodes.end()) { 
         this->m_nodes.remove(node);
-    } 
+    }
+    /* XXX TODO: Scan Through Instance, CC and Value Lists and make sure
+     * they are all deleted as well
+     */ 
 }
 void mqttpublisher::nodeReset(quint8 node) {
     qCDebug(ozwmp) << "Publishing Event nodeReset:" << node;
     this->delNodeTopic(node);
     if (this->m_nodes.find(node) == this->m_nodes.end()) { 
         this->m_nodes.remove(node);
-    } 
+    }
+    /* XXX TODO: Scan Through Instance, CC and Value Lists and make sure
+     * they are all deleted as well
+     */  
 }
 void mqttpublisher::nodeNaming(quint8 node) {
     qCDebug(ozwmp) << "Publishing Event nodeNaming:" << node;
@@ -743,18 +832,21 @@ void mqttpublisher::driverFailed(quint32 homeID) {
     QT2JS::SetString(this->m_ozwstatus, "Status", "driverFailed");
     QT2JS::SetUint(this->m_ozwstatus, "homeID", homeID);
     this->sendStatusUpdate();
+    /* XXX TODO: Scan Nodes, Instances, CC and Value Lists and delete them */
 }
 void mqttpublisher::driverReset(quint32 homeID) {
     qCDebug(ozwmp) << "Publishing Event driverReset:" << homeID;
     QT2JS::SetString(this->m_ozwstatus, "Status", "driverReset");
     QT2JS::SetUint(this->m_ozwstatus, "homeID", homeID);
     this->sendStatusUpdate();
+    /* XXX TODO: Scan Nodes, Instances, CC and Value Lists and delete them */
 }
 void mqttpublisher::driverRemoved(quint32 homeID) {
     qCDebug(ozwmp) << "Publishing Event driverRemoved:" << homeID;
     QT2JS::SetString(this->m_ozwstatus, "Status", "driverRemoved");
     QT2JS::SetUint(this->m_ozwstatus, "homeID", homeID);
     this->sendStatusUpdate();
+    /* XXX TODO: Scan Nodes, Instances, CC and Value Lists and delete them */
 }
 void mqttpublisher::driverAllNodesQueriedSomeDead() {
     qCDebug(ozwmp) << "Publishing Event driverAllNodesQueriedSomeDead:" ;
@@ -912,4 +1004,23 @@ void mqttpublisher::stopped(quint32 homeID) {
 
 QTOZWManager *mqttpublisher::getQTOZWManager() {
     return this->m_qtozwdeamon->getManager();
+}
+
+rapidjson::Document *mqttpublisher::getInstanceJSON(quint8 node, quint8 instance) {
+    if (this->m_instances.find(node) != this->m_instances.end()) {
+        if (this->m_instances[node].find(instance) != this->m_instances[node].end()) {
+            return this->m_instances[node][instance];
+        }
+    }
+    return nullptr;
+}
+rapidjson::Document *mqttpublisher::getCommandClassJSON(quint8 node, quint8 instance, quint8 cc) {
+    if (this->m_CommandClasses.find(node) != this->m_CommandClasses.end()) {
+        if (this->m_CommandClasses[node].find(instance) != this->m_CommandClasses[node].end()) {
+            if (this->m_CommandClasses[node][instance].find(cc) != this->m_CommandClasses[node][instance].end()) {
+                return this->m_CommandClasses[node][instance][cc]; 
+            }
+        }
+    }
+    return nullptr;
 }
