@@ -117,6 +117,7 @@ unix {
     INCLUDEPATH += ../qt-openzwavedatabase/include/
     QMAKE_CXXFLAGS += -g1
     QMAKE_LFLAGS += -rdynamic
+	QMAKE_STRIP = echo
 }
 win32 {
     LIBS += -lDnsapi -L../qt-openzwave/$$BUILDTYPE/ -lqt-openzwave1

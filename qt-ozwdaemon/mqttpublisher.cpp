@@ -173,64 +173,85 @@ bool mqttValueIDModel::populateJsonObject(rapidjson::Document &jsonobject, quint
 bool mqttValueIDModel::encodeValue(rapidjson::Document &value, quint64 vidKey) {
     QVariant data = this->getValueData(vidKey, mqttValueIDModel::ValueIdColumns::Value);
     QTOZW_ValueIds::ValueIdTypes type = this->getValueData(vidKey, mqttValueIDModel::ValueIdColumns::Type).value<QTOZW_ValueIds::ValueIdTypes>();
+    bool changed = false;
     switch (type) {
         case QTOZW_ValueIds::ValueIdTypes::BitSet: {
-            rapidjson::Value bitsets(rapidjson::kArrayType);
-            bitsets.SetArray();
-            QTOZW_ValueIDBitSet vidbs = data.value<QTOZW_ValueIDBitSet>();
-            int size = vidbs.mask.size();
-            for (int i = 0; i < size; i++) {
-                if (vidbs.mask[i] == 1) {
-                    rapidjson::Value bitset;
-                    bitset.SetObject();
-                    bitset.AddMember(
-                        rapidjson::Value("Label", value.GetAllocator()).Move(),
-                        rapidjson::Value(vidbs.label[i].toStdString().c_str(), value.GetAllocator()).Move(),
-                        value.GetAllocator()
-                    );
-                    bitset.AddMember(
-                        rapidjson::Value("Help", value.GetAllocator()).Move(), 
-                        rapidjson::Value(vidbs.help[i].toStdString().c_str(), value.GetAllocator()).Move(),
-                        value.GetAllocator()
-                    );
-                    bitset.AddMember(
-                        rapidjson::Value("Values", value.GetAllocator()).Move(),
-                        rapidjson::Value(vidbs.values[i]),
-                        value.GetAllocator()
-                    );
-                    bitset.AddMember(
-                        rapidjson::Value("Position", value.GetAllocator()).Move(),
-                        rapidjson::Value(i),
-                        value.GetAllocator()
-                    );
-                    bitsets.PushBack(bitset, value.GetAllocator());
+            if (!value.HasMember("Value")) { 
+                rapidjson::Value bitsets(rapidjson::kArrayType);
+                bitsets.SetArray();
+                QTOZW_ValueIDBitSet vidbs = data.value<QTOZW_ValueIDBitSet>();
+                int size = vidbs.mask.size();
+                for (int i = 0; i < size; i++) {
+                    if (vidbs.mask[i] == 1) {
+                        rapidjson::Value bitset;
+                        bitset.SetObject();
+                        bitset.AddMember(
+                            rapidjson::Value("Label", value.GetAllocator()).Move(),
+                            rapidjson::Value(vidbs.label[i].toStdString().c_str(), value.GetAllocator()).Move(),
+                            value.GetAllocator()
+                        );
+                        bitset.AddMember(
+                            rapidjson::Value("Help", value.GetAllocator()).Move(), 
+                            rapidjson::Value(vidbs.help[i].toStdString().c_str(), value.GetAllocator()).Move(),
+                            value.GetAllocator()
+                        );
+                        bitset.AddMember(
+                            rapidjson::Value("Value", value.GetAllocator()).Move(),
+                            rapidjson::Value(vidbs.values[i]),
+                            value.GetAllocator()
+                        );
+                        bitset.AddMember(
+                            rapidjson::Value("Position", value.GetAllocator()).Move(),
+                            rapidjson::Value(i),
+                            value.GetAllocator()
+                        );
+                        bitsets.PushBack(bitset, value.GetAllocator());
+                    }
+                }
+                value.AddMember(
+                    rapidjson::Value("Value", value.GetAllocator()).Move(),
+                    bitsets,
+                    value.GetAllocator()
+                );
+                changed = true;
+            } else {
+                /* Value Already Exists, Just Check for Changes */
+                rapidjson::Value bitsets = value["Value"].GetArray();
+                QTOZW_ValueIDBitSet vidbs = data.value<QTOZW_ValueIDBitSet>();
+                for (unsigned int i = 0; i < bitsets.Size(); i++) {
+                    rapidjson::Value bitset = bitsets[i].GetObject();
+                    if (bitset.HasMember("Position") && bitset.HasMember("Value") && bitset["Position"].IsInt() && bitset["Value"].IsBool()) { 
+                        int pos = bitset["Position"].GetInt();
+                        bool val = bitset["Value"].GetBool();
+                        if (vidbs.values[pos] != val) {
+                            bitset["Value"].SetBool(val);
+                            changed = true;
+                        }
+                    } else {
+                        qCWarning(ozwmpvalue) << "Bitset is Missing Position or Value Members, or Incorrect Types: " << QT2JS::getJSON(value);
+                    }
                 }
             }
-            value.AddMember(
-                rapidjson::Value("Value", value.GetAllocator()).Move(),
-                bitsets,
-                value.GetAllocator()
-            );
             break;
         }
         case QTOZW_ValueIds::ValueIdTypes::Bool: {
-            QT2JS::SetBool(value, "Value", data.toBool());
+            changed = QT2JS::SetBool(value, "Value", data.toBool());
             break;
         }
         case QTOZW_ValueIds::ValueIdTypes::Button: {
-            QT2JS::SetBool(value, "Value", data.toBool());
+            changed = QT2JS::SetBool(value, "Value", data.toBool());
             break;
         }
         case QTOZW_ValueIds::ValueIdTypes::Byte: {
-            QT2JS::SetInt(value, "Value", data.toInt());
+            changed = QT2JS::SetInt(value, "Value", data.toInt());
             break;
         }
         case QTOZW_ValueIds::ValueIdTypes::Decimal: {
-            QT2JS::SetDouble(value, "Value", data.toDouble());
+            changed = QT2JS::SetDouble(value, "Value", data.toDouble());
             break;
         }
         case QTOZW_ValueIds::ValueIdTypes::Int:{
-            QT2JS::SetInt(value, "Value", data.toInt());
+            changed = QT2JS::SetInt(value, "Value", data.toInt());
             break;
         }
         case QTOZW_ValueIds::ValueIdTypes::List: {
@@ -238,38 +259,50 @@ bool mqttValueIDModel::encodeValue(rapidjson::Document &value, quint64 vidKey) {
             int size = vidlist.values.count();
             rapidjson::Value list(rapidjson::kArrayType);
             list.SetArray();
-            for (int i = 0; i < size; i++) {
-                rapidjson::Value entry;
-                entry.SetObject();
-                entry.AddMember(
+            if (!value.HasMember("Value")) {
+                for (int i = 0; i < size; i++) {
+                    rapidjson::Value entry;
+                    entry.SetObject();
+                    entry.AddMember(
+                        rapidjson::Value("Value", value.GetAllocator()).Move(),
+                        vidlist.values[i],
+                        value.GetAllocator()
+                    );
+                    entry.AddMember(
+                        rapidjson::Value("Label", value.GetAllocator()).Move(),
+                        rapidjson::Value(vidlist.labels[i].toStdString().c_str(), value.GetAllocator()),
+                        value.GetAllocator()
+                    );
+                    list.PushBack(entry, value.GetAllocator());
+                }
+                rapidjson::Value var(rapidjson::kObjectType);
+                var.SetObject();
+                var.AddMember(
+                    rapidjson::Value("List", value.GetAllocator()).Move(),
+                    list,
+                    value.GetAllocator()
+                );
+                var.AddMember(
+                    rapidjson::Value("Selected", value.GetAllocator()).Move(),
+                    rapidjson::Value(vidlist.selectedItem.toStdString().c_str(), value.GetAllocator()).Move(),
+                    value.GetAllocator()
+                );
+                value.AddMember(
                     rapidjson::Value("Value", value.GetAllocator()).Move(),
-                    vidlist.values[i],
+                    var,
                     value.GetAllocator()
                 );
-                entry.AddMember(
-                    rapidjson::Value("Label", value.GetAllocator()).Move(),
-                    rapidjson::Value(vidlist.labels[i].toStdString().c_str(), value.GetAllocator()),
-                    value.GetAllocator()
-                );
-                list.PushBack(entry, value.GetAllocator());
+                changed = true;
+            } else {
+                /* Value Array exists, so just check/update the Values */
+                QString selected = value["Value"]["Selected"].GetString();
+                if (selected != vidlist.selectedItem) {
+                    value["Value"]["Selected"].SetString(vidlist.selectedItem.toStdString().c_str(), value.GetAllocator());
+                    changed = true;
+                } else {
+                    qCDebug(ozwmpvalue) << "List Selected Value has Not Changed: " << vidlist.selectedItem;
+                }
             }
-            rapidjson::Value var;
-            var.SetObject();
-            var.AddMember(
-                rapidjson::Value("List", value.GetAllocator()).Move(),
-                list,
-                value.GetAllocator()
-            );
-            var.AddMember(
-                rapidjson::Value("Selected", value.GetAllocator()).Move(),
-                rapidjson::Value(vidlist.selectedItem.toStdString().c_str(), value.GetAllocator()).Move(),
-                value.GetAllocator()
-            );
-            value.AddMember(
-                rapidjson::Value("Value", value.GetAllocator()).Move(),
-                var,
-                value.GetAllocator()
-            );
             break;
         }
         case QTOZW_ValueIds::ValueIdTypes::Raw: {
@@ -281,11 +314,11 @@ bool mqttValueIDModel::encodeValue(rapidjson::Document &value, quint64 vidKey) {
             break;
         }
         case QTOZW_ValueIds::ValueIdTypes::Short: {
-            QT2JS::SetInt(value, "Value" ,data.toInt());
+            changed = QT2JS::SetInt(value, "Value" ,data.toInt());
             break;
         }
         case QTOZW_ValueIds::ValueIdTypes::String: {
-            QT2JS::SetString(value, "Value", data.toString());
+            changed = QT2JS::SetString(value, "Value", data.toString());
             break;
         }
         case QTOZW_ValueIds::ValueIdTypes::TypeCount: {
@@ -293,7 +326,7 @@ bool mqttValueIDModel::encodeValue(rapidjson::Document &value, quint64 vidKey) {
             break;
         }
     }
-    return true;
+    return changed;
 }
 
 bool mqttValueIDModel::setData(quint64 vidKey, QVariant data) {
@@ -611,9 +644,11 @@ void mqttpublisher::valueAdded(quint64 vidKey) {
     if (this->m_values.find(vidKey) == this->m_values.end()) {
         this->m_values.insert(vidKey, new rapidjson::Document());
     }
-    this->m_valueModel->populateJsonObject(*this->m_values[vidKey], vidKey, this->m_qtozwdeamon->getManager());
-    QT2JS::SetString(*this->m_values[vidKey], "Event", "valueAdded");
-    this->sendValueUpdate(vidKey);
+    if (this->m_valueModel->populateJsonObject(*this->m_values[vidKey], vidKey, this->m_qtozwdeamon->getManager())) {
+        /* something has changed */
+        QT2JS::SetString(*this->m_values[vidKey], "Event", "valueAdded");
+        this->sendValueUpdate(vidKey);
+    }
 }
 void mqttpublisher::valueRemoved(quint64 vidKey) {
     qCDebug(ozwmp) << "Publishing Event valueRemoved:" << vidKey;
@@ -621,19 +656,25 @@ void mqttpublisher::valueRemoved(quint64 vidKey) {
 }
 void mqttpublisher::valueChanged(quint64 vidKey) {
     qCDebug(ozwmp) << "Publishing Event valueChanged:" << vidKey;
-    QT2JS::SetString(*this->m_values[vidKey], "Event", "valueChanged");
-    this->m_valueModel->encodeValue(*this->m_values[vidKey], vidKey);
-    this->sendValueUpdate(vidKey);
-
+    if (this->m_valueModel->encodeValue(*this->m_values[vidKey], vidKey)) {
+        /* something has changed */
+        QT2JS::SetString(*this->m_values[vidKey], "Event", "valueChanged");
+        this->sendValueUpdate(vidKey);
+    }
 }
 void mqttpublisher::valueRefreshed(quint64 vidKey) {
     qCDebug(ozwmp) << "Publishing Event valueRefreshed:" << vidKey;
-    QT2JS::SetString(*this->m_values[vidKey], "Event", "valueRefreshed");
-    this->m_valueModel->encodeValue(*this->m_values[vidKey], vidKey);
-    this->sendValueUpdate(vidKey);
+    if (this->m_valueModel->encodeValue(*this->m_values[vidKey], vidKey)) {
+        /* something has changed */
+        QT2JS::SetString(*this->m_values[vidKey], "Event", "valueRefreshed");
+        this->sendValueUpdate(vidKey);
+    }
 }
 void mqttpublisher::nodeNew(quint8 node) {
     qCDebug(ozwmp) << "Publishing Event NodeNew:" << node;
+    if (this->m_nodes.find(node) == this->m_nodes.end()) {
+        this->m_nodes.insert(node, new rapidjson::Document(rapidjson::kObjectType));
+    }
     this->m_nodeModel->populateJsonObject(*this->m_nodes[node], node, this->m_qtozwdeamon->getManager());
     QT2JS::SetString(*this->m_nodes[node], "Event", "nodeNew");
     this->sendNodeUpdate(node);
@@ -641,7 +682,7 @@ void mqttpublisher::nodeNew(quint8 node) {
 void mqttpublisher::nodeAdded(quint8 node) {
     qCDebug(ozwmp) << "Publishing Event NodeAdded:" << node;
     if (this->m_nodes.find(node) == this->m_nodes.end()) {
-        this->m_nodes.insert(node, new rapidjson::Document());
+        this->m_nodes.insert(node, new rapidjson::Document(rapidjson::kObjectType));
     }
     this->m_nodeModel->populateJsonObject(*this->m_nodes[node], node, this->m_qtozwdeamon->getManager());
     QT2JS::SetString(*this->m_nodes[node], "Event", "nodeAdded");
