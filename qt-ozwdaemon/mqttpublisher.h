@@ -12,7 +12,7 @@
 
 class MqttCommands;
 
-#define MQTT_OZW_TOP_TOPIC "/OpenZWave/%1/"
+#define MQTT_OZW_TOP_TOPIC "OpenZWave/%1/"
 #define MQTT_OZW_STATS_TOPIC "statistics/"
 #define MQTT_OZW_STATS_NODE_TOPIC "node/%1/statistics/"
 #define MQTT_OZW_STATUS_TOPIC "status/"
