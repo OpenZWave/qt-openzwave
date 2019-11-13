@@ -44,6 +44,7 @@ public Q_SLOTS:
     void delNode(quint8 _nodeID);
     void resetModel();
     void finishTransaction(quint8 _nodeID);
+    
 };
 
 

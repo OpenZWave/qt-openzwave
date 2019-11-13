@@ -120,7 +120,7 @@ protected:
     QVariant getValueData(quint64, ValueIdColumns);
     int32_t getValueRow(quint64 _node);
 
-    QMap<int32_t, QMap<ValueIdColumns, QVariant> > m_valueData;
+    QVector< QMap<ValueIdColumns, QVariant> > m_valueData;
 };
 
 #endif // QTOZWVALUEIDMODEL_H

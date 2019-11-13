@@ -161,6 +161,26 @@ bool QTOZWManager_Internal::close() {
         qCWarning(manager) << "Failed to Remove Driver: " << QString(e.GetMsg().c_str());
         return false;
     }
+    try {
+        if (this->m_manager->RemoveWatcher(OZWNotification::processNotification, this ) != true) {
+            emit this->error(QTOZWManagerErrorCodes::setupFailed);
+            this->setErrorString("Failed to Remove Notification Callback");
+            qCWarning(manager) << "Failed to Remove Notification Callback";
+            return false;
+        }
+    } catch (OpenZWave::OZWException &e) {
+        emit this->error(QTOZWManagerErrorCodes::OZWException);
+        this->setErrorString(e.GetMsg().c_str());
+        qCWarning(manager) << "Failed to Remove Notification Callback " << QString(e.GetMsg().c_str());
+        return false;
+    }
+    if (OZWNotification::Get()->disconnect() != true) {
+        emit this->error(QTOZWManagerErrorCodes::setupFailed);
+        this->setErrorString("Failed to Disconnect Notification Signals");
+        qCWarning(manager) << "Failed to Disconnect Notification Signals";
+        return false;
+    }
+    qCDebug(manager) << "OZW Serial Port Closed";
     this->m_SerialPort = QString();
     return true;
 }
@@ -1016,18 +1036,33 @@ void QTOZWManager_Internal::pvt_nodeAdded(quint8 node)
 void QTOZWManager_Internal::pvt_nodeRemoved(quint8 node)
 {
     qCDebug(notifications) << "Notification pvt_nodeRemoved " << node;
+    QVector<quint64> valueList(this->m_validValues);
+    for (QVector<quint64>::Iterator it = valueList.begin(); it != valueList.end(); it++) {
+        if (this->m_valueModel->getValueData(*it, QTOZW_ValueIds::ValueIdColumns::Node).toInt() == node) 
+            this->pvt_valueRemoved(*it);
+    }
+    emit this->nodeRemoved(node);
+
     if (this->m_validNodes.contains(node))
         this->m_validNodes.removeAll(node);
+
     this->m_associationsModel->delNode(node);
     /* technically, this shouldn't be required... but just in case */
     this->m_valueModel->delNodeValues(node);
     this->m_nodeModel->delNode(node);
-    emit this->nodeRemoved(node);
 
 }
 void QTOZWManager_Internal::pvt_nodeReset(quint8 node)
 {
     qCDebug(notifications) << "Notification pvt_nodeReset " << node;
+    QVector<quint64> valueList(this->m_validValues);
+    for (QVector<quint64>::Iterator it = valueList.begin(); it != valueList.end(); it++) {
+        if (this->m_valueModel->getValueData(*it, QTOZW_ValueIds::ValueIdColumns::Node).toInt() == node) 
+            this->pvt_valueRemoved(*it);
+    }
+
+    emit this->nodeReset(node);
+
     if (this->m_validNodes.contains(node))
         this->m_validNodes.removeAll(node);
 
@@ -1035,7 +1070,6 @@ void QTOZWManager_Internal::pvt_nodeReset(quint8 node)
     /* technically, this shouldn't be required... but just in case */
     this->m_valueModel->delNodeValues(node);
     this->m_nodeModel->delNode(node);
-    emit this->nodeReset(node);
 
 }
 void QTOZWManager_Internal::pvt_nodeNaming(quint8 node)
@@ -1339,9 +1373,6 @@ void QTOZWManager_Internal::pvt_driverReady(quint32 _homeID)
 void QTOZWManager_Internal::pvt_driverFailed(quint32 _homeID)
 {
     qCDebug(notifications) << "Notification pvt_driverFailed " << _homeID;
-    QVector<quint64> valueList(this->m_validValues);
-    for (QVector<quint64>::Iterator it = valueList.begin(); it != valueList.end(); it++)
-        this->pvt_valueRemoved(*it);
     QVector<quint8> nodeList(this->m_validNodes);
     for (QVector<quint8>::iterator it = nodeList.begin(); it != nodeList.end(); it++) 
         this->pvt_nodeRemoved(*it);
@@ -1356,9 +1387,6 @@ void QTOZWManager_Internal::pvt_driverFailed(quint32 _homeID)
 void QTOZWManager_Internal::pvt_driverReset(quint32 _homeID)
 {
     qCDebug(notifications) << "Notification pvt_driverReset " << _homeID;
-     QVector<quint64> valueList(this->m_validValues);
-    for (QVector<quint64>::Iterator it = valueList.begin(); it != valueList.end(); it++)
-        this->pvt_valueRemoved(*it);
     QVector<quint8> nodeList(this->m_validNodes);
     for (QVector<quint8>::iterator it = nodeList.begin(); it != nodeList.end(); it++) 
         this->pvt_nodeRemoved(*it);
@@ -1373,9 +1401,6 @@ void QTOZWManager_Internal::pvt_driverReset(quint32 _homeID)
 void QTOZWManager_Internal::pvt_driverRemoved(quint32 _homeID)
 {
     qCDebug(notifications) << "Notification pvt_driverRemoved " << _homeID;
-    QVector<quint64> valueList(this->m_validValues);
-    for (QVector<quint64>::Iterator it = valueList.begin(); it != valueList.end(); it++)
-        this->pvt_valueRemoved(*it);
     QVector<quint8> nodeList(this->m_validNodes);
     for (QVector<quint8>::iterator it = nodeList.begin(); it != nodeList.end(); it++) 
         this->pvt_nodeRemoved(*it);

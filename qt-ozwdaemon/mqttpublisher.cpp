@@ -745,6 +745,55 @@ void mqttpublisher::valueAdded(quint64 vidKey) {
 void mqttpublisher::valueRemoved(quint64 vidKey) {
     qCDebug(ozwmp) << "Publishing Event valueRemoved:" << vidKey;
     this->delValueTopic(vidKey);
+    quint8 vinstance = this->m_valueModel->getValueData(vidKey, QTOZW_ValueIds::ValueIdColumns::Instance).toInt();
+    quint8 vcc = this->m_valueModel->getValueData(vidKey, QTOZW_ValueIds::ValueIdColumns::CommandClass).toInt();
+    quint8 node = this->m_valueModel->getValueData(vidKey, QTOZW_ValueIds::ValueIdColumns::Node).toInt();
+    bool removeInstance = true;
+    bool removeCC = true;
+    QMap<quint64, rapidjson::Document *>::iterator it;
+    for (it =this->m_values.begin(); it != this->m_values.end(); it++) {
+        if (this->m_valueModel->getValueData(it.key(), QTOZW_ValueIds::ValueIdColumns::ValueIDKey).value<quint64>() == vidKey) {
+            continue;
+        }
+        if (this->m_valueModel->getValueData(it.key(), QTOZW_ValueIds::ValueIdColumns::Node).toInt() != node) {
+            continue;
+        }
+        if (this->m_valueModel->getValueData(it.key(), QTOZW_ValueIds::ValueIdColumns::Instance).toInt() != vinstance) {
+            continue;
+        };
+        quint8 cc = this->m_valueModel->getValueData(it.key(), QTOZW_ValueIds::ValueIdColumns::CommandClass).toInt();
+        if (vcc == cc) {
+            removeCC = false;
+        }
+    }
+    if (removeCC) {
+        qCDebug(ozwmp) << "Removing CommandClass Topic for " << this->m_valueModel->getValueData(vidKey, QTOZW_ValueIds::ValueIdColumns::Node).toInt() << vinstance << vcc;
+        this->delCommandClassTopic(this->m_valueModel->getValueData(vidKey, QTOZW_ValueIds::ValueIdColumns::Node).toInt(), vinstance, vcc);
+    }
+    for (it =this->m_values.begin(); it != this->m_values.end(); it++) {
+        if (this->m_valueModel->getValueData(it.key(), QTOZW_ValueIds::ValueIdColumns::ValueIDKey).value<quint64>() == vidKey) {
+            continue;
+        }
+        if (this->m_valueModel->getValueData(it.key(), QTOZW_ValueIds::ValueIdColumns::Node).toInt() != node) {
+            continue;
+        }
+        quint8 instance = this->m_valueModel->getValueData(it.key(), QTOZW_ValueIds::ValueIdColumns::Instance).toInt();
+        if (vinstance == instance) {
+            removeInstance = false;
+        }
+    }
+
+    if (removeInstance) {
+        qCDebug(ozwmp) << "Removing Instance Topic for " << this->m_valueModel->getValueData(vidKey, QTOZW_ValueIds::ValueIdColumns::Node).toInt() << vinstance;
+        this->delInstanceTopic(this->m_valueModel->getValueData(vidKey, QTOZW_ValueIds::ValueIdColumns::Node).toInt(), vinstance);
+    }
+
+
+    if (this->m_values.find(vidKey) != this->m_values.end()) {
+        this->m_values.remove(vidKey);
+    } else {
+        qCWarning(ozwmp) << "Can't Find Value Map for " << vidKey;
+    }
 }
 void mqttpublisher::valueChanged(quint64 vidKey) {
     qCDebug(ozwmp) << "Publishing Event valueChanged:" << vidKey;

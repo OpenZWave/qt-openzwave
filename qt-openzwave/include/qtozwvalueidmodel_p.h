@@ -45,6 +45,8 @@ public Q_SLOTS:
     void delNodeValues(quint8 _node);
     void resetModel();
     void finishTransaction(quint64 _vidKey);
+    QVariant getValueData(quint64, ValueIdColumns);
+
 };
 
 

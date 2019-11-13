@@ -56,7 +56,7 @@ QVariant QTOZW_Nodes::data(const QModelIndex &index, int role) const {
         return QVariant();
 
     if (role == Qt::DisplayRole) {
-        QMap<NodeColumns, QVariant> node = this->m_nodeData[index.row()];
+        QMap<NodeColumns, QVariant> node = this->m_nodeData.at(index.row());
         if (node.size() == 0) {
             qCWarning(nodeModel) << "data: Cant find any Node on Row " << index.row();
             return QVariant();
@@ -171,7 +171,7 @@ bool QTOZW_Nodes::setData(const QModelIndex &index, const QVariant &value, int r
     switch (static_cast<NodeColumns>(index.column())) {
         case NodeName:
         case NodeLocation:
-            if (this->m_nodeData[index.row()][static_cast<NodeColumns>(index.column())] != value) {
+            if (this->m_nodeData.at(index.row())[static_cast<NodeColumns>(index.column())] != value) {
                 this->m_nodeData[index.row()][static_cast<NodeColumns>(index.column())] = value;
                 QVector<int> roles;
                 roles << Qt::DisplayRole << QTOZW_UserRoles::ModelDataChanged;
@@ -187,7 +187,7 @@ bool QTOZW_Nodes::setData(const QModelIndex &index, const QVariant &value, int r
 QVariant QTOZW_Nodes::getNodeData(quint8 _node, QTOZW_Nodes::NodeColumns _column) {
     int32_t row = this->getNodeRow(_node);
     if (row >= 0)
-        return this->m_nodeData[row][_column];
+        return this->m_nodeData.at(row)[_column];
     qCWarning(nodeModel) << "Can't find NodeData for Node " << _node;
     return QVariant();
 }
@@ -196,12 +196,14 @@ int32_t QTOZW_Nodes::getNodeRow(quint8 _node) {
     if (this->m_nodeData.count() == 0) {
         return -1;
     }
-    QMap<int32_t, QMap<NodeColumns, QVariant> >::iterator it;
+    QVector< QMap<NodeColumns, QVariant> >::iterator it;
+    int i = 0;
     for (it = m_nodeData.begin(); it != m_nodeData.end(); ++it) {
-        QMap<NodeColumns, QVariant> node = it.value();
+        QMap<NodeColumns, QVariant> node = (*it);
         if (node.value(QTOZW_Nodes::NodeID) == _node) {
-            return it.key();
+            return i;
         }
+        i++;
     }
     //qCWarning(nodeModel) << "Can't Find NodeID " << _node << " in NodeData";
     return -1;
