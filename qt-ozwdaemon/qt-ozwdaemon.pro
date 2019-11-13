@@ -23,6 +23,8 @@ qtHaveModule(mqtt) {
 	QT += mqtt
 	DEFINES += HAVE_MQTT
 	SOURCES += mqttpublisher.cpp \
+			mqttNodes.cpp \
+			mqttValues.cpp \
 			qtrj.cpp \
         	mqttcommands/mqttcommands.cpp \
 	        mqttcommands/ping.cpp \
@@ -59,6 +61,8 @@ qtHaveModule(mqtt) {
 
 	HEADERS += mqttpublisher.h \
 			qtrj.h \
+			mqttNodes.h \
+			mqttValues.h \
 			mqttcommands/mqttcommands.h \
 			mqttcommands/ping.h \
 			mqttcommands/open.h \

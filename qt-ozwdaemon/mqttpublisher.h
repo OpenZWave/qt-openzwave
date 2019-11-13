@@ -8,6 +8,8 @@
 #include <rapidjson/document.h>
 
 #include "qtozwdaemon.h"
+#include "mqttNodes.h"
+#include "mqttValues.h"
 #include "mqttcommands/mqttcommands.h"
 
 class MqttCommands;
@@ -23,26 +25,6 @@ class MqttCommands;
 #define MQTT_OZW_COMMAND_TOPIC "command/%1/"
 #define MQTT_OZW_RESPONSE_TOPIC "event/%1/"
 
-
-class mqttNodeModel : public QTOZW_Nodes {
-    Q_OBJECT
-public:
-    explicit mqttNodeModel(QObject *parent = nullptr);
-    QVariant getNodeData(quint8, NodeColumns);
-    bool populateJsonObject(rapidjson::Document &, quint8, QTOZWManager *);
-    bool isValidNode(quint8);
-};
-
-class mqttValueIDModel : public QTOZW_ValueIds {
-    Q_OBJECT
-public:
-    explicit mqttValueIDModel(QObject *parent = nullptr);
-    QVariant getValueData(quint64, ValueIdColumns);
-    bool populateJsonObject(rapidjson::Document &, quint64, QTOZWManager *);
-    bool encodeValue(rapidjson::Document &, quint64);
-    bool isValidValueID(quint64);
-    bool setData(quint64, QVariant);
-};
 
 class mqttpublisher : public QObject
 {
