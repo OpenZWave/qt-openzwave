@@ -10,24 +10,25 @@ Start Container with the following command line:
 
 (replace MQTT_SERVER with IP address of the MQTT Server and all /dev/ttyUSB0 entries with path to your USB Stick
 
-MQTT Commands
--------------
+## MQTT Commands
 
 Most OZW "Commands" asyncronys meaning that the results of the command may not be immediatly available and require talking to the Device on your network. 
 
-The MQTT Client for OZW will usually report the status of each command it process in at least one stages, although some commands will return the progress of the command:
+The MQTT Client for OZW will usually report the status of each command it process in at least one stage, although some commands will return the progress of the command:
 
-1) Command Accepted by OZW - This means any paramaters required are passed and valid and that the OZW library has accepted the command
+1) Command Accepted by OZW - This means any parameters required are passed and valid and that the OZW library has accepted the command
 2) For some commands, the subsequent updates are reported via Notifications, which will be reported to the /OpenZWave/<instance>/event/<command>/ (where command may be a specific command, or in some cases, "ControllerCommand" where the notification may be generic in nature)
-    Please see the documentation of each command to determine where responses may be sent.
+    
+
+Please see the documentation of each command to determine where responses may be sent.
 
 All Commands are located under the "OpenZWave/<instance>/command/<command>/ topics
 Success/Failure of commands is sent to the OpenZWave/<instance>/event/<command>/ topic
 
 Commands Lists
---------------
-addNode
--------
+==============
+## addNode
+
 Params:
     "secure" - bool: If we should attempt to add the node to a network securely.
 Returns:
@@ -40,10 +41,10 @@ Notes:
     If a Node is succesfully added, its details will be progressively added to the Nodes topic with all applicable ValueID's
 
 See Also:
-    cancleControllerCommand
+    [cancelControllerCommand](#cancelControllerCommand)
 
-assignReturnRoute
------------------
+## assignReturnRoute
+
 Params:
     "node" - uint8: The NodeID to execute this command on
 Returns:
@@ -54,8 +55,8 @@ Notification:
 Notes:
     Asks thee Node to calculate the Route to communicate with the Controller. This is a advanced command and should not be required on ZWave Plus devices. 
 
-cancelControllerCommand
------------------------
+## cancelControllerCommand
+
 Params:
     None
 Returns:
@@ -66,8 +67,8 @@ Notification:
 Note:
     Cancels in Controller Commands that are in progress.
 
-checkLatestConfigFileRevision
------------------------------
+## checkLatestConfigFileRevision
+
 Params:
     "node" - uint8: Instructs OZW to check if it has hte latest version of the confile file for a particular node
 Returns:
@@ -81,10 +82,10 @@ Note:
     OZW will check if the installation has the latest config file for a particular node.
 
 See Also:
-    checkLatestMFSRevision, downloadLatestConfigFileRevision, downloadLatestMFSRevision
+    [checkLatestMFSRevision](#checkLatestMFSRevision), [downloadLatestConfigFileRevision](#downloadLatestConfigFileRevision), [downloadLatestMFSRevision](#downloadLatestMFSRevision)
 
-checkLatestMFSRevision
-----------------------
+## checkLatestMFSRevision
+
 Params:
     None
 Returns:
@@ -98,10 +99,10 @@ Note:
     OZW will check if the installation has the latest manufacturer_specific.xml file. Use this if you have a device that is not recongised but present in the latest release of OZW.
 
 See Also:
-checkLastestConfigFileRevision, downloadLatestConfigFileRevision, downloadLatestMSFRevision
+[checkLastestConfigFileRevision](#checkLastestConfigFileRevision), [downloadLatestConfigFileRevision](#downloadLatestConfigFileRevision), [downloadLatestMSFRevision](#downloadLatestMSFRevision)
 
-close
------
+## close
+
 Params:
     None
 Returns:
@@ -113,10 +114,10 @@ Note:
     As OZW shuts down, it will progressively delete values/notes and association information from the MQTT Topics. Applications should not treat the disappearance of these values as NodeDeleted or ValueDeleted once a "close" event is recieved 
 
 See Also:
-    open
+    [open](#open)
 
-deleteAllReturnRoute
---------------------
+## deleteAllReturnRoute
+
 Params:
     "node" - uint8: The NodeID to perform the action on
 Returns:
@@ -127,8 +128,8 @@ Notification:
 Note:
     This is a advanced command and should not be required on a ZWave+ Device.
 
-downloadLatestConfigFileRevision
---------------------------------
+## downloadLatestConfigFileRevision
+
 Params:
     "node" - uint8: The NodeID to Update the Config File for
 Returns:
@@ -140,8 +141,12 @@ Notification:
 Note:
     Depending upon the OZW configuration (set in Options.xml) a node may automatically reload 
 
-downloadLatestMFSRevision
--------------------------
+See Also:
+
+[checkLatestConfigRevision](#checkLatestConfigRevision), [checkLatestMFSRevision](#checkLatestMFSRevision), [downloadLatestMFSRevision](#downloadLatestMFSRevision)
+
+## downloadLatestMFSRevision
+
 Params:
     None
 Returns:
@@ -150,10 +155,16 @@ Notification:
     "Notification" with Event field set to "Alert_ConfigFileDownloadFailed" - The Download Failed for whatever reason.
 
 Note:
-    A sucessful download of manufacturer_specific.xml will also trigger the download of any "new" device config files. This will happen transparently in the backgound.
+    A successful download of manufacturer_specific.xml will also trigger the download of any "new" device config files. This will happen transparently in the background.
 
-hardResetController
--------------------
+See Also:
+
+[checkLatestConfigRevision](#checkLatestConfigRevision), [checkLatestMFSRevision](#checkLatestMFSRevision), [downloadLatestConfigFileRevision](#downloadLatestConfigFileRevision)
+
+
+
+## hardResetController
+
 Params:
     None
 Returns:
@@ -165,10 +176,10 @@ Note:
     This will factory reset the Controller. All Nodes will need to be reincluded after this command. Applications should completely reset the state of Z-Wave.
 
 See Also:
-    softResetController
+    [softResetController](#softResetController)
 
-hasNodeFailed
--------------
+## hasNodeFailed
+
 Params:
     "node" - uint8: The NodeID of the device you wish to test.
 Returns:
@@ -180,10 +191,10 @@ Note:
     This command forces the Controler to attempt to communicate with a Node, Regardless of the state of the nodes IsFailed status. This can be used to "revive" a dead node once the issues have been addressed (such as replacing a dead battery)
 
 See Also:
-    isNodeFailed
+    [isNodeFailed](#isNodeFailed)
 
-healNetwork
------------
+## healNetwork
+
 Params:
     None
 Returns:
@@ -192,21 +203,21 @@ Notification:
     None
 
 Note:
-    This asks the Z-Wave Network to rediscover nodes, neighbors and routes on the Network. This command should only be used under the following circumstances:
+    This asks the Z-Wave Network to rediscover nodes, neighbours and routes on the Network. This command should only be used under the following circumstances:
     1) Adding or Deleting Nodes
     2) Physically Moving a Device
     If you have a pure Z-Wave+ (or ZWave+2) network, this command *should* not be used.
     The actual networking healing process may take several hours, and is likely to consume the majority of the bandwidth on your network. You should expect Z-Wave to be slugish as this command runs.
 
-    There is no Notificaiton when the Network has completed the Healing Process.
+There is no Notificaiton when the Network has completed the Healing Process.
 
-    Unecessarly running this command on a Network with ZWave+ (and higher) devices can result in worse stability rather than better. Be Warned!
+Unnecessarily running this command on a Network with ZWave+ (and higher) devices can result in worse stability rather than better. Be Warned!
 
 See Also:
-    healNetworkNode
+    [healNetworkNode](#healNetworkNode)
 
-healNetworkNode
----------------
+## healNetworkNode
+
 Params:
     "node" - uint8: The Node to execute this command on.
 Returns:
@@ -216,10 +227,14 @@ Notification:
 
 Notes:
     Asks a Node to recalculate its neighbors and routes to other devices. 
-    See warning for healNetwork.
+    See warning for [healNetwork](#healNetwork).
 
-isNodeFailed
-------------
+See Also:
+
+​	[healNetwork](#healNetwork)
+
+## isNodeFailed
+
 Params:
     "node" - uint8: The NodeID to check
 Returns:
@@ -231,10 +246,10 @@ Notes:
     This does not confirm with the controller. Use HasNodeFailed to have the controller check if the Node is alive or not.
 
 See Also:
-    hasNodeFailed
+    [hasNodeFailed](#hasNodeFailed)
 
-open
-----
+## open
+
 Params:
     "serialport" - String: The Path to the Serial Port to open
 Returns:
@@ -246,10 +261,10 @@ Notes:
     Starts OZW by opening the Serial Port
 
 See Also:
-    close
+    [close](#close)
 
-ping
-----
+## ping
+
 Params:
     "ping" - String: A variable to return.
 Returns:
@@ -260,9 +275,8 @@ Notification:
 Notes:
     Can be used to check if the OZW MQTT Client is alive
 
+## refreshNodeInfo
 
-refreshNodeInfo
----------------
 Params:
     "node" - uint8: The NodeID of the device you wish to refresh
 Returns:
@@ -274,10 +288,10 @@ Notes:
     This essentially forces OZW to reinterview a device like it would when a device has just been included. You should use this when the configuration of the device changes its operation (consult the Device Manual for such scenarios) or after OZW has downloaded a new configuration file and you recieve a notification indiciating it needs to be reloaded.
 
 See Also:
-    downloadLatestConfigFileRevision
+    [downloadLatestConfigFileRevision](#downloadLatestConfigFileRevision)
 
-removeFailedNode
-----------------
+## removeFailedNode
+
 Params:
     "node" - uint8: NodeID of the device that has failed.
 Returns:
@@ -289,10 +303,10 @@ Notes:
     You can use this command if a Node is failed and it can't be excluded via the normal removeNode command. The Controller needs to believe the node has failed, and you can force the controller to check the node via the "hasNodeFailed" command. 
 
 See Also:
-    hasNodeFailed
+    [hasNodeFailed](#hasNodeFailed)
 
-removeNode
-----------
+## removeNode
+
 Params:
     None
 Returns:
@@ -301,10 +315,14 @@ Notification:
     "RemoveNode" - When the Controller has entered the Exclusing Mode.
 
 Notes:
-    Once you recieve the RemoveNode Notification, you need to perform the network exclusion steps as detailed in the device manual to actually exclude the Node. 
+    Once you receive the RemoveNode Notification, you need to perform the network exclusion steps as detailed in the device manual to actually exclude the Node. 
 
-replaceFailedNode
------------------
+See Also:
+
+​	[removeFailedNode](#removeFailedNode)
+
+## replaceFailedNode
+
 Params:
     "node" - uint8: The NodeID of the device you wish to replace.
 Returns:
@@ -314,11 +332,15 @@ Notification:
 
 Notes:
     You should use this command to include a device that has may have been factory reset or lost its configuration into the Network Again. It will reuse its old NodeID. 
-    This command may not always be successful, in which cases, you may have to include it as per addNode, and remove the old "ghost" node via the removeFailedNode command
+    This command may not always be successful, in which cases, you may have to include it as per [addNode](#addNode), and remove the old "ghost" node via the [removeFailedNode](#removeFailedNode) command
+
+See Also:
+
+​	[removeFailedNode](#removeFailedNode)
 
 
-requestAllConfigParam
----------------------
+## requestAllConfigParam
+
 Params:
     "node" - uint8: The NodeID of the device you wish to get all Config Paramaters from
 Returns:
@@ -327,10 +349,14 @@ Notification:
     None
 
 Notes:
-    OZW will get the latest configuration settings from a device. You should issue this after initially including a device or if the Device Settings were modifed while OZW was offline.
+    OZW will get the latest configuration settings from a device. You should issue this after initially including a device or if the Device Settings were modified while OZW was offline.
 
-requestConfigParam
-------------------
+See Also:
+
+​	[requestConfigParam](#requestConfigParam)
+
+## requestConfigParam
+
 Params:
     "node" - uint8: the NodeID of the device yu wish to get a Config Param
     "param" - uint8: THe index of the Config Param you wish to get.
@@ -342,8 +368,12 @@ Notification:
 Notes:
     OZW will refresh the particular config param 
 
-requestNetworkUpdate
---------------------
+See Also:
+
+​	[requestAllConfigParam](#requestAllConfigParam)
+
+## requestNetworkUpdate
+
 Params:
     "node" - uint8: The NodeID to execute this command against
 Returns:
@@ -354,8 +384,8 @@ Notification:
 Notes:
     Only required for Networks that have older (pre-ZWave+ roughly) controllers. Requests the SUC to update the Network Routing Tables. 
 
-requestNodeDynamic
-------------------
+## requestNodeDynamic
+
 Params:
     "node" - uint8: The NodeID to execute this command against
 Returns:
@@ -366,8 +396,8 @@ Notification:
 Notes:
     OZW will refresh all ValueID's that are considered "Dynamic" - such as the State of a light etc
 
-requestNodeNeighborUpdate
--------------------------
+## requestNodeNeighborUpdate
+
 Params:
     "node" - uint8: The NodeID to execute this command against
 Returns:
@@ -378,11 +408,116 @@ Notification:
 Notes:
     Syncronises the list of Neighbors a node has.
     
-requestNodeState
-sendNodeInformation
-setValue
-softResetController
-testNetwork
-testNetworkNode
 
+## requestNodeState
+
+Params:
+
+​	"node" - uint8: The NodeID to execute this command against
+
+Returns:
+
+​	"requestNodeState" - if OZW accepted the command
+
+Notification:
+
+​	None
+
+Notes: 
+
+​	This command refreshes all values that are considered both Static and Dynamic
+
+## sendNodeInformation
+
+Params:
+
+​	"node" - uint8: the NodeID to send the NIF frame to
+
+Returns:
+
+​	"sendNodeInformation" - If OZW accepted the command
+
+Notification:
+
+​	"SendNodeInformation" - The status after sending a NIF to the device.
+
+Notes:
+
+​	This command sends a NIF (Not Information Frame) to the target device. 
+
+## setValue
+
+Params:
+
+Returns:
+
+Notes:
+
+​	This command will set a new Value on a particular device. 
+
+## softResetController
+
+Params:
+
+​	None
+
+Returns:
+
+​	"softResetController" - if OZW accepted the command
+
+Notification:
+
+​	Various - Several Notifications are sent as the Controller Restarts. 
+
+Notes:
+
+​	Resets the Controller. Configuration and Network Details are not reset. This is essentially like restarting 	OZW 
+
+## testNetwork
+
+Params:
+
+​	"count" - int: The number of packets to send to the network
+
+Returns:
+
+​	"testNetwork" - if OZW Accepted the command
+
+Notification:
+
+​	"Notification" with Event Type set to "Code_NoOperation" - A Notification for each packet the Nodes Respond to, or a Notification with Event Type set to "Code_Timeout" if a Node failed to respond
+
+Notes:
+
+​	This sends a No Operation Message (NOP) to each node on the network. This can be used to test and measure the response times of each node on your network. You will receive a Notification indicating if the node responded or not 
+
+See Also:
+
+​	[testNetworkNode](#testNetworkNode)
+
+## testNetworkNode
+
+Params:
+
+​	"node" - uint8: The NodeID to test
+
+​	"count" - int: The number of packets to send to the Node
+
+Returns:
+
+​	"testNetworkNode" - if OZW accepted the command
+
+Notification:
+
+​	"Notification" with a Event Type set to "Code_NoOperation" - a Notification for each packet the Node Responds to. 
+
+​	"Notification" with Event Type set to "Code_Timeout" if the Node Failed to respond. 
+
+Notes:
+
+​	This sends a No Operations Message (NOP) to the specified Node. This can be used to test and measure the response times of each node on your network.  You will receive a Notification indicating if the node responded or not 
+
+See Also:
+
+​	[testNetwork](#testNetwork)
 
