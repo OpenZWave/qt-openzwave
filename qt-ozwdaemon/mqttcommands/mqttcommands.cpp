@@ -69,7 +69,7 @@ void MqttCommand::messageReceived(QMqttMessage msg) {
     jmsg.Parse(msg.payload());
     if (jmsg.HasParseError()) {
         rapidjson::Document js;
-        QT2JS::SetString(js, "Error", rapidjson::GetParseError_En(jmsg.GetParseError()));
+        QT2JS::SetString(js, "error", rapidjson::GetParseError_En(jmsg.GetParseError()));
         emit sendCommandUpdate(GetCommand(), js);
         qCWarning(ozwmc) << "Json Parse Error for " << GetCommand() << ": " << rapidjson::GetParseError_En(jmsg.GetParseError()) << ": " << msg.payload();
         return;     
@@ -78,14 +78,14 @@ void MqttCommand::messageReceived(QMqttMessage msg) {
     foreach (field, this->m_requiredIntFields) {
         if (!jmsg.HasMember(field.toStdString().c_str())) {
             rapidjson::Document js;
-            QT2JS::SetString(js, "Error", QString("Missing Field ").append(field).toStdString().c_str());
+            QT2JS::SetString(js, "error", QString("Missing Field ").append(field).toStdString().c_str());
             emit sendCommandUpdate(GetCommand(), js);
             qCWarning(ozwmc) << "Missing Field for " << GetCommand() << ": " << field << ": " << msg.payload();
             return;
         }
         if (!jmsg[field.toStdString().c_str()].IsNumber()) {
             rapidjson::Document js;
-            QT2JS::SetString(js, "Error", QString("Incorrect Field Type: ").append(field).append(": Not Integer").toStdString().c_str());
+            QT2JS::SetString(js, "error", QString("Incorrect Field Type: ").append(field).append(": Not Integer").toStdString().c_str());
             emit sendCommandUpdate(GetCommand(), js);
             qCWarning(ozwmc) << "Incorrect Field Type (Int) for " << GetCommand() << ": " << field << ": " << jmsg[field.toStdString().c_str()].GetType() << msg.payload();
             return;
@@ -94,14 +94,14 @@ void MqttCommand::messageReceived(QMqttMessage msg) {
     foreach (field, this->m_requiredStringFields) {
         if (!jmsg.HasMember(field.toStdString().c_str())) {
             rapidjson::Document js;
-            QT2JS::SetString(js, "Error", QString("Missing Field ").append(field).toStdString().c_str());
+            QT2JS::SetString(js, "error", QString("Missing Field ").append(field).toStdString().c_str());
             emit sendCommandUpdate(GetCommand(), js);
             qCWarning(ozwmc) << "Missing Field for " << GetCommand() << ": " << field << ": " << msg.payload();
             return;
         }
         if (!jmsg[field.toStdString().c_str()].IsString()) {
             rapidjson::Document js;
-            QT2JS::SetString(js, "Error", QString("Incorrect Field Type: ").append(field).append(": Not String").toStdString().c_str());
+            QT2JS::SetString(js, "error", QString("Incorrect Field Type: ").append(field).append(": Not String").toStdString().c_str());
             emit sendCommandUpdate(GetCommand(), js);
             qCWarning(ozwmc) << "Incorrect Field Type (String) for " << GetCommand() << ": " << field << ": " << jmsg[field.toStdString().c_str()].GetType() << msg.payload();
             return;
@@ -110,14 +110,14 @@ void MqttCommand::messageReceived(QMqttMessage msg) {
     foreach (field, this->m_requiredBoolFields) {
         if (!jmsg.HasMember(field.toStdString().c_str())) {
             rapidjson::Document js;
-            QT2JS::SetString(js, "Error", QString("Missing Field ").append(field).toStdString().c_str());
+            QT2JS::SetString(js, "error", QString("Missing Field ").append(field).toStdString().c_str());
             emit sendCommandUpdate(GetCommand(), js);
             qCWarning(ozwmc) << "Missing Field for " << GetCommand() << ": " << field << ": " << msg.payload();
             return;
         }
         if (!jmsg[field.toStdString().c_str()].IsBool()) {
             rapidjson::Document js;
-            QT2JS::SetString(js, "Error", QString("Incorrect Field Type: ").append(field).append(": Not Bool").toStdString().c_str());
+            QT2JS::SetString(js, "error", QString("Incorrect Field Type: ").append(field).append(": Not Bool").toStdString().c_str());
             emit sendCommandUpdate(GetCommand(), js);
             qCWarning(ozwmc) << "Incorrect Field Type (Bool) for " << GetCommand() << ": " << field << ": " << jmsg[field.toStdString().c_str()].GetType() << msg.payload();
             return;
