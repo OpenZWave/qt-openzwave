@@ -688,7 +688,7 @@ void mqttpublisher::ozwNotification(quint8 node, NotificationTypes::QTOZW_Notifi
     this->sendCommandUpdate("Notification", js);
 }
 void mqttpublisher::ozwUserAlert(quint8 node, NotificationTypes::QTOZW_Notification_User event, quint8 retry) {
-    qCDebug(ozwmp) << "Publishing Event ozwNotification";
+    qCDebug(ozwmp) << "Publishing Event ozwUserAlert";
     rapidjson::Document js;
     QMetaEnum metaEnum = QMetaEnum::fromType<NotificationTypes::QTOZW_Notification_User>();
     QT2JS::SetUint(js, "Node", node);
