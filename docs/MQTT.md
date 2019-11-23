@@ -61,8 +61,296 @@ When the MQTT Client initially connects to the Broker, it will clean up any prev
 
 Node related information is published to `OpenZWave/<instance>/node/<nodeid>/`. See below for details on the most important parts of the Payload.
 
+## Node Payload
 
+The following fields are present in the Node Payload:
 
+### NodeID
+Type: Integer
+
+Description: The Node ID of the device on the Network
+
+### NodeQueryStage
+Type: - Enum
+
+Description: The Stage of the Interview process of a Node. The Target Stage would be Complete. 
+
+Possible Values:
+** None ** - Interview Process has not started for this node
+** ProtocolInfo ** - Obtaining basic Z-Wave Capabilities of this node from the controller
+** Probe ** - Check if the Node is Alive/Awake
+** WakeUp ** - Setup Support for Wakeup Queues and Messages
+** ManufacturerSpecific1 ** - Obtain Manufacturer/Product ID and Type Codes from device
+** NodeInfo ** - Obtain supported Command Classes from the Node
+** NodePlusInfo ** - Obtain Z-Wave+ Relvent information if supported by the Node 
+** ManufacturerSpecific2 ** - Obtain Manufacturer/Product ID and Type Codes from device.
+** Versions ** - Get information about Firmware and CommandClass Versions
+** Instances ** - Get Details about what instances/channels a device supports
+** Static ** - Obtain Values from the device that are static/don't change.
+** CacheLoad ** - Load information from the Cache File. If its a sleeping device, it will stay at this stage until the device wakes up
+** Associations ** - Refresh Association Groups and Memberships
+** Neighbors ** - Get the Neighbors List
+** Session ** - Get infrequently changing values from device
+** Dynamic ** - Get Frequently changing values from device
+** Configuration ** - Obtain Configuration Values from the device
+** Complete ** - Interview Process is Complete.
+
+### isListening
+Type: Bool
+
+Description: If the Node is in constant listening mode. This usually indicates mains powered devices
+
+### isFlirs
+Type: Bool
+
+Description: If the Device Supports FLiRS (Frequent Listening) - The device periodically checks for messages for it. Requires the sending node/neighbors to support Beaming. Usually found on Locks
+
+### isBeaming
+Type: bool
+
+Description: If the node has the capability to "wake up" a FLiRS device.
+
+### isRouting
+Type: bool
+
+Description: If the Node is participating in routing messages on the Mesh Network. 
+
+### isSecurityv1
+Type: bool
+
+Description: If the Device Supports the original version of encryption on Z-Wave. This is **NOT** S0 or S2 Security
+
+### isZWavePlus
+Type: bool
+
+Description: If the Device is a Z-Wave+ Device
+
+### isNIFRecieved
+Type: bool
+
+Description: If the NIF (Node Information Frame) has been recieved. This is part of the Interview process.
+
+### isAwake
+Type: bool
+
+Description: If the Node is Awake and Able to recieve messages
+
+### isFailed
+Type: book
+
+Description: If the Z-Wave Controller believes the node has failed. (eg, dead battery etc)
+
+### MetaData
+Type: Structure
+
+Description: MetaData about the Device, such as inclusion/exclusion data, product pictures, manuals etc
+
+The MetaData Fields are:
+
+#### OZWInfoURL
+Type: String
+
+Description: URL to the OZW Database Entry for this device.
+
+#### ZWAProductURL
+Type: String
+
+Description: URL to the Z-Wave Alliance Product Page
+
+#### ProductPIC
+Type: String
+
+Description: Filesystem/HTTP Path to the Product Picture.
+
+#### Description
+Type: String
+
+Description: Description of the device and its features.
+
+#### ProductManualURL
+Type: String
+
+Description: URL to the Product Manual
+
+#### ProcuctPageURL
+Type: String
+
+Description: URL the vendors website for the Device
+
+#### InclusionHelp
+Type: String
+
+Description: Instructions for performing inclusion in the Network
+
+#### ExclusionHelp
+Type: String
+
+Description: Instructions for performing exclusion of the device from a Network
+
+#### ResetHelp
+Type: String
+
+Description: Instructions for performing a factory reset of the device
+
+#### WakeupHelp
+Type: String
+
+Description: Instructions for Waking up the Device
+
+#### ProductSupportURL:
+Type: String
+
+Description: URL to the vendors support pages for the device
+
+#### Frequency:
+Type: String
+
+Description: Frequency/Region this device operates in.
+
+#### Name:
+Type: String
+
+Description: Long Version of the Product Name
+
+#### ProductPicBase64:
+Type: String
+
+Description: The Product Picture (200x200 resolution) encoded with base64. 
+
+### Event
+Type: Enum
+
+Description: The Last Event that triggered a update to this payload.
+Please see the Notifications Topic for possible values
+
+### TimeStamp
+Type: Integer
+
+Description: The timestamp when this message was published
+
+### NodeManufacturerName
+Type: String
+
+Description: The Name of the Manufacturer of this device
+
+### NodeProductName
+Type: String
+
+Description: The Short Name of this product
+
+### NodeBasicString
+Type: String
+
+Description: The Basic Type of Node
+
+### NodeBasic
+Type: Integer
+
+Description: The Basic Type of the Node (as a Integer)
+
+### NodeGenericString
+Type: String
+
+Description: The Generic Function of this device
+
+### NodeGeneric
+Type: Integer
+
+Description: The Generic Function of this device (as a Integer)
+
+### NodeSpecificString
+Type: String
+
+Description: The Specific Function of this device
+
+### NodeSpecific
+Type: Integer
+
+Description: The Specific Function of this device
+
+### NodeManufactuerID
+Type: String
+
+Description: The Manufacturer ID of the device, in HEX
+
+### NodeProductType
+Type: String
+
+Description: The Product Type of the device, in HEX
+
+### NodeProductID
+Type: String
+
+Description: The Product ID of the device, in HEX
+
+### NodeBaudRate
+Type: Integer
+
+Description: THe Maximum Speed the device communicates on the network at
+
+### NodeVersion
+Type: Integer
+
+Description: The SDK Version of the Node. 
+
+### NodeGroups
+Type: Integer
+
+Description: The Number of Association Groups the Node Supports
+
+### NodeName
+Type: String
+
+Description: The User Defined name of the Node. Only supported if the device has NodeNaming CommandClass
+
+### NodeLocation
+Type: String
+
+Description: The User Defined location of the Node. Only supported if the device has the NodeNaming CommandClass
+
+### NodeDeviceTypeString
+Type: String
+
+Description: The DeviceType of the Node. Only Supported if the Node is Z-Wave+ 
+
+### NodeDeviceType
+Type: integer
+
+Description: The DeviceType of the Node as a Integer. Only Supported if the Node is Z-Wave+ 
+
+### NodeRoleString
+Type: String
+
+Description: The Role of the Node in the Z-Wave Network. Only available if the device is Z-Wave+
+
+### NodeRole
+Type: integer
+
+Description: The Role of the Node as a integer in the Z-Wave Network. Only available if the device is Z-Wave+
+
+### NodePlusTypeString
+Type: String
+
+Description: The Type of Z-Wave+ Device this node is. Only available if the device is Z-Wave+
+
+### NodePlusType
+Type: String
+
+Description: The Type of Z-Wave+ Device as a integer this node is. Only available if the device is Z-Wave+
+
+### Neighbors
+Type: Array (Integers)
+
+Description: The Neighbors the Node can see. This is not the full routing table from a node and only a partial representation of how a node participates in the Mesh Network. You should not draw any conclusions about the effectiveness of your Mesh with this information alone without understaning how Z-Wave Mesh Networks and routing are performed.
+
+## Instance Payload
+The Instance Topic represents the different instances/channels/endpoints available on a Node.
+
+## CommandClass Payload
+The CommandClass Topic represents the different commandclasses a endpoint supports on the device.
+
+## Value Payload
+The Value Payload represent the individual values that a application can monitor/alter on a device. This is the Primary topic that Applications would interact with in order to get the status of different paramaters a device might expose, such as the state of a light, or power consumption
 
 # MQTT Commands
 
