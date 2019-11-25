@@ -120,6 +120,26 @@ public:
 
     QString getCommandClassString(quint8 const _cc);
 
+    QString getVersionAsString();
+    QString getVersionLongAsString();
+    quint8 getControllerNodeId();
+    quint8 getSucNodeId();
+    bool isPrimaryController();
+    bool isStaticUpdateController();
+    bool isBridgeController();
+    bool hasExtendedTXStatus();
+    QString getLibraryVersion();
+    QString getLibraryTypeName();
+    quint32 getSendQueueCount();
+    QString getControllerPath();
+
+    qint32 getPollInterval();
+
+    void setPollInterval(qint32 interval, bool intervalBetweenPolls);
+
+    void syncroniseNodeNeighbors(quint8 node);
+
+
 /* Property Methods */
     QDir OZWDatabasePath() { return this->m_ozwdatabasepath; }
     QDir OZWUserPath() { return this->m_ozwuserpath; }

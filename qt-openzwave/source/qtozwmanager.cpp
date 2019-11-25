@@ -404,8 +404,51 @@ bool QTOZWManager::downloadLatestMFSRevision() {
 QString QTOZWManager::getCommandClassString(quint8 const _cc) {
     CALL_DPTR_RTN(getCommandClassString(_cc), QString);
 }
-
-
+QString QTOZWManager::getVersionAsString() {
+    CALL_DPTR_RTN(getVersionAsString(), QString);
+}
+QString QTOZWManager::getVersionLongAsString() {
+    CALL_DPTR_RTN(getVersionLongAsString(), QString);
+}
+quint8 QTOZWManager::getControllerNodeId() {
+    CALL_DPTR_RTN(getControllerNodeId(), quint8);
+}
+quint8 QTOZWManager::getSucNodeId() {
+    CALL_DPTR_RTN(getSucNodeId(), quint8);
+}
+bool QTOZWManager::isPrimaryController() {
+    CALL_DPTR_RTN(isPrimaryController(), bool);
+}
+bool QTOZWManager::isStaticUpdateController() {
+    CALL_DPTR_RTN(isStaticUpdateController(), bool);
+}
+bool QTOZWManager::isBridgeController() {
+    CALL_DPTR_RTN(isBridgeController(), bool);
+}
+bool QTOZWManager::hasExtendedTXStatus() {
+    CALL_DPTR_RTN(hasExtendedTXStatus(), bool);
+}
+QString QTOZWManager::getLibraryVersion() {
+    CALL_DPTR_RTN(getLibraryVersion(), QString);
+}
+QString QTOZWManager::getLibraryTypeName() {
+    CALL_DPTR_RTN(getLibraryTypeName(), QString);
+}
+quint32 QTOZWManager::getSendQueueCount() {
+    CALL_DPTR_RTN(getSendQueueCount(), quint32);
+}
+QString QTOZWManager::getControllerPath() {
+    CALL_DPTR_RTN(getControllerPath(), QString);
+}
+qint32 QTOZWManager::getPollInterval() {
+    CALL_DPTR_RTN(getPollInterval(), qint32);
+}
+void QTOZWManager::setPollInterval(qint32 interval, bool intervalBetweenPolls) {
+    CALL_DPTR(setPollInterval(interval, intervalBetweenPolls))
+}
+void QTOZWManager::syncroniseNodeNeighbors(quint8 node) {
+    CALL_DPTR(syncroniseNodeNeighbors(node));
+}
 
 void QTOZWManager::setOZWDatabasePath(QDir path) {
     if (path.exists())

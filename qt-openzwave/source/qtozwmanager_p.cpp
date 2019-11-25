@@ -653,8 +653,6 @@ bool QTOZWManager_Internal::downloadLatestMFSRevision() {
 }
 
 QString QTOZWManager_Internal::getCommandClassString(quint8 const _cc) {
-    if (!this->checkHomeId())
-        return QString();
     try {
         return this->m_manager->GetCommandClassName(_cc).c_str();
     } catch (OpenZWave::OZWException &e) {
@@ -664,6 +662,169 @@ QString QTOZWManager_Internal::getCommandClassString(quint8 const _cc) {
     return QString();
 }
 
+QString QTOZWManager_Internal::getVersionAsString() {
+    try {
+        return this->m_manager->getVersionAsString().c_str();
+    } catch (OpenZWave::OZWException &e) {
+        emit this->error(QTOZWManagerErrorCodes::OZWException);
+        this->setErrorString(e.GetMsg().c_str());
+    }
+    return QString();
+}
+QString QTOZWManager_Internal::getVersionLongAsString() {
+    try {
+        return this->m_manager->getVersionLongAsString().c_str();
+    } catch (OpenZWave::OZWException &e) {
+        emit this->error(QTOZWManagerErrorCodes::OZWException);
+        this->setErrorString(e.GetMsg().c_str());
+    }
+    return QString();
+}
+quint8 QTOZWManager_Internal::getControllerNodeId() {
+    if (!this->checkHomeId())
+        return 0;
+    try {
+        return this->m_manager->GetControllerNodeId(this->homeId());
+    } catch (OpenZWave::OZWException &e) {
+        emit this->error(QTOZWManagerErrorCodes::OZWException);
+        this->setErrorString(e.GetMsg().c_str());
+    }
+    return 0;
+}
+quint8 QTOZWManager_Internal::getSucNodeId() {
+    if (!this->checkHomeId())
+        return 0;
+    try {
+        return this->m_manager->GetSUCNodeId(this->homeId());
+    } catch (OpenZWave::OZWException &e) {
+        emit this->error(QTOZWManagerErrorCodes::OZWException);
+        this->setErrorString(e.GetMsg().c_str());
+    }
+    return 0;
+}
+bool QTOZWManager_Internal::isPrimaryController() {
+    if (!this->checkHomeId())
+        return false;
+    try {
+        return this->m_manager->IsPrimaryController(this->homeId());
+    } catch (OpenZWave::OZWException &e) {
+        emit this->error(QTOZWManagerErrorCodes::OZWException);
+        this->setErrorString(e.GetMsg().c_str());
+    }
+    return false;
+}
+bool QTOZWManager_Internal::isStaticUpdateController() {
+    if (!this->checkHomeId())
+        return false;
+    try {
+        return this->m_manager->IsStaticUpdateController(this->homeId());
+    } catch (OpenZWave::OZWException &e) {
+        emit this->error(QTOZWManagerErrorCodes::OZWException);
+        this->setErrorString(e.GetMsg().c_str());
+    }
+    return false;
+}
+bool QTOZWManager_Internal::isBridgeController() {
+    if (!this->checkHomeId())
+        return false;
+    try {
+        return this->m_manager->IsBridgeController(this->homeId());
+    } catch (OpenZWave::OZWException &e) {
+        emit this->error(QTOZWManagerErrorCodes::OZWException);
+        this->setErrorString(e.GetMsg().c_str());
+    }
+    return false;
+}
+bool QTOZWManager_Internal::hasExtendedTXStatus() {
+    if (!this->checkHomeId())
+        return false;
+    try {
+        return this->m_manager->HasExtendedTxStatus(this->homeId());
+    } catch (OpenZWave::OZWException &e) {
+        emit this->error(QTOZWManagerErrorCodes::OZWException);
+        this->setErrorString(e.GetMsg().c_str());
+    }
+    return false;
+}
+QString QTOZWManager_Internal::getLibraryVersion() {
+    if (!this->checkHomeId())
+        return QString();
+    try {
+        return this->m_manager->GetLibraryVersion(this->homeId()).c_str();
+    } catch (OpenZWave::OZWException &e) {
+        emit this->error(QTOZWManagerErrorCodes::OZWException);
+        this->setErrorString(e.GetMsg().c_str());
+    }
+    return QString();
+}
+QString QTOZWManager_Internal::getLibraryTypeName() {
+    if (!this->checkHomeId())
+        return QString();
+    try {
+        return this->m_manager->GetLibraryTypeName(this->homeId()).c_str();
+    } catch (OpenZWave::OZWException &e) {
+        emit this->error(QTOZWManagerErrorCodes::OZWException);
+        this->setErrorString(e.GetMsg().c_str());
+    }
+    return QString();
+}
+quint32 QTOZWManager_Internal::getSendQueueCount() {
+    if (!this->checkHomeId())
+        return 0;
+    try {
+        return this->m_manager->GetSendQueueCount(this->homeId());
+    } catch (OpenZWave::OZWException &e) {
+        emit this->error(QTOZWManagerErrorCodes::OZWException);
+        this->setErrorString(e.GetMsg().c_str());
+    }
+    return 0;
+}
+QString QTOZWManager_Internal::getControllerPath() {
+    if (!this->checkHomeId())
+        return QString();
+    try {
+        return this->m_manager->GetControllerPath(this->homeId()).c_str();
+    } catch (OpenZWave::OZWException &e) {
+        emit this->error(QTOZWManagerErrorCodes::OZWException);
+        this->setErrorString(e.GetMsg().c_str());
+    }
+    return QString();
+}
+qint32 QTOZWManager_Internal::getPollInterval() {
+    try {
+        return this->m_manager->GetPollInterval();
+    } catch (OpenZWave::OZWException &e) {
+        emit this->error(QTOZWManagerErrorCodes::OZWException);
+        this->setErrorString(e.GetMsg().c_str());
+    }
+    return 0;
+}
+void QTOZWManager_Internal::setPollInterval(qint32 interval, bool intervalBetweenPolls) {
+    if (!this->checkHomeId())
+        return;
+    try {
+        this->m_manager->SetPollInterval(interval, intervalBetweenPolls);
+        return;
+    } catch (OpenZWave::OZWException &e) {
+        emit this->error(QTOZWManagerErrorCodes::OZWException);
+        this->setErrorString(e.GetMsg().c_str());
+    }
+    return;
+}
+void QTOZWManager_Internal::syncroniseNodeNeighbors(quint8 node) {
+    if (!this->checkHomeId())
+        return;
+    if (!this->checkNodeId(node))
+        return;
+    try {
+        this->m_manager->SyncronizeNodeNeighbors(this->homeId(), node);
+        return;
+    } catch (OpenZWave::OZWException &e) {
+        emit this->error(QTOZWManagerErrorCodes::OZWException);
+        this->setErrorString(e.GetMsg().c_str());
+    }
+    return;
+}
 
 
 QTOZW_Nodes *QTOZWManager_Internal::getNodeModel() {
@@ -866,7 +1027,21 @@ void QTOZWManager_Internal::pvt_valueAdded(quint64 vidKey)
         this->m_validValues.push_back(vidKey);
 
     this->m_valueModel->addValue(vidKey);
+#if 0
+    /* XXX TODO: Need to check/implement these functions on ValueModel */
+    bool enablePoll(quint64 vidKey, uint8 intensity);
+    bool disablePoll(quint64 vidKey);
+    bool isPolled(quint64 vidKey);
+    bool setPollIntensity(quint64 vidKey, quint8 intensity);
+    quint8 getPollIntensity(quint64 vidKey);
 
+    QString getInstanceLabel(quint64 vidKey);
+    QString getInstanceLabel(quint8 node, quint8 cc, quint8 instance);
+
+    bool refreshValue(quint64 vidKey);
+    bool setChangedVerified(quint64 vidKey);
+    bool getChangedVerified(quint64 vidKey);
+#endif
     try {
         OpenZWave::ValueID vid(this->homeId(), vidKey);
         this->m_valueModel->setValueData(vidKey, QTOZW_ValueIds::ValueIdColumns::Label, this->m_manager->GetValueLabel(vid).c_str(), true);

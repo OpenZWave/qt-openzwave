@@ -133,4 +133,23 @@ class QTOZWManager {
     SLOT(bool downloadLatestConfigFileRevision(quint8 const _node))
     SLOT(bool downloadLatestMFSRevision())
     SLOT(QString getCommandClassString(quint8 const _cc))
+
+    SLOT(QString getVersionAsString())
+    SLOT(QString getVersionLongAsString())
+    SLOT(quint8 getControllerNodeId())
+    SLOT(quint8 getSucNodeId())
+    SLOT(bool isPrimaryController())
+    SLOT(bool isStaticUpdateController())
+    SLOT(bool isBridgeController())
+    SLOT(bool hasExtendedTXStatus())
+    SLOT(QString getLibraryVersion())
+    SLOT(QString getLibraryTypeName())
+    SLOT(quint32 getSendQueueCount())
+    SLOT(QString getControllerPath())
+
+    SLOT(qint32 getPollInterval())
+    SLOT(void setPollInterval(qint32 interval, bool intervalBetweenPolls))
+
+    SLOT(void syncroniseNodeNeighbors(quint8 node))
+
 }

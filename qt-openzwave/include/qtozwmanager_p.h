@@ -115,6 +115,23 @@ public Q_SLOTS:
 
     QString getCommandClassString(quint8 const _cc);
 
+    QString getVersionAsString();
+    QString getVersionLongAsString();
+    quint8 getControllerNodeId();
+    quint8 getSucNodeId();
+    bool isPrimaryController();
+    bool isStaticUpdateController();
+    bool isBridgeController();
+    bool hasExtendedTXStatus();
+    QString getLibraryVersion();
+    QString getLibraryTypeName();
+    quint32 getSendQueueCount();
+    QString getControllerPath();
+
+    qint32 getPollInterval();
+
+    void setPollInterval(qint32 interval, bool intervalBetweenPolls);
+    void syncroniseNodeNeighbors(quint8 node);
 
     /* these slots are called from our OZWNotification Class. Applications should not call them */
     void pvt_valueAdded(quint64 vidKey);
