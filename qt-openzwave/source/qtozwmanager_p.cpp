@@ -29,22 +29,6 @@
 #include "qtozwmanager_p.h"
 #include "qt-openzwave/qtozwmanager.h"
 
-/* XXX TODO: this needs to go into OZW */
-QString nodeBasicStr (uint8 basic)
-{
-  switch (basic) {
-  case 1:
-    return "Controller";
-  case 2:
-    return "Static Controller";
-  case 3:
-    return "Slave";
-  case 4:
-    return "Routing Slave";
-  }
-  return "unknown";
-}
-
 
 QTOZWManager_Internal::QTOZWManager_Internal(QObject *parent)
     : QTOZWManagerSimpleSource (parent)
@@ -1142,13 +1126,13 @@ void QTOZWManager_Internal::pvt_nodeProtocolInfo(quint8 node)
         data = this->m_manager->GetNodeProductType(this->homeId(), node).c_str();
         this->m_nodeModel->setNodeData(node, QTOZW_Nodes::NodeProductType, data, true);
 
-        data = nodeBasicStr(this->m_manager->GetNodeBasic(this->homeId(), node));
+        data = this->m_manager->GetNodeBasicString(this->homeId(), node).c_str();
         this->m_nodeModel->setNodeData(node, QTOZW_Nodes::NodeBasicString, data, true);
 
         data = this->m_manager->GetNodeBasic(this->homeId(), node);
         this->m_nodeModel->setNodeData(node, QTOZW_Nodes::NodeBasic, data, true);
-
-        data = this->m_manager->GetNodeDeviceTypeString(this->homeId(), node).c_str();
+        
+        data = this->m_manager->GetNodeGenericString(this->homeId(), node).c_str();
         this->m_nodeModel->setNodeData(node, QTOZW_Nodes::NodeGenericString, data, true);
 
         data = this->m_manager->GetNodeGeneric(this->homeId(), node);
@@ -1157,8 +1141,7 @@ void QTOZWManager_Internal::pvt_nodeProtocolInfo(quint8 node)
         data = this->m_manager->GetNodeSpecific(this->homeId(), node);
         this->m_nodeModel->setNodeData(node, QTOZW_Nodes::NodeSpecific, data, true);
 
-        /* XXX TODO: Need a OZW SpecificString function */
-        data = this->m_manager->GetNodeSpecific(this->homeId(), node);
+        data = this->m_manager->GetNodeSpecificString(this->homeId(), node).c_str();
         this->m_nodeModel->setNodeData(node, QTOZW_Nodes::NodeSpecificString, data, true);
 
         data = this->m_manager->GetNodeMaxBaudRate(this->homeId(), node);
@@ -1221,13 +1204,13 @@ void QTOZWManager_Internal::pvt_nodeEssentialNodeQueriesComplete(quint8 node)
         data = this->m_manager->GetNodeProductType(this->homeId(), node).c_str();
         this->m_nodeModel->setNodeData(node, QTOZW_Nodes::NodeProductType, data, true);
 
-        data = nodeBasicStr(this->m_manager->GetNodeBasic(this->homeId(), node));
+        data = this->m_manager->GetNodeBasicString(this->homeId(), node).c_str();
         this->m_nodeModel->setNodeData(node, QTOZW_Nodes::NodeBasicString, data, true);
 
         data = this->m_manager->GetNodeBasic(this->homeId(), node);
         this->m_nodeModel->setNodeData(node, QTOZW_Nodes::NodeBasic, data, true);
 
-        data = this->m_manager->GetNodeDeviceTypeString(this->homeId(), node).c_str();
+        data = this->m_manager->GetNodeGenericString(this->homeId(), node).c_str();
         this->m_nodeModel->setNodeData(node, QTOZW_Nodes::NodeGenericString, data, true);
 
         data = this->m_manager->GetNodeGeneric(this->homeId(), node);
@@ -1236,8 +1219,7 @@ void QTOZWManager_Internal::pvt_nodeEssentialNodeQueriesComplete(quint8 node)
         data = this->m_manager->GetNodeSpecific(this->homeId(), node);
         this->m_nodeModel->setNodeData(node, QTOZW_Nodes::NodeSpecific, data, true);
 
-        /* XXX TODO: Need a OZW SpecificString function */
-        data = this->m_manager->GetNodeSpecific(this->homeId(), node);
+        data = this->m_manager->GetNodeSpecificString(this->homeId(), node).c_str();
         this->m_nodeModel->setNodeData(node, QTOZW_Nodes::NodeSpecificString, data, true);
 
         data = this->m_manager->GetNodeMaxBaudRate(this->homeId(), node);
@@ -1319,13 +1301,13 @@ void QTOZWManager_Internal::pvt_nodeQueriesComplete(quint8 node)
         data = this->m_manager->GetNodeProductType(this->homeId(), node).c_str();
         this->m_nodeModel->setNodeData(node, QTOZW_Nodes::NodeProductType, data, true);
 
-        data = nodeBasicStr(this->m_manager->GetNodeBasic(this->homeId(), node));
+        data = this->m_manager->GetNodeBasicString(this->homeId(), node).c_str();
         this->m_nodeModel->setNodeData(node, QTOZW_Nodes::NodeBasicString, data, true);
 
         data = this->m_manager->GetNodeBasic(this->homeId(), node);
         this->m_nodeModel->setNodeData(node, QTOZW_Nodes::NodeBasic, data, true);
 
-        data = this->m_manager->GetNodeDeviceTypeString(this->homeId(), node).c_str();
+        data = this->m_manager->GetNodeGenericString(this->homeId(), node).c_str();
         this->m_nodeModel->setNodeData(node, QTOZW_Nodes::NodeGenericString, data, true);
 
         data = this->m_manager->GetNodeGeneric(this->homeId(), node);
@@ -1334,8 +1316,7 @@ void QTOZWManager_Internal::pvt_nodeQueriesComplete(quint8 node)
         data = this->m_manager->GetNodeSpecific(this->homeId(), node);
         this->m_nodeModel->setNodeData(node, QTOZW_Nodes::NodeSpecific, data, true);
 
-        /* XXX TODO: Need a OZW SpecificString function */
-        data = this->m_manager->GetNodeSpecific(this->homeId(), node);
+        data = this->m_manager->GetNodeSpecificString(this->homeId(), node).c_str();
         this->m_nodeModel->setNodeData(node, QTOZW_Nodes::NodeSpecificString, data, true);
 
         data = this->m_manager->GetNodeMaxBaudRate(this->homeId(), node);
