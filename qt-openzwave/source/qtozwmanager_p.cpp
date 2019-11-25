@@ -656,8 +656,7 @@ QString QTOZWManager_Internal::getCommandClassString(quint8 const _cc) {
     if (!this->checkHomeId())
         return QString();
     try {
-        /* TODO: This should be a public method on the Manager Class of OZW */
-        return OpenZWave::Internal::CC::CommandClasses::GetName(_cc).c_str();
+        return this->m_manager->GetCommandClassName(_cc).c_str();
     } catch (OpenZWave::OZWException &e) {
         emit this->error(QTOZWManagerErrorCodes::OZWException);
         this->setErrorString(e.GetMsg().c_str());
