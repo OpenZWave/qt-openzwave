@@ -68,3 +68,10 @@ QTOZWManager *QTOpenZwave::GetManager
     }
     return this->m_manager;
 }
+
+#define VAL(str) #str
+#define TOSTRING(str) VAL(str)
+
+QString QTOpenZwave::getVersion() {
+    return TOSTRING(LIB_VERSION);
+}

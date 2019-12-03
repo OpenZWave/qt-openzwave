@@ -18,6 +18,7 @@ public:
     void setSerialPort(QString serialPort) { this->m_serialPort = serialPort;}
     void startOZW();
     QTOZWManager *getManager();
+    QTOpenZwave *getQTOpenZWave();
 signals:
 
 public slots:

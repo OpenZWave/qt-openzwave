@@ -25,3 +25,6 @@ QTOZWManager *qtozwdaemon::getManager() {
     return this->m_qtozwmanager;
 }
 
+QTOpenZwave *qtozwdaemon::getQTOpenZWave() {
+    return this->m_openzwave;
+}

@@ -1,4 +1,5 @@
 #include <QDateTime>
+#include <QCoreApplication>
 
 #include "mqttpublisher.h"
 #include "qtrj.h"
@@ -215,6 +216,8 @@ QString mqttpublisher::getCommandResponseTopic(QString cmd) {
     return t;
 }
 
+
+
 void mqttpublisher::setOZWDaemon(qtozwdaemon *ozwdaemon) {
     this->m_qtozwdeamon = ozwdaemon;
 
@@ -252,6 +255,11 @@ void mqttpublisher::setOZWDaemon(qtozwdaemon *ozwdaemon) {
     connect(manager, &QTOZWManager::started, this, &mqttpublisher::started);
     connect(manager, &QTOZWManager::stopped, this, &mqttpublisher::stopped);
     
+    QT2JS::SetString(this->m_ozwstatus, "OpenZWave_Version", this->getQTOZWManager()->getVersionAsString());
+    QT2JS::SetString(this->m_ozwstatus, "OZWDeamon_Version", QCoreApplication::applicationVersion());
+    QT2JS::SetString(this->m_ozwstatus, "QTOpenZWave_Version", this->m_qtozwdeamon->getQTOpenZWave()->getVersion());
+    QT2JS::SetString(this->m_ozwstatus, "QT_Version", qVersion());
+
     this->m_currentStartTime = QDateTime::currentDateTime();
     if (settings->value("MQTTTLS").toBool() == true) {
         this->m_client->connectToHostEncrypted();   
@@ -295,6 +303,7 @@ bool mqttpublisher::clearStatusUpdate() {
     QT2JS::removeField(this->m_ozwstatus, "getControllerLibraryVersion");
     QT2JS::removeField(this->m_ozwstatus, "getControllerLibraryType");
     QT2JS::removeField(this->m_ozwstatus, "getControllerPath");
+    QT2JS::removeField(this->m_ozwstatus, "pollInterval");
     return true;
 }
 
@@ -568,6 +577,7 @@ void mqttpublisher::driverReady(quint32 homeID) {
     QT2JS::SetString(this->m_ozwstatus, "getControllerLibraryVersion", this->getQTOZWManager()->getLibraryVersion());
     QT2JS::SetString(this->m_ozwstatus, "getControllerLibraryType", this->getQTOZWManager()->getLibraryTypeName());
     QT2JS::SetString(this->m_ozwstatus, "getControllerPath", this->getQTOZWManager()->getControllerPath());
+    QT2JS::SetUint(this->m_ozwstatus, "pollInterval", this->getQTOZWManager()->getPollInterval());
     QT2JS::SetUint(this->m_ozwstatus, "homeID", homeID);
     this->sendStatusUpdate();
 }
