@@ -286,6 +286,18 @@ bool mqttpublisher::sendStatusUpdate() {
     return true;
 }
 
+bool mqttpublisher::clearStatusUpdate() {
+    QT2JS::removeField(this->m_ozwstatus, "getControllerNodeId");
+    QT2JS::removeField(this->m_ozwstatus, "getSUCNodeId");
+    QT2JS::removeField(this->m_ozwstatus, "isPrimaryController");
+    QT2JS::removeField(this->m_ozwstatus, "isBridgeController");
+    QT2JS::removeField(this->m_ozwstatus, "hasExtendedTXStatistics");
+    QT2JS::removeField(this->m_ozwstatus, "getControllerLibraryVersion");
+    QT2JS::removeField(this->m_ozwstatus, "getControllerLibraryType");
+    QT2JS::removeField(this->m_ozwstatus, "getControllerPath");
+    return true;
+}
+
 bool mqttpublisher::sendNodeUpdate(quint8 node) {
     QT2JS::SetUInt64(*this->m_nodes[node], "TimeStamp", QDateTime::currentSecsSinceEpoch());
     this->m_client->publish(QMqttTopicName(getNodeTopic(MQTT_OZW_NODE_TOPIC, node)), QT2JS::getJSON(*this->m_nodes[node]), 0, true);
@@ -376,6 +388,7 @@ bool mqttpublisher::delCommandClassTopic(quint8 node, quint8 instance, quint8 cc
 
 void mqttpublisher::ready() {
     qCDebug(ozwmp) << "Publishing Event ready:";
+    this->clearStatusUpdate();
     QT2JS::SetString(this->m_ozwstatus, "Status", "Ready");
     this->sendStatusUpdate();
 }
@@ -547,11 +560,20 @@ void mqttpublisher::nodeQueriesComplete(quint8 node) {
 void mqttpublisher::driverReady(quint32 homeID) {
     qCDebug(ozwmp) << "Publishing Event driverReady:" << homeID;
     QT2JS::SetString(this->m_ozwstatus, "Status", "driverReady");
+    QT2JS::SetUint(this->m_ozwstatus, "getControllerNodeId", this->getQTOZWManager()->getControllerNodeId());
+    QT2JS::SetUint(this->m_ozwstatus, "getSUCNodeId", this->getQTOZWManager()->getSucNodeId());
+    QT2JS::SetBool(this->m_ozwstatus, "isPrimaryController", this->getQTOZWManager()->isStaticUpdateController());
+    QT2JS::SetBool(this->m_ozwstatus, "isBridgeController", this->getQTOZWManager()->isBridgeController());
+    QT2JS::SetBool(this->m_ozwstatus, "hasExtendedTXStatistics", this->getQTOZWManager()->hasExtendedTXStatus());
+    QT2JS::SetString(this->m_ozwstatus, "getControllerLibraryVersion", this->getQTOZWManager()->getLibraryVersion());
+    QT2JS::SetString(this->m_ozwstatus, "getControllerLibraryType", this->getQTOZWManager()->getLibraryTypeName());
+    QT2JS::SetString(this->m_ozwstatus, "getControllerPath", this->getQTOZWManager()->getControllerPath());
     QT2JS::SetUint(this->m_ozwstatus, "homeID", homeID);
     this->sendStatusUpdate();
 }
 void mqttpublisher::driverFailed(quint32 homeID) {
     qCDebug(ozwmp) << "Publishing Event driverFailed:" << homeID;
+    this->clearStatusUpdate();
     QT2JS::SetString(this->m_ozwstatus, "Status", "driverFailed");
     QT2JS::SetUint(this->m_ozwstatus, "homeID", homeID);
     this->sendStatusUpdate();
@@ -559,6 +581,7 @@ void mqttpublisher::driverFailed(quint32 homeID) {
 }
 void mqttpublisher::driverReset(quint32 homeID) {
     qCDebug(ozwmp) << "Publishing Event driverReset:" << homeID;
+    this->clearStatusUpdate();
     QT2JS::SetString(this->m_ozwstatus, "Status", "driverReset");
     QT2JS::SetUint(this->m_ozwstatus, "homeID", homeID);
     this->sendStatusUpdate();
@@ -566,6 +589,7 @@ void mqttpublisher::driverReset(quint32 homeID) {
 }
 void mqttpublisher::driverRemoved(quint32 homeID) {
     qCDebug(ozwmp) << "Publishing Event driverRemoved:" << homeID;
+    this->clearStatusUpdate();
     QT2JS::SetString(this->m_ozwstatus, "Status", "driverRemoved");
     QT2JS::SetUint(this->m_ozwstatus, "homeID", homeID);
     this->sendStatusUpdate();
@@ -706,11 +730,13 @@ void mqttpublisher::manufacturerSpecificDBReady() {
 
 void mqttpublisher::starting() {
     qCDebug(ozwmp) << "Publishing Event starting";
+    this->clearStatusUpdate();
     QT2JS::SetString(this->m_ozwstatus, "Status", "starting");
     this->sendStatusUpdate();
 }
 void mqttpublisher::started(quint32 homeID) {
     qCDebug(ozwmp) << "Publishing Event started";
+    this->clearStatusUpdate();
     QT2JS::SetString(this->m_ozwstatus, "Status", "started");
     QT2JS::SetUint(this->m_ozwstatus, "homeID", homeID);
     this->sendStatusUpdate();
@@ -718,6 +744,7 @@ void mqttpublisher::started(quint32 homeID) {
 }
 void mqttpublisher::stopped(quint32 homeID) {
     qCDebug(ozwmp) << "Publishing Event stopped";
+    this->clearStatusUpdate();
     QT2JS::SetString(this->m_ozwstatus, "Status", "stopped");
     QT2JS::SetUint(this->m_ozwstatus, "homeID", homeID);
     this->sendStatusUpdate();

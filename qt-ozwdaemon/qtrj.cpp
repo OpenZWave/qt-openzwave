@@ -162,3 +162,13 @@ QByteArray QT2JS::getJSON(rapidjson::Document &doc) {
     doc.Accept(writer);    // Accept() traverses the DOM and generates Handler events.
     return sb.GetString();
 }
+
+bool QT2JS::removeField(rapidjson::Document &doc, QString field) {
+    if (!doc.IsObject())
+        doc.SetObject();
+    if (doc.HasMember(field.toStdString().c_str())) {
+        return doc.RemoveMember(field.toStdString().c_str());
+    } else {
+        return false;
+    }
+}

@@ -89,6 +89,7 @@ private:
     QString getCommandTopic();
     QString getCommandResponseTopic(QString);
     bool sendStatusUpdate();
+    bool clearStatusUpdate();
     bool sendNodeUpdate(quint8);
     bool sendValueUpdate(quint64);
     bool sendInstanceUpdate(quint8, quint8);

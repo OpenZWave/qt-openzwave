@@ -15,6 +15,7 @@ class QT2JS {
     static bool SetBool(rapidjson::Document &, QString, bool);
     static bool SetDouble(rapidjson::Document &, QString, double);
     static QByteArray getJSON(rapidjson::Document &);
+    static bool removeField(rapidjson::Document &, QString);
 };
 
 
