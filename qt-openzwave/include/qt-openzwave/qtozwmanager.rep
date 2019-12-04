@@ -146,6 +146,7 @@ class QTOZWManager {
     SLOT(QString getLibraryTypeName())
     SLOT(quint32 getSendQueueCount())
     SLOT(QString getControllerPath())
+    SLOT(bool refreshValue(quint64))
 
     SLOT(qint32 getPollInterval())
     SLOT(void setPollInterval(qint32 interval, bool intervalBetweenPolls))

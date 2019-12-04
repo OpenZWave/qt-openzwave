@@ -826,6 +826,22 @@ void QTOZWManager_Internal::syncroniseNodeNeighbors(quint8 node) {
     return;
 }
 
+bool QTOZWManager_Internal::refreshValue(quint64 vidKey) {
+    if (!this->checkHomeId())
+        return false;
+    if (!this->checkValueKey(vidKey))
+        return false;
+    try {
+        OpenZWave::ValueID vid(this->homeId(), vidKey);
+        return this->m_manager->RefreshValue(vid);
+    } catch (OpenZWave::OZWException &e) {
+        emit this->error(QTOZWManagerErrorCodes::OZWException);
+        this->setErrorString(e.GetMsg().c_str());
+    }
+    return false;
+}
+
+
 
 QTOZW_Nodes *QTOZWManager_Internal::getNodeModel() {
     return static_cast<QTOZW_Nodes *>(this->m_nodeModel);

@@ -139,6 +139,8 @@ public:
 
     void syncroniseNodeNeighbors(quint8 node);
 
+    bool refreshValue(quint64);
+
 
 /* Property Methods */
     QDir OZWDatabasePath() { return this->m_ozwdatabasepath; }

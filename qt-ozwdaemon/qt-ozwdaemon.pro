@@ -59,7 +59,11 @@ qtHaveModule(mqtt) {
 	        mqttcommands/checkLatestMFSRevision.cpp \
         	mqttcommands/downloadLatestConfigFileRevision.cpp \
 	        mqttcommands/downloadLatestMFSRevision.cpp \
-			mqttcommands/setValue.cpp
+			mqttcommands/setValue.cpp \
+			mqttcommands/setPollInterval.cpp \
+			mqttcommands/getPollINterval.cpp \
+			mqttcommands/syncroniseNodeNeighbors.cpp \
+			mqttcommands/refreshValue.cpp
 
 	HEADERS += mqttpublisher.h \
 			qtrj.h \
@@ -96,7 +100,12 @@ qtHaveModule(mqtt) {
     		mqttcommands/CheckLatestMFSRevision.h \
     		mqttcommands/downloadLatestConfigFileRevision.h \
     		mqttcommands/downloadLatestMFSRevision.h \
-			mqttcommands/setValue.h
+			mqttcommands/setValue.h \
+			mqttcommands/setPollInterval.h \
+			mqttcommands/getPollInterval.h\
+			mqttcommands/syncroniseNodeNeighbors.h \
+			mqttcommands/refreshValue.h
+
 } else {
 	warning("MQTT Qt Module Not Found. Not Building MQTT Client Capabilities")
 }

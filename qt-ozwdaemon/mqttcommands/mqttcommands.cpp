@@ -33,6 +33,11 @@
 #include "mqttcommands/downloadLatestConfigFileRevision.h"
 #include "mqttcommands/downloadLatestMFSRevision.h"
 #include "mqttcommands/setValue.h"
+#include "mqttcommands/getPollInterval.h"
+#include "mqttcommands/setPollInterval.h"
+#include "mqttcommands/syncroniseNodeNeighbors.h"
+#include "mqttcommands/enablePoll.h"
+#include "mqttcommands/refreshValue.h"
 
 Q_LOGGING_CATEGORY(ozwmc, "ozw.mqtt.commands");
 
@@ -241,6 +246,11 @@ void MqttCommands::setupCommands() {
     this->Register(MqttCommand_DownloadLatestConfigFileRevision::StaticGetCommand(), &MqttCommand_DownloadLatestConfigFileRevision::Create);
     this->Register(MqttCommand_DownloadLatestMFSRevision::StaticGetCommand(), &MqttCommand_DownloadLatestMFSRevision::Create);
     this->Register(MqttCommand_SetValue::StaticGetCommand(), &MqttCommand_SetValue::Create);
+    this->Register(MqttCommand_GetPollInterval::StaticGetCommand(), &MqttCommand_GetPollInterval::Create);
+    this->Register(MqttCommand_SetPollInterval::StaticGetCommand(), &MqttCommand_SetPollInterval::Create);
+    this->Register(MqttCommand_SyncroniseNodeNeighbors::StaticGetCommand(), &MqttCommand_SyncroniseNodeNeighbors::Create);
+//    this->Register(MqttCommand_EnablePoll::StaticGetCommand(), &MqttCommand_EnablePoll::Create);    
+    this->Register(MqttCommand_RefreshValue::StaticGetCommand(), &MqttCommand_RefreshValue::Create);
 }
 
 void MqttCommands::setupSubscriptions(QMqttClient *mqttclient, QString topTopic) {

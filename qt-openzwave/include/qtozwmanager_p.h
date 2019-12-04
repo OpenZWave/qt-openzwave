@@ -133,6 +133,8 @@ public Q_SLOTS:
     void setPollInterval(qint32 interval, bool intervalBetweenPolls);
     void syncroniseNodeNeighbors(quint8 node);
 
+    bool refreshValue(quint64);
+
     /* these slots are called from our OZWNotification Class. Applications should not call them */
     void pvt_valueAdded(quint64 vidKey);
     void pvt_valueRemoved(quint64 vidKey);

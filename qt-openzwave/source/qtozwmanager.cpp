@@ -449,6 +449,9 @@ void QTOZWManager::setPollInterval(qint32 interval, bool intervalBetweenPolls) {
 void QTOZWManager::syncroniseNodeNeighbors(quint8 node) {
     CALL_DPTR(syncroniseNodeNeighbors(node));
 }
+bool QTOZWManager::refreshValue(quint64 vidKey) {
+    CALL_DPTR_RTN(refreshValue(vidKey), bool);
+}
 
 void QTOZWManager::setOZWDatabasePath(QDir path) {
     if (path.exists())

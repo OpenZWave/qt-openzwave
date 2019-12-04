@@ -303,7 +303,6 @@ bool mqttpublisher::clearStatusUpdate() {
     QT2JS::removeField(this->m_ozwstatus, "getControllerLibraryVersion");
     QT2JS::removeField(this->m_ozwstatus, "getControllerLibraryType");
     QT2JS::removeField(this->m_ozwstatus, "getControllerPath");
-    QT2JS::removeField(this->m_ozwstatus, "pollInterval");
     return true;
 }
 
@@ -577,7 +576,6 @@ void mqttpublisher::driverReady(quint32 homeID) {
     QT2JS::SetString(this->m_ozwstatus, "getControllerLibraryVersion", this->getQTOZWManager()->getLibraryVersion());
     QT2JS::SetString(this->m_ozwstatus, "getControllerLibraryType", this->getQTOZWManager()->getLibraryTypeName());
     QT2JS::SetString(this->m_ozwstatus, "getControllerPath", this->getQTOZWManager()->getControllerPath());
-    QT2JS::SetUint(this->m_ozwstatus, "pollInterval", this->getQTOZWManager()->getPollInterval());
     QT2JS::SetUint(this->m_ozwstatus, "homeID", homeID);
     this->sendStatusUpdate();
 }
