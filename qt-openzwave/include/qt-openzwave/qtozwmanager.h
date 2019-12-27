@@ -164,6 +164,7 @@ Q_SIGNALS:
     void nodeProtocolInfo(quint8 node);
     void nodeEssentialNodeQueriesComplete(quint8 node);
     void nodeQueriesComplete(quint8 node);
+    void nodeGroupChanged(quint8 node, quint8 group);
     void driverReady(quint32 homeID);
     void driverFailed(quint32 homeID);
     void driverReset(quint32 homeID);

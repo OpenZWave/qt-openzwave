@@ -75,6 +75,7 @@ class QTOZWManager {
     SIGNAL(nodeProtocolInfo(quint8 node))
     SIGNAL(nodeEssentialNodeQueriesComplete(quint8 node))
     SIGNAL(nodeQueriesComplete(quint8 node))
+    SIGNAL(nodeGroupChanged(quint8 node, quint8 group))
     SIGNAL(driverReady(quint32 homeID))
     SIGNAL(driverFailed(quint32 homeID))
     SIGNAL(driverReset(quint32 homeID))

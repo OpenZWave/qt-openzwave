@@ -202,6 +202,13 @@ QString mqttpublisher::getValueTopic(QString topic, quint8 node, quint8 instance
     return t;
 }
 
+QString mqttpublisher::getAssociationTopic(quint8 node, quint8 group) {
+    QString t(MQTT_OZW_TOP_TOPIC);
+    t = t.arg(settings->value("Instance", 1).toInt());
+    t.append(QString(MQTT_OZW_ASSOCIATION_TOPIC).arg(static_cast<quint8>(node)).arg(static_cast<quint8>(group)));
+    return t;
+}
+
 QString mqttpublisher::getCommandTopic() {
     QString t(MQTT_OZW_TOP_TOPIC);
     t = t.arg(settings->value("Instance", 1).toInt());
@@ -225,6 +232,7 @@ void mqttpublisher::setOZWDaemon(qtozwdaemon *ozwdaemon) {
 
     this->m_nodeModel = static_cast<mqttNodeModel *>(manager->getNodeModel());
     this->m_valueModel = static_cast<mqttValueIDModel *>(manager->getValueModel());
+    this->m_assocModel = static_cast<mqttAssociationModel *>(manager->getAssociationModel());
 
     connect(manager, &QTOZWManager::ready, this, &mqttpublisher::ready);
     connect(manager, &QTOZWManager::valueAdded, this, &mqttpublisher::valueAdded);
@@ -240,6 +248,7 @@ void mqttpublisher::setOZWDaemon(qtozwdaemon *ozwdaemon) {
     connect(manager, &QTOZWManager::nodeProtocolInfo, this, &mqttpublisher::nodeProtocolInfo);
     connect(manager, &QTOZWManager::nodeEssentialNodeQueriesComplete, this, &mqttpublisher::nodeEssentialNodeQueriesComplete);
     connect(manager, &QTOZWManager::nodeQueriesComplete, this, &mqttpublisher::nodeQueriesComplete);
+    connect(manager, &QTOZWManager::nodeGroupChanged, this, &mqttpublisher::nodeGroupChanged);
     connect(manager, &QTOZWManager::driverReady, this, &mqttpublisher::driverReady);
     connect(manager, &QTOZWManager::driverReset, this, &mqttpublisher::driverReset);
     connect(manager, &QTOZWManager::driverFailed, this, &mqttpublisher::driverFailed);
@@ -356,6 +365,12 @@ bool mqttpublisher::sendCommandClassUpdate(quint8 node, quint8 instance, quint8 
 void mqttpublisher::sendCommandUpdate(QString command, rapidjson::Document &js) {
     QT2JS::SetUInt64(js, "TimeStamp", QDateTime::currentSecsSinceEpoch());
     this->m_client->publish(QMqttTopicName(getCommandResponseTopic(command.toLower())), QT2JS::getJSON(js), 0, false);
+    return;
+}
+
+void mqttpublisher::sendAssociationUpdate(quint8 node, quint8 group, rapidjson::Document &js) {
+    QT2JS::SetUInt64(js, "TimeStamp", QDateTime::currentSecsSinceEpoch());
+    this->m_client->publish(QMqttTopicName(getAssociationTopic(node, group)), QT2JS::getJSON(js), 0, false);
     return;
 }
 
@@ -565,6 +580,15 @@ void mqttpublisher::nodeQueriesComplete(quint8 node) {
     QT2JS::SetString(*this->m_nodes[node], "Event", "nodeQueriesComplete");
     this->sendNodeUpdate(node);
 }
+
+void mqttpublisher::nodeGroupChanged(quint8 node, quint8 group) {
+    qCDebug(ozwmp) << "Publishing Event nodeGroupChanged: " << node << " Group: " << group;
+    rapidjson::Document *jsinstance = new rapidjson::Document(rapidjson::kObjectType);
+    this->m_assocModel->populateJsonObject(*jsinstance, node, group, this->m_qtozwdeamon->getManager());
+    this->sendAssociationUpdate(node, group, *jsinstance);
+    delete jsinstance;
+}
+
 void mqttpublisher::driverReady(quint32 homeID) {
     qCDebug(ozwmp) << "Publishing Event driverReady:" << homeID;
     QT2JS::SetString(this->m_ozwstatus, "Status", "driverReady");

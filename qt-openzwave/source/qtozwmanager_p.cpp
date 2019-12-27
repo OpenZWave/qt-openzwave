@@ -1166,6 +1166,8 @@ void QTOZWManager_Internal::pvt_nodeGroupChanged(quint8 node, quint8 group)
 
     if (ia != nullptr)
         delete [] ia;
+    
+    emit this->nodeGroupChanged(node, group);
 }
 void QTOZWManager_Internal::pvt_nodeNew(quint8 node)
 {

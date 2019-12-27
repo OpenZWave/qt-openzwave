@@ -10,6 +10,7 @@
 #include "qtozwdaemon.h"
 #include "mqttNodes.h"
 #include "mqttValues.h"
+#include "mqttAssociations.h"
 #include "mqttcommands/mqttcommands.h"
 
 class MqttCommands;
@@ -22,6 +23,7 @@ class MqttCommands;
 #define MQTT_OZW_INSTANCE_TOPIC "node/%1/instance/%2/"
 #define MQTT_OZW_VID_TOPIC "node/%1/instance/%2/commandclass/%3/value/%4/"
 #define MQTT_OZW_COMMANDCLASS_TOPIC "node/%1/instance/%2/commandclass/%3/"
+#define MQTT_OZW_ASSOCIATION_TOPIC "node/%1/association/%2/"
 #define MQTT_OZW_COMMAND_TOPIC "command/%1/"
 #define MQTT_OZW_RESPONSE_TOPIC "event/%1/"
 
@@ -34,6 +36,7 @@ public:
     void setOZWDaemon(qtozwdaemon *ozwdaemon);
     QTOZWManager *getQTOZWManager();
     void sendCommandUpdate(QString, rapidjson::Document &);
+    void sendAssociationUpdate(quint8 node, quint8 group, rapidjson::Document &js);
     bool isValidNode(quint8 node);
     bool isValidValueID(quint64 vidKey);
     QVariant getValueData(quint64, mqttValueIDModel::ValueIdColumns);
@@ -55,6 +58,7 @@ public slots:
     void nodeProtocolInfo(quint8 node);
     void nodeEssentialNodeQueriesComplete(quint8 node);
     void nodeQueriesComplete(quint8 node);
+    void nodeGroupChanged(quint8 node, quint8 group);
     void driverReady(quint32 homeID);
     void driverFailed(quint32 homeID);
     void driverReset(quint32 homeID);
@@ -86,6 +90,7 @@ private:
     QString getInstanceTopic(QString, quint8, quint8);
     QString getCommandClassTopic(QString, quint8, quint8, quint8);
     QString getValueTopic(QString, quint8, quint8, quint8, quint64);
+    QString getAssociationTopic(quint8, quint8);
     QString getCommandTopic();
     QString getCommandResponseTopic(QString);
     bool sendStatusUpdate();
@@ -94,6 +99,7 @@ private:
     bool sendValueUpdate(quint64);
     bool sendInstanceUpdate(quint8, quint8);
     bool sendCommandClassUpdate(quint8, quint8, quint8);
+
     bool delNodeTopic(quint8);
     bool delValueTopic(quint64);
     bool delInstanceTopic(quint8, quint8);
@@ -108,6 +114,7 @@ private:
     mqttNodeModel *m_nodeModel;
     QMap<quint64, rapidjson::Document *> m_values;
     mqttValueIDModel *m_valueModel;
+    mqttAssociationModel *m_assocModel;
 
     QMqttClient *m_client;
     qtozwdaemon *m_qtozwdeamon;

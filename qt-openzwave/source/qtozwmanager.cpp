@@ -249,6 +249,7 @@ void QTOZWManager::connectSignals() {
     CONNECT_DPTR(nodeProtocolInfo);
     CONNECT_DPTR(nodeEssentialNodeQueriesComplete);
     CONNECT_DPTR(nodeQueriesComplete);
+    CONNECT_DPTR(nodeGroupChanged);
     CONNECT_DPTR(driverReady);
     CONNECT_DPTR(driverFailed);
     CONNECT_DPTR(driverReset);
