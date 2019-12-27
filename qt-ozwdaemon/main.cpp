@@ -109,7 +109,7 @@ int main(int argc, char *argv[])
                                      "qt.remoteobjects.io.debug=true\n"
                                      "default.debug=true");
 #else
-    QLoggingCategory::setFilterRules("default.debug=true");
+    QLoggingCategory::setFilterRules("*.debug=true");
 #endif
 
     QStringList PossibleDBPaths;

@@ -178,13 +178,15 @@ bool QTOZW_ValueIds::setData(const QModelIndex &index, const QVariant &value, in
     switch (static_cast<ValueIdColumns>(index.column())) {
         case Value:
             if (this->m_valueData.at(index.row())[static_cast<ValueIdColumns>(index.column())] != value) {
-                this->m_valueData.value(index.row())[static_cast<ValueIdColumns>(index.column())] = value;
+                qCDebug(valueModel) << "setData Called for Row" << index.row() << " With Value" << value;
+                this->m_valueData[index.row()][static_cast<ValueIdColumns>(index.column())] = value;
                 QVector<int> roles;
                 roles << Qt::DisplayRole << QTOZW_UserRoles::ModelDataChanged;
                 this->dataChanged(index, index, roles);
             }
         break;
-        default:
+        default: 
+            qCWarning(valueModel) << "got a setData for a Column other than Value. Ignoring" << index.column();
             return false;
     }
     return true;

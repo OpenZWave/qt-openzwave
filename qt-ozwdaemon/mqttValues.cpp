@@ -236,7 +236,7 @@ bool mqttValueIDModel::encodeValue(rapidjson::Document &value, quint64 vidKey) {
 }
 
 bool mqttValueIDModel::setData(quint64 vidKey, QVariant data) {
-    return QTOZW_ValueIds::setData(this->index(this->getValueRow(vidKey), QTOZW_ValueIds::ValueIdColumns::Value), data, Qt::EditRole);
+    return QTOZW_ValueIds::setData(this->index(this->getValueRow(vidKey), QTOZW_ValueIds::ValueIdColumns::Value), data);
 }
 
 

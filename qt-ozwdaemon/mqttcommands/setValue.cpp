@@ -21,7 +21,7 @@ bool MqttCommand_SetValue::processMessage(rapidjson::Document &msg) {
         return this->sendSimpleStatus(false, "Missing Field Value");
     }
 
-    quint64 vidKey = msg["ValueIdKey"].GetUint();
+    quint64 vidKey = msg["ValueIDKey"].GetUint();
     QBitArray flags = this->getValueData(vidKey, QTOZW_ValueIds::ValueIdColumns::ValueFlags).value<QBitArray>();
     if (flags[QTOZW_ValueIds::ValueIDFlags::ReadOnly] == true) {
         return this->sendSimpleStatus(false, "ValueID is Read Only");
@@ -129,5 +129,6 @@ bool MqttCommand_SetValue::processMessage(rapidjson::Document &msg) {
         qCWarning(ozwmcsv) << "Data is undefined for setValue... Json Conversion Failed?";
         return this->sendSimpleStatus(false, "JSON Conversion Failed");
     }
+    qCInfo(ozwmcsv) << "Setting " << vidKey << " to Value " << data;
     return this->sendSimpleStatus(this->setValue(vidKey, data));
 }

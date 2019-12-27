@@ -1660,9 +1660,11 @@ void QTOZWManager_Internal::pvt_valueModelDataChanged(const QModelIndex &topLeft
     if (!roles.contains(QTOZW_UserRoles::ModelDataChanged)) {
         return;
     }
-    qCDebug(valueModel) << "valueModel Changed!" << static_cast<QTOZW_ValueIds::ValueIdColumns>(topLeft.column()) << ": "<< topLeft.data();
+    qCDebug(valueModel) << "valueModel Changed!" << static_cast<QTOZW_ValueIds::ValueIdColumns>(topLeft.column())<< "-" << topLeft.row() << ": "<< topLeft.data();
     /* get the Node Number */
     quint64 vidKey = this->m_valueModel->data(topLeft.siblingAtColumn(QTOZW_ValueIds::ValueIdColumns::ValueIDKey), Qt::DisplayRole).value<quint64>();
+    QVariant data = this->m_valueModel->data(topLeft.siblingAtColumn(QTOZW_ValueIds::ValueIdColumns::Value), Qt::DisplayRole);
+    qCDebug(valueModel) << "valueModel Changed! vidKey:" << vidKey << data;
     try {
         OpenZWave::ValueID vid(this->homeId(), vidKey);
         switch (static_cast<OpenZWave::ValueID::ValueType>(vid.GetType())) {
