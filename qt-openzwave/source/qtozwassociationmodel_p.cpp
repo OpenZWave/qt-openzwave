@@ -114,7 +114,7 @@ void QTOZW_Associations_internal::addAssociation(quint8 _nodeID, quint8 _groupID
         return;
     }
     QString target;
-    target.append(QString::number(_targetNode)).append(":").append(QString::number(_targetInstance));
+    target.append(QString::number(_targetNode)).append(".").append(QString::number(_targetInstance));
     QStringList targetlist = this->m_associationData[row][associationColumns::Members].toStringList();
     if (targetlist.contains(target)) {
         qCWarning(associationModel) << "addAssociation: Target " << target << "already exists in Group " << _groupIDX << "for node " << _nodeID;
@@ -134,7 +134,7 @@ void QTOZW_Associations_internal::delAssociation(quint8 _nodeID, quint8 _groupID
         return;
     }
     QString target;
-    target.append(QString::number(_targetNode)).append(":").append(QString::number(_targetInstance));
+    target.append(QString::number(_targetNode)).append(".").append(QString::number(_targetInstance));
     QStringList targetlist = this->m_associationData[row][associationColumns::Members].toStringList();
     if (!targetlist.contains(target)) {
         qCWarning(associationModel) << "delAssociation: Target " << target << "does not exist in Group " << _groupIDX << "for node " << _nodeID;
@@ -154,7 +154,7 @@ bool QTOZW_Associations_internal::findAssociation(quint8 _nodeID, quint8 _groupI
         return false;
     }
     QString target;
-    target.append(QString::number(_targetNode)).append(":").append(QString::number(_targetInstance));
+    target.append(QString::number(_targetNode)).append(".").append(QString::number(_targetInstance));
     QStringList targetlist = this->m_associationData[row][associationColumns::Members].toStringList();
     if (!targetlist.contains(target)) {
         return false;

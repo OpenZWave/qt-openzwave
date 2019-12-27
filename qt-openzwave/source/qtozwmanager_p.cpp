@@ -1152,8 +1152,8 @@ void QTOZWManager_Internal::pvt_nodeGroupChanged(quint8 node, quint8 group)
     QStringList removeitems;
     for (int i = 0; i < list.size(); ++i) {
         QString member = list.at(i);
-        int targetnode = member.split(":")[0].toInt();
-        int targetinstance = member.split(":")[1].toInt();
+        int targetnode = member.split(".")[0].toInt();
+        int targetinstance = member.split(".")[1].toInt();
         bool found = false;
         for (quint32 j = 0; j < count; j++) {
             if (targetnode == ia[i].m_nodeId && targetinstance == ia[i].m_instance)
