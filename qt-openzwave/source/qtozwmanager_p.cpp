@@ -969,6 +969,7 @@ bool QTOZWManager_Internal::convertValueID(quint64 vidKey) {
         }
         case OpenZWave::ValueID::ValueType_Schedule:
         {
+            qCWarning(manager) << "ValueType_Schedule Not Implemented for convertValueID";
             this->m_valueModel->setValueData(vidKey, QTOZW_ValueIds::ValueIdColumns::Type, QTOZW_ValueIds::ValueIdTypes::Schedule, true);
             this->m_valueModel->finishTransaction(vidKey);
             return true;
@@ -993,14 +994,23 @@ bool QTOZWManager_Internal::convertValueID(quint64 vidKey) {
         }
         case OpenZWave::ValueID::ValueType_Button:
         {
+            bool value;
+            this->m_manager->GetValueAsBool(vid, &value);
+            this->m_valueModel->setValueData(vidKey, QTOZW_ValueIds::ValueIdColumns::Value, QVariant::fromValue(value), true);
             this->m_valueModel->setValueData(vidKey, QTOZW_ValueIds::ValueIdColumns::Type, QTOZW_ValueIds::ValueIdTypes::Button, true);
             this->m_valueModel->finishTransaction(vidKey);
             return true;
         }
         case OpenZWave::ValueID::ValueType_Raw:
         {
+            uint8* rawval;
+            uint8 length; // strangely GetValueAsRaw wants uint8
+            this->m_manager->GetValueAsRaw(vid, &rawval, &length);
+            QByteArray value(value, length);
+            this->m_valueModel->setValueData(vidKey, QTOZW_ValueIds::ValueIdColumns::Value, QVariant::fromValue(value), true);
             this->m_valueModel->setValueData(vidKey, QTOZW_ValueIds::ValueIdColumns::Type, QTOZW_ValueIds::ValueIdTypes::Raw, true);
             this->m_valueModel->finishTransaction(vidKey);
+            delete[] rawval;
             return true;
         }
         case OpenZWave::ValueID::ValueType_BitSet:
@@ -1711,12 +1721,13 @@ void QTOZWManager_Internal::pvt_valueModelDataChanged(const QModelIndex &topLeft
             }
             case OpenZWave::ValueID::ValueType_Button:
             {
-                qCWarning(valueModel) << "ValueType_Button TODO";
+                this->m_manager->SetValue(vid, topLeft.data().toBool());
                 return;
             }
             case OpenZWave::ValueID::ValueType_Raw:
             {
-                qCWarning(valueModel) << "ValueType_Raw TODO";
+                QByteArray val = topLeft.data().toByteArray();
+                this->m_manager->SetValue(vid, (uint8 const*)val.data(), val.length());
                 return;
             }
             case OpenZWave::ValueID::ValueType_BitSet:

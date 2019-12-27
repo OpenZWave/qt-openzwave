@@ -76,24 +76,24 @@ Type: - Enum
 Description: The Stage of the Interview process of a Node. The Target Stage would be Complete. 
 
 Possible Values:
-** None ** - Interview Process has not started for this node
-** ProtocolInfo ** - Obtaining basic Z-Wave Capabilities of this node from the controller
-** Probe ** - Check if the Node is Alive/Awake
-** WakeUp ** - Setup Support for Wakeup Queues and Messages
-** ManufacturerSpecific1 ** - Obtain Manufacturer/Product ID and Type Codes from device
-** NodeInfo ** - Obtain supported Command Classes from the Node
-** NodePlusInfo ** - Obtain Z-Wave+ Relvent information if supported by the Node 
-** ManufacturerSpecific2 ** - Obtain Manufacturer/Product ID and Type Codes from device.
-** Versions ** - Get information about Firmware and CommandClass Versions
-** Instances ** - Get Details about what instances/channels a device supports
-** Static ** - Obtain Values from the device that are static/don't change.
-** CacheLoad ** - Load information from the Cache File. If its a sleeping device, it will stay at this stage until the device wakes up
-** Associations ** - Refresh Association Groups and Memberships
-** Neighbors ** - Get the Neighbors List
-** Session ** - Get infrequently changing values from device
-** Dynamic ** - Get Frequently changing values from device
-** Configuration ** - Obtain Configuration Values from the device
-** Complete ** - Interview Process is Complete.
+* *None* - Interview Process has not started for this node
+* *ProtocolInfo* - Obtaining basic Z-Wave Capabilities of this node from the controller
+* *Probe* - Check if the Node is Alive/Awake
+* *WakeUp* - Setup Support for Wakeup Queues and Messages
+* *ManufacturerSpecific1* - Obtain Manufacturer/Product ID and Type Codes from device
+* *NodeInfo* - Obtain supported Command Classes from the Node
+* *NodePlusInfo* - Obtain Z-Wave+ Relvent information if supported by the Node 
+* *ManufacturerSpecific2* - Obtain Manufacturer/Product ID and Type Codes from device.
+* *Versions* - Get information about Firmware and CommandClass Versions
+* *Instances* - Get Details about what instances/channels a device supports
+* *Static* - Obtain Values from the device that are static/don't change.
+* *CacheLoad* - Load information from the Cache File. If its a sleeping device, it will stay at this stage until the device wakes up
+* *Associations* - Refresh Association Groups and Memberships
+* *Neighbors* - Get the Neighbors List
+* *Session* - Get infrequently changing values from device
+* *Dynamic* - Get Frequently changing values from device
+* *Configuration* - Obtain Configuration Values from the device
+* *Complete* - Interview Process is Complete.
 
 ### isListening
 Type: Bool
@@ -1060,9 +1060,45 @@ See Also:
 
 ## setValue
 
+This allows a MQTT Client to set a value on a Device. As OZW supports many different types of Values, you must ensure that the payload that you send matches the type of Value you are attempting to change (String, Integer etc)
+
 **Params**:
+    "ValueIDKey" - the ValueID Key Number of the Value You want ot change
+
+    "Value" - The new Value to Set - Encoded as below:
+
+        BitSet - A Array of Bits you wish to change:
+        ```"Value": { [
+            {"Label":"<string label of the BitSet you wish to change>",
+             "Value":<bool>
+            },
+            {"Position":<position of the BitSet you wish to change>,
+             "Value":<bool>
+            }
+        ]}```
+        You can specify either Label or Position
+
+        Bool - true/false
+
+        Button - true/false 
+        sending "True" simulates a button push, sending false simulates a button release
+
+        Byte/Short/Integer - Decimal value that falls within the range of the type you are changing
+
+        Decimal - Value encoded as a JSON Double
+
+        List - Value is the Position of the entry you wish to select
+
+        Raw - Value is encoded as a Hex String
+
+        String - Value is encoded as a JSON String
 
 **Returns:**
+  ​	"setValue" - If OZW accepted the command
+
+**Notification**:
+
+​	The Affected ValueID Topic will be updated with the new value if the Device accepted the change. 
 
 **Notes**:
 

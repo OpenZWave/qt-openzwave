@@ -30,8 +30,36 @@ bool MqttCommand_SetValue::processMessage(rapidjson::Document &msg) {
     QVariant data;
     switch (types) {
         case QTOZW_ValueIds::ValueIdTypes::BitSet: {
-            qCWarning(ozwmcsv) << "BitSet Not Done Yet";
-            return false;
+            if (!msg["Value"].IsArray()) {
+                this->sendSimpleStatus(false, QString("Incorrect Field Type for Value: Not Array: ").append(msg["Value"].GetType()));
+                qCWarning(ozwmcsv) << "Incorrect Field Type (Array) for " << GetCommand() << ": Value: " << msg["Value"].GetType();
+                return false;
+            }
+            rapidjson::Value bitsets = msg["Value"].GetArray();
+            QTOZW_ValueIDBitSet bits = this->getValueData(vidKey, QTOZW_ValueIds::ValueIdColumns::Value).value<QTOZW_ValueIDBitSet>();
+            for (rapidjson::SizeType i = 0; i < bitsets.Size(); i++) {
+                qint32 pos = -1;
+                if (bitsets[i].HasMember("Label")) {
+                    QString label = bitsets[i]["Label"].GetString();
+                    pos = bits.label.key(label, -1);
+                } else if (bitsets[i].HasMember("Position")) {
+                    pos = bitsets[i]["Position"].GetUint();
+                } else {
+                    this->sendSimpleStatus(false, QString("BitSet Array Does not have a Label or Position Value: "));
+                    qCWarning(ozwmcsv) << "BitSet Array does not have a Label or Position Value:" << GetCommand() << ": Value: " << msg["Value"].GetString();
+                    return false;
+                }
+                if (pos < 0) {
+                    this->sendSimpleStatus(false, QString("BitSet Array Does not have a Valid Label or Position Value: "));
+                    qCWarning(ozwmcsv) << "BitSet Array does not have a Valid Label or Position Value:" << GetCommand() << ": Value: " << msg["Value"].GetString();
+                    return false;
+                }
+                if (bits.values[pos] != bitsets[i]["Value"].GetBool()) {
+                    bits.values.setBit(pos, bitsets[i]["Value"].GetBool());
+                }
+            }
+            data = QVariant::fromValue<QTOZW_ValueIDBitSet>(bits);
+            break;
         }
 
         case QTOZW_ValueIds::ValueIdTypes::Bool: {
@@ -89,10 +117,35 @@ bool MqttCommand_SetValue::processMessage(rapidjson::Document &msg) {
             data = msg["Value"].GetUint();
             break;
         }
-        case QTOZW_ValueIds::ValueIdTypes::List: 
-        case QTOZW_ValueIds::ValueIdTypes::Raw:
+        case QTOZW_ValueIds::ValueIdTypes::List: {
+            if (!msg["Value"].IsUint()) {
+                this->sendSimpleStatus(false, QString("Incorrect Field Type for Value: Not Integer: ").append(msg["Value"].GetType()));
+                qCWarning(ozwmcsv) << "Incorrect Field Type (Integer) for " << GetCommand() << ": Value: " << msg["Value"].GetType();
+                return false;
+            }
+            QTOZW_ValueIDList list = this->getValueData(vidKey, QTOZW_ValueIds::ValueIdColumns::Value).value<QTOZW_ValueIDList>();
+            int index = list.values.indexOf(msg["Value"].GetUint());
+            if (index < 0) {
+                this->sendSimpleStatus(false, QString("Selected List Value is not in Lists: ").append(msg["Value"].GetUint()));
+                qCWarning(ozwmcsv) << "Selected List Value is Not In List for " << GetCommand() << ": Value: " << msg["Value"].GetUint() << "List:" << list.labels;
+                return false;
+            }
+            list.selectedItem = list.labels[index];
+            data.fromValue<QTOZW_ValueIDList>(list);
+            break;
+        }
+        case QTOZW_ValueIds::ValueIdTypes::Raw: {
+            if (!msg["Value"].IsString()) {
+                this->sendSimpleStatus(false, QString("Incorrect Field Type for Value: Not String: ").append(msg["Value"].GetType()));
+                qCWarning(ozwmcsv) << "Incorrect Field Type (String) for " << GetCommand() << ": Value: " << msg["Value"].GetType();
+                return false;
+            }
+            data = QByteArray::fromHex(msg["Value"].GetString());
+            break;
+        }
+
         case QTOZW_ValueIds::ValueIdTypes::Schedule: {
-            qCWarning(ozwmcsv) << "List/Raw/Schedule Not Done Yet";
+            qCWarning(ozwmcsv) << "Raw/Schedule Not Done Yet";
             return false;
 
         }

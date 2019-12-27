@@ -212,11 +212,12 @@ bool mqttValueIDModel::encodeValue(rapidjson::Document &value, quint64 vidKey) {
             break;
         }
         case QTOZW_ValueIds::ValueIdTypes::Raw: {
-            qCWarning(ozwmpvalue) << "Raw ValueType not handled in mqttValueIdModel::encodeValue yet";
+            QByteArray ba = data.value<QByteArray>();
+            changed = QT2JS::SetString(value, "Value", ba.toHex());
             break;
         }
         case QTOZW_ValueIds::ValueIdTypes::Schedule: {
-            qCWarning(ozwmpvalue) << "Raw ValueType not handled in mqttValueIdModel::encodeValue yet";
+            qCWarning(ozwmpvalue) << "Schedule ValueType not handled in mqttValueIdModel::encodeValue yet";
             break;
         }
         case QTOZW_ValueIds::ValueIdTypes::Short: {
