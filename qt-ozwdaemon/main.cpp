@@ -77,6 +77,10 @@ int main(int argc, char *argv[])
 
 #endif
 
+    QCommandLineOption StopOnFailure(QStringList() << "stop-on-failure",
+        "Exit on Driver Failure"
+    );
+    parser.addOption(StopOnFailure);
 
 
     parser.process(a);
@@ -173,7 +177,9 @@ int main(int argc, char *argv[])
     }
 #endif
 
-
+    if (parser.isSet(StopOnFailure)) {
+        settings.setValue("StopOnFailure", true);
+    }
 
     QTOZWOptions options(QTOZWOptions::Local);
     options.setUserPath(userPath);

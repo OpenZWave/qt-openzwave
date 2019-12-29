@@ -279,15 +279,25 @@ void mqttpublisher::setOZWDaemon(qtozwdaemon *ozwdaemon) {
 
 void mqttpublisher::updateLogStateChange()
 {
-    qCDebug(ozwmp) << "State Change" << m_client->state();
-    if (settings->value("MQTTTLS").toBool() == true && this->m_client->state() == QMqttClient::ClientState::Connecting) {
-        QSslSocket *socket = qobject_cast<QSslSocket *>(this->m_client->transport());
-        socket->setPeerVerifyMode(QSslSocket::PeerVerifyMode::VerifyNone);
-    }
-    if (this->m_client->state() == QMqttClient::ClientState::Connected) {
+    qCDebug(ozwmp) << "MQTT State Change" << m_client->state();
+    if (this->m_client->state() == QMqttClient::ClientState::Connecting) {
+        qCInfo(ozwmp) << "MQTT Client Connecting";
+        if (settings->value("MQTTTLS").toBool() == true) {
+            QSslSocket *socket = qobject_cast<QSslSocket *>(this->m_client->transport());
+            socket->setPeerVerifyMode(QSslSocket::PeerVerifyMode::VerifyNone);
+        }
+    } else if (this->m_client->state() == QMqttClient::ClientState::Connected) {
+        qCInfo(ozwmp) << "MQTT Client Connected";
         this->m_cleanTopicSubscription = this->m_client->subscribe(QMqttTopicFilter(getTopic("#")));
         connect(this->m_cleanTopicSubscription, &QMqttSubscription::messageReceived, this, &mqttpublisher::cleanTopics);
         this->m_commands->setupSubscriptions(this->m_client, this->getCommandTopic());
+        return;
+    } else if (this->m_client->state() == QMqttClient::ClientState::Disconnected) {
+        if (settings->value("StopOnFailure", false).toBool()) {
+            qCWarning(ozwmp) << "Exiting on Failure";
+            exit(-1);
+        }
+        return;
     }
 
 }
@@ -609,7 +619,10 @@ void mqttpublisher::driverFailed(quint32 homeID) {
     QT2JS::SetString(this->m_ozwstatus, "Status", "driverFailed");
     QT2JS::SetUint(this->m_ozwstatus, "homeID", homeID);
     this->sendStatusUpdate();
-    /* XXX TODO: Scan Nodes, Instances, CC and Value Lists and delete them */
+    if (settings->value("StopOnFailure", false).toBool()) {
+        qCWarning(ozwmp) << "Exiting on Failure";
+        exit(-1);
+    }
 }
 void mqttpublisher::driverReset(quint32 homeID) {
     qCDebug(ozwmp) << "Publishing Event driverReset:" << homeID;
