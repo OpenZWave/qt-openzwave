@@ -117,11 +117,6 @@ SOURCES += main.cpp \
         qtozwdaemon.cpp
 
 
-# Default rules for deployment.
-qnx: target.path = /tmp/$${TARGET}/bin
-else: unix:!android: target.path = /opt/$${TARGET}/bin
-!isEmpty(target.path): INSTALLS += target
-
 HEADERS += \
     qtozwdaemon.h \
 
@@ -132,6 +127,10 @@ include(../qt-openzwave.pri)
 INCLUDEPATH += ../qt-openzwave/include/
 
 unix {
+	# Default rules for deployment.
+	target.path = /usr/local/bin
+	INSTALLS += target
+
     LIBS += -lresolv -L../qt-openzwave/ -lqt-openzwave -L../qt-openzwavedatabase/ -lqt-openzwavedatabase
     INCLUDEPATH += ../qt-openzwavedatabase/include/
     QMAKE_CXXFLAGS += -g1
