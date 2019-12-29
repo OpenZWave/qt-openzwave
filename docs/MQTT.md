@@ -1,14 +1,16 @@
 MQTT Client for OpenZWave
 =========================
 
-Docker Repo: https://cloud.docker.com/u/openzwave/repository/docker/openzwave/ozw-mqtt
+Docker Repo: https://hub.docker.com/r/openzwave/ozw-mqtt
 
-Copy "config" folder from OZW to /tmp/ozw/
+Copy the "config" folder from OZW to `/tmp/ozw/`.
 
-Start Container with the following command line:
->docker run -it --device=/dev/ttyUSB0 -v /tmp/ozw:/opt/ozw/config -e MQTT_SERVER="10.100.200.102" -e USBPATH=/dev/ttyUSB0 ozw-mqtt:latest
+Start a container with the following command line:
+```
+docker run -it --device=/dev/ttyUSB0 -v /tmp/ozw:/opt/ozw/config -e MQTT_SERVER="10.100.200.102" -e USBPATH=/dev/ttyUSB0 openzwave/ozw-mqtt:latest
+```
 
-(replace MQTT_SERVER with IP address of the MQTT Server and all /dev/ttyUSB0 entries with path to your USB Stick
+(replace `MQTT_SERVER` with the IP address of the MQTT Server and all `/dev/ttyUSB0` entries with the path to your USB Stick.
 
 ## MQTT Topic Structure
 The MQTT Client for OZW will send messages to a MQTT Broker with a predifined topic structure. The structure of the messages are detailed in the sections below.
