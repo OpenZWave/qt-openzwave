@@ -28,6 +28,10 @@ void backtrace(int sig = 0)
   unw_cursor_t cursor;
   unw_context_t context;
 
+  qWarning() << "=============================";
+  qWarning() << "CRASH!!! - Dumping Backtrace:";
+  qWarning() << "=============================";
+
   unw_getcontext(&context);
   unw_init_local(&cursor, &context);
 
@@ -46,14 +50,14 @@ void backtrace(int sig = 0)
       if ( (name = abi::__cxa_demangle(symbol, NULL, NULL, &status)) == 0 )
         name = symbol;
     }
-
-    printf("#%-2d 0x%016" PRIxPTR " sp=0x%016" PRIxPTR " %s + 0x%" PRIxPTR "\n",
+    char message[1024];
+    snprintf(message, sizeof(message), "#%-2d 0x%016" PRIxPTR " sp=0x%016" PRIxPTR " %s + 0x%" PRIxPTR,
         ++n,
         static_cast<uintptr_t>(ip),
         static_cast<uintptr_t>(sp),
         name,
         static_cast<uintptr_t>(off));
-
+    qWarning() << message;
     if ( name != symbol )
       free(name);
   }
@@ -67,8 +71,7 @@ void crash() { volatile int* a = (int*)(NULL); *a = 1; }
 #ifdef HAVE_BP
 static bool dumpCallback(const google_breakpad::MinidumpDescriptor& descriptor,
 void* context, bool succeeded) {
-    Q_UNUSED(context);
-    printf("Dump path: %s\n", descriptor.path());
+    backtrace();
     if (succeeded == true) {
         std::map<string, string> parameters;
         std::map<string, string> files;
@@ -89,9 +92,11 @@ void* context, bool succeeded) {
 
         std::string response, error;
         bool success = google_breakpad::HTTPUpload::SendRequest(url, parameters, files, proxy_host, proxy_userpasswd, "", &response, NULL, &error);
-        printf("%d - %s\n", success, response.c_str());
+        if (success) 
+            qWarning() << "Uploaded Crash minidump With ID: " <<  response.c_str();
+        else
+            qWarning() << "Failed to Upload Crash MiniDump in " << descriptor.path();
     }
-    backtrace();
     return succeeded;
 }
 #endif
