@@ -1,3 +1,10 @@
+
+#ifdef BP_LINUX
+#include "client/linux/handler/exception_handler.h"
+#include "common/linux/http_upload.h"
+#define HAVE_BP
+#endif
+
 #include <signal.h>
 #include <stdlib.h>
 #include <unistd.h>
@@ -11,9 +18,87 @@
 #include "mqttpublisher.h"
 #endif
 
+#define UNW_LOCAL_ONLY
+#include <libunwind.h>
+#include <cxxabi.h>
+
+void backtrace(int sig = 0)
+{
+  Q_UNUSED(sig);
+  unw_cursor_t cursor;
+  unw_context_t context;
+
+  unw_getcontext(&context);
+  unw_init_local(&cursor, &context);
+
+  int n=0;
+  while ( unw_step(&cursor) ) {
+    unw_word_t ip, sp, off;
+
+    unw_get_reg(&cursor, UNW_REG_IP, &ip);
+    unw_get_reg(&cursor, UNW_REG_SP, &sp);
+
+    char symbol[256] = {"<unknown>"};
+    char *name = symbol;
+
+    if ( !unw_get_proc_name(&cursor, symbol, sizeof(symbol), &off) ) {
+      int status;
+      if ( (name = abi::__cxa_demangle(symbol, NULL, NULL, &status)) == 0 )
+        name = symbol;
+    }
+
+    printf("#%-2d 0x%016" PRIxPTR " sp=0x%016" PRIxPTR " %s + 0x%" PRIxPTR "\n",
+        ++n,
+        static_cast<uintptr_t>(ip),
+        static_cast<uintptr_t>(sp),
+        name,
+        static_cast<uintptr_t>(off));
+
+    if ( name != symbol )
+      free(name);
+  }
+#ifndef HAVE_BP
+    exit(-1);
+#endif
+}
+
+void crash() { volatile int* a = (int*)(NULL); *a = 1; }
+
+#ifdef HAVE_BP
+static bool dumpCallback(const google_breakpad::MinidumpDescriptor& descriptor,
+void* context, bool succeeded) {
+    Q_UNUSED(context);
+    printf("Dump path: %s\n", descriptor.path());
+    if (succeeded == true) {
+        std::map<string, string> parameters;
+        std::map<string, string> files;
+        std::string proxy_host;
+        std::string proxy_userpasswd;
+        std::string url("https://sentry.io/api/1868130/minidump/?sentry_key=e086ba93030843199aab391947d205da");
+
+        // Add any attributes to the parameters map.
+        // Note that several attributes are automatically extracted.
+        parameters["product_name"] = QCoreApplication::applicationName().toStdString();
+        parameters["release"] =  QCoreApplication::applicationVersion().toStdString();
+        qtozwdaemon *daemon = static_cast<qtozwdaemon *>(context);
+        parameters["OpenZWave_Version"] = daemon->getManager()->getVersionAsString().toStdString();
+        parameters["QTOpenZWave_Version"] = daemon->getQTOpenZWave()->getVersion().toStdString();
+        parameters["QT_Version"] = qVersion();
+
+        files["upload_file_minidump"] = descriptor.path();
+
+        std::string response, error;
+        //bool success = google_breakpad::HTTPUpload::SendRequest(url, parameters, files, proxy_host, proxy_userpasswd, "", &response, NULL, &error);
+        //printf("%d - %s\n", success, response.c_str());
+    }
+    backtrace();
+    return succeeded;
+}
+#endif
 
 int main(int argc, char *argv[])
 {
+
 
 
     QCoreApplication a(argc, argv);
@@ -192,7 +277,23 @@ int main(int argc, char *argv[])
     mqttpublisher mqttpublisher(&settings);
     mqttpublisher.setOZWDaemon(&daemon);
 #endif
+
+#ifdef HAVE_BP
+    QString bppath =  QString::fromLocal8Bit(qgetenv("BP_DB_PATH"));
+    if (bppath.isEmpty())
+        bppath = QStandardPaths::standardLocations(QStandardPaths::TempLocation).at(0);
+    google_breakpad::MinidumpDescriptor descriptor(bppath.toStdString());
+    google_breakpad::ExceptionHandler eh(descriptor, NULL, dumpCallback, static_cast<void *>(&daemon), true, -1);
+#else 
+    signal(SIGSEGV, backtrace); 
+    signal(SIGABRT, backtrace);
+#endif
+
+
+
     daemon.setSerialPort(parser.value(serialPort));
     daemon.startOZW();
+    assert(0);
+    crash();
     return a.exec();
 }

@@ -6,7 +6,7 @@ TARGET = ../ozwdaemon
 
 VERSION = 0.1.0
 
-CONFIG += c++11 console link_pkgconfig silent
+CONFIG += c++11 console link_pkgconfig silent force_debug_info
 CONFIG -= app_bundle
 
 # The following define makes your compiler emit warnings if you use
@@ -14,11 +14,6 @@ CONFIG -= app_bundle
 # depend on your compiler). Please consult the documentation of the
 # deprecated API in order to know how to port your code away from it.
 DEFINES += QT_DEPRECATED_WARNINGS QT_MESSAGELOGCONTEXT APP_VERSION=$$VERSION
-
-# You can also make your code fail to compile if it uses deprecated APIs.
-# In order to do so, uncomment the following line.
-# You can also select to disable deprecated APIs only up to a certain version of Qt.
-#DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0x060000    # disables all the APIs deprecated before Qt 6.0.0
 
 qtHaveModule(mqtt) {
 	PKGCONFIG += RapidJSON
@@ -121,19 +116,34 @@ HEADERS += \
     qtozwdaemon.h \
 
 
-
 include(../qt-openzwave.pri)
 
 INCLUDEPATH += ../qt-openzwave/include/
+
+
+BreakPad {
+    exists( $$top_srcdir/../breakpad/src/src/client/linux/libbreakpad_client.a) {
+        INCLUDEPATH += $$top_srcdir/../breakpad/src/src/
+		SOURCES += $$top_srcdir/../breakpad/src/src/common/linux/http_upload.cc
+        LIBS += $$top_srcdir/../breakpad/src/src/client/linux/libbreakpad_client.a -ldl
+        DEFINES += BP_LINUX
+        message("Building with BreakPad");
+    } else {
+		error("Can't find BreakPad Library");
+	}
+}
+
+
 
 unix {
 	# Default rules for deployment.
 	target.path = /usr/local/bin
 	INSTALLS += target
-
+	PKGCONFIG += libunwind libcurl
     LIBS += -lresolv -L../qt-openzwave/ -lqt-openzwave -L../qt-openzwavedatabase/ -lqt-openzwavedatabase
     INCLUDEPATH += ../qt-openzwavedatabase/include/
-    QMAKE_CXXFLAGS += -g1
+    QMAKE_CXXFLAGS += -g
+    QMAKE_CFLAGS += -g
     QMAKE_LFLAGS += -rdynamic
 	QMAKE_STRIP = echo
 }
@@ -146,4 +156,9 @@ macx {
     QMAKE_POST_LINK=$$top_srcdir/updaterpath.sh $(TARGET)
 }
 
-
+QMAKE_CFLAGS_RELEASE -= -O
+QMAKE_CFLAGS_RELEASE -= -O1
+QMAKE_CFLAGS_RELEASE -= -O2
+QMAKE_CXXFLAGS_RELEASE -= -O
+QMAKE_CXXFLAGS_RELEASE -= -O1
+QMAKE_CXXFLAGS_RELEASE -= -O2
