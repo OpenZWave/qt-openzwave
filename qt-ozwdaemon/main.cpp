@@ -88,8 +88,8 @@ void* context, bool succeeded) {
         files["upload_file_minidump"] = descriptor.path();
 
         std::string response, error;
-        //bool success = google_breakpad::HTTPUpload::SendRequest(url, parameters, files, proxy_host, proxy_userpasswd, "", &response, NULL, &error);
-        //printf("%d - %s\n", success, response.c_str());
+        bool success = google_breakpad::HTTPUpload::SendRequest(url, parameters, files, proxy_host, proxy_userpasswd, "", &response, NULL, &error);
+        printf("%d - %s\n", success, response.c_str());
     }
     backtrace();
     return succeeded;
