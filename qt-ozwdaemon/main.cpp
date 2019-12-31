@@ -282,6 +282,7 @@ int main(int argc, char *argv[])
     QString bppath =  QString::fromLocal8Bit(qgetenv("BP_DB_PATH"));
     if (bppath.isEmpty())
         bppath = QStandardPaths::standardLocations(QStandardPaths::TempLocation).at(0);
+    qInfo() << "Using BreakPad - Crash Directory: " << bppath;
     google_breakpad::MinidumpDescriptor descriptor(bppath.toStdString());
     google_breakpad::ExceptionHandler eh(descriptor, NULL, dumpCallback, static_cast<void *>(&daemon), true, -1);
 #else 
@@ -293,7 +294,7 @@ int main(int argc, char *argv[])
 
     daemon.setSerialPort(parser.value(serialPort));
     daemon.startOZW();
-    assert(0);
+//    assert(0);
     crash();
     return a.exec();
 }
