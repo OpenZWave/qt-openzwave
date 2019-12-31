@@ -62,6 +62,7 @@ void backtrace(int sig = 0)
       free(name);
   }
 #ifndef HAVE_BP
+    qWarning("Exiting....");
     exit(-1);
 #endif
 }
@@ -72,6 +73,7 @@ void crash() { volatile int* a = (int*)(NULL); *a = 1; }
 static bool dumpCallback(const google_breakpad::MinidumpDescriptor& descriptor,
 void* context, bool succeeded) {
     backtrace();
+    qWarning() << "dumpCallback Succeeded: " << succeeded << " at " << descriptor.path();
     if (succeeded == true) {
         std::map<string, string> parameters;
         std::map<string, string> files;
