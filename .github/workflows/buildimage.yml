@@ -11,6 +11,8 @@ jobs:
       -
         name: Checkout
         uses: actions/checkout@v1
+        with:
+          ref: mqtt
       -
         name: Set up Docker Buildx
         id: buildx
@@ -26,4 +28,4 @@ jobs:
           docker buildx build \
             --platform linux/386,linux/amd64,linux/arm/v6,linux/arm/v7,linux/arm64 \
             --output "type=image,push=false" \
-            --file ./Docker/Dockerfile
+            --file ./Docker/Dockerfile ./test
