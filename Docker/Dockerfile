@@ -19,9 +19,6 @@ RUN git clone https://github.com/qt/qtmqtt.git && cd qtmqtt && git checkout 5.12
 RUN git clone https://github.com/OpenZWave/open-zwave.git && cd open-zwave && make -j4 && make install
 RUN git clone https://github.com/Fishwaldo/qt-openzwave.git && cd qt-openzwave && git checkout mqtt && /usr/lib/qt5/bin/qmake "CONFIG += BreakPad" && make -j4 && make install
 
-RUN ls /usr/local/lib/
-RUN ls /usr/local/lib*/*
-
 FROM debian:buster-slim
 MAINTAINER Justin Hammond
 WORKDIR /opt
