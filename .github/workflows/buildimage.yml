@@ -2,7 +2,7 @@ name: buildx
 
 on:
   push:
-    branches: master
+    branches: mqtt
 
 jobs:
   buildx:
