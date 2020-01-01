@@ -20,7 +20,7 @@ RUN git clone https://github.com/OpenZWave/open-zwave.git && cd open-zwave && ma
 RUN git clone https://github.com/Fishwaldo/qt-openzwave.git && cd qt-openzwave && git checkout mqtt && /usr/lib/qt5/bin/qmake "CONFIG += BreakPad" && make -j4 && make install
 
 RUN ls /usr/local/lib/
-RUN ls /usr/local/lib64/*
+RUN ls /usr/local/lib*/*
 
 FROM debian:buster-slim
 MAINTAINER Justin Hammond
@@ -34,7 +34,7 @@ RUN apt-get -y -t experimental install libqt5remoteobjects5
 
 COPY --from=builder /usr/local/bin/* /usr/local/bin/
 COPY --from=builder /usr/local/lib/libqt* /usr/local/lib/
-COPY --from=builder /usr/local/lib64/libopenzwave* /usr/local/lib/
+COPY --from=builder /usr/local/lib*/libopenzwave* /usr/local/lib/
 COPY --from=builder /usr/lib/*/libQt5Mqtt* /usr/local/lib/
 RUN mkdir -p /opt/ozw/config/crashes/
 ENV LD_LIBRARY_PATH="/usr/local/lib:/usr/local/lib64:$LD_LIBRARY_PATH"
