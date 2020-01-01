@@ -99,14 +99,13 @@ void* context, bool succeeded) {
         else
             qWarning() << "Failed to Upload Crash MiniDump in " << descriptor.path();
     }
+
     return succeeded;
 }
 #endif
 
 int main(int argc, char *argv[])
 {
-
-
 
     QCoreApplication a(argc, argv);
     QCoreApplication::setApplicationName("ozwdaemon");
@@ -302,6 +301,6 @@ int main(int argc, char *argv[])
     daemon.setSerialPort(parser.value(serialPort));
     daemon.startOZW();
 //    assert(0);
-    crash();
+//    crash();
     return a.exec();
 }
