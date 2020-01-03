@@ -14,8 +14,8 @@ WORKDIR /opt
 RUN echo 'APT::Default-Release "stable";' > /etc/apt/apt.conf.d/99defaultrelease && echo 'deb     http://ftp.uk.debian.org/debian/    unstable main contrib non-free' > /etc/apt/sources.list.d/unstable.list && echo 'deb     http://ftp.uk.debian.org/debian/    experimental main contrib non-free' >> /etc/apt/sources.list.d/unstable.list && apt update
 RUN apt-get -y install rapidjson-dev git g++ cmake make pkgconf bash python wget joe mc libunwind-dev libcurl4-openssl-dev && apt-get -y -t unstable install qt5-default && apt-get -y -t unstable install qtbase5-private-dev && apt-get -y -t unstable install g++ && apt-get -y -t experimental install libqt5remoteobjects5-dev libqt5remoteobjects5-bin 
 ENV PATH=$PATH:/opt/depot_tools/
-RUN git clone https://chromium.googlesource.com/chromium/tools/depot_tools.git && mkdir breakpad && cd breakpad && fetch breakpad && cd src && ./configure && make && make install
-RUN git clone https://github.com/qt/qtmqtt.git && cd qtmqtt && git checkout 5.12 && /usr/lib/qt5/bin/qmake && make && make install
+RUN git clone https://chromium.googlesource.com/chromium/tools/depot_tools.git && mkdir breakpad && cd breakpad && fetch breakpad && cd src && ./configure --disable-processor && make && make install
+RUN git clone https://github.com/qt/qtmqtt.git && cd qtmqtt && git checkout 5.12 && /usr/lib/qt5/bin/qmake QT_BUILD_PARTS="libs tools" && make && make install
 RUN git clone https://github.com/OpenZWave/open-zwave.git && cd open-zwave && make -j4 && make install
 RUN git clone https://github.com/OpenZWave/qt-openzwave.git && cd qt-openzwave && git checkout mqtt && /usr/lib/qt5/bin/qmake "CONFIG += BreakPad" && make -j4 && make install
 
