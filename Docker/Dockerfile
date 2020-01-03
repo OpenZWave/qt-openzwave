@@ -17,7 +17,7 @@ ENV PATH=$PATH:/opt/depot_tools/
 RUN git clone https://chromium.googlesource.com/chromium/tools/depot_tools.git && mkdir breakpad && cd breakpad && fetch breakpad && cd src && ./configure && make && make install
 RUN git clone https://github.com/qt/qtmqtt.git && cd qtmqtt && git checkout 5.12 && /usr/lib/qt5/bin/qmake && make && make install
 RUN git clone https://github.com/OpenZWave/open-zwave.git && cd open-zwave && make -j4 && make install
-RUN git clone https://github.com/Fishwaldo/qt-openzwave.git && cd qt-openzwave && git checkout mqtt && /usr/lib/qt5/bin/qmake "CONFIG += BreakPad" && make -j4 && make install
+RUN git clone https://github.com/OpenZWave/qt-openzwave.git && cd qt-openzwave && git checkout mqtt && /usr/lib/qt5/bin/qmake "CONFIG += BreakPad" && make -j4 && make install
 
 
 FROM debian:buster-slim
