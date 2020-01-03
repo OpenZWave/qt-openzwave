@@ -13,7 +13,7 @@ TEMPLATE = lib
 
 VERSION = 1.0.0
 
-CONFIG += silent file_copies
+CONFIG += silent file_copies force_debug_info
 !versionAtLeast(QT_VERSION, 5.11.2):error("Use at least Qt version 5.11.2")
 
 include(../qt-openzwave.pri)
@@ -87,8 +87,10 @@ COPIES += copyrepheaders
 unix {
     target.path = /usr/local/lib
     INSTALLS += target
-    QMAKE_CXXFLAGS += -g1
+    QMAKE_CXXFLAGS += -g
+    QMAKE_CFLAGS += -g
     QMAKE_LFLAGS += -rdynamic
+    QMAKE_STRIP = echo
 }
 #LIBS += -L../../open-zwave -lopenzwave
 
@@ -96,6 +98,13 @@ macx {
     QMAKE_LFLAGS_SONAME = -Wl,-install_name,@rpath/
     QMAKE_POST_LINK=$$top_srcdir/updaterpath.sh $(TARGET)
 } 
+
+QMAKE_CFLAGS_RELEASE -= -O
+QMAKE_CFLAGS_RELEASE -= -O1
+QMAKE_CFLAGS_RELEASE -= -O2
+QMAKE_CXXFLAGS_RELEASE -= -O
+QMAKE_CXXFLAGS_RELEASE -= -O1
+QMAKE_CXXFLAGS_RELEASE -= -O2
 
 message(" ")
 message("Summary:")
