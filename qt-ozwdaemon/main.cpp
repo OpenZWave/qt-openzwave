@@ -219,7 +219,6 @@ int main(int argc, char *argv[])
         PossibleDBPaths << parser.value(userDir);
     PossibleDBPaths << "./config/";
     PossibleDBPaths <<  QDir::toNativeSeparators("../../../config/");
-//    PossibleDBPaths << settings.value("openzwave/UserPath", QDir::toNativeSeparators("../../../config/")).toString().append("/");
     PossibleDBPaths << QStandardPaths::standardLocations(QStandardPaths::AppDataLocation);
 
     foreach(path, PossibleDBPaths) {
@@ -235,20 +234,21 @@ int main(int argc, char *argv[])
         }
     }
 
-//    if (userPath.isEmpty()) {
-//        fputs(qPrintable("userPath is Not Set or Missing\n"), stderr);
-//        exit(-1);
-//    }
+
     if (dbPath.isEmpty()) {
-        copyConfigDatabase(QFileInfo("./").absoluteFilePath().append("/"));
-        dbPath = "./config/";
-        userPath = "./config/";
+        if (initConfigDatabase(PossibleDBPaths)) {
+            copyConfigDatabase(QFileInfo("./").absoluteFilePath().append("/"));
+            dbPath = "./config/";
+            userPath = "./config/";
+        } else {
+            qWarning() << "Cant find qt-openzwavedatabase.rcc";
+        }
     }
     qDebug() << "DBPath: " << dbPath;
     qDebug() << "userPath: " << userPath;
 
     QSettings settings(userPath.append("/ozwdaemon.ini"), QSettings::IniFormat);
-
+    exit(-1);
 
 #ifdef HAVE_MQTT
     if (parser.isSet(MQTTServer)) {

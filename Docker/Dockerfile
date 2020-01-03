@@ -35,6 +35,7 @@ COPY --from=builder /usr/local/lib/libqt* /usr/local/lib/
 COPY --from=builder /usr/local/lib*/libopenzwave* /usr/local/lib/
 COPY --from=builder /usr/lib/*/libQt5Mqtt* /usr/local/lib/
 COPY --from=builder /opt/qt-openzwave/tools/* /usr/local/bin/
+COPY --from=builder /usr/share/OpenZWave/qt-openzwavedatabase.rcc /usr/share/OpenZWave/
 RUN mkdir -p /opt/ozw/config/crashes/
 ENV LD_LIBRARY_PATH="/usr/local/lib:/usr/local/lib64:$LD_LIBRARY_PATH"
 ENV USBPATH="/dev/ttyUSB0"

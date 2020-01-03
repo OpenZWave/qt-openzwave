@@ -1,6 +1,42 @@
 #include <QDirIterator>
 #include <QDebug>
+#include <QResource>
+#include <QStandardPaths>
 #include "qt-openzwave/qt-openzwavedatabase.h"
+
+bool initConfigDatabase(QStringList path) {
+    for (int i = 0; i < path.size(); ++i) {
+        QString test = path.at(i);
+        test.append("/qt-openzwavedatabase.rcc");
+        qDebug() << "Testing " << test;
+        if (QResource::registerResource(test)) {
+            qInfo() << "Found qt-openzwavedatabase.rcc at " << test;
+            return true;
+        }
+    }
+    if (QResource::registerResource("qt-openzwavedatabase/qt-openzwavedatabase.rcc")) {
+        qInfo() << "Found qt-openzwavedatabase.rcc at qt-openzwavedatabase/qt-openzwavedatabase.rcc";
+        return true;
+    }
+    if (QResource::registerResource("./qt-openzwavedatabase.rcc")) {
+        qInfo() << "Found qt-openzwavedatabase.rcc at ./qt-openzwavedatabase.rcc";
+        return true;
+    }
+
+    for (int i = 0; i < QStandardPaths::standardLocations(QStandardPaths::GenericDataLocation).size(); ++i) {
+        QString test = QStandardPaths::standardLocations(QStandardPaths::GenericDataLocation).at(i);
+        test.append("/OpenZWave/qt-openzwavedatabase.rcc");
+        qDebug() << "Testing Standard Paths" << test;
+        if (QResource::registerResource(test)) {
+            qInfo() << "Found qt-openzwavedatabase.rcc at " << test;
+            return true;
+        }
+    }
+
+    return true; 
+
+}
+
 
 bool copyConfigDatabase(QDir configpath)
 {
