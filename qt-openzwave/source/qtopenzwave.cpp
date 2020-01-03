@@ -37,7 +37,24 @@ QTOpenZwave::QTOpenZwave
     qRegisterMetaType<OptionList>("OptionList");
     qRegisterMetaTypeStreamOperators<OptionList>("OptionList");
 
-    qSetMessagePattern("%{category} %{message}");
+    qRegisterMetaType<NotificationTypes::QTOZW_Notification_Code>("NotificationTypes::QTOZW_Notification_Code");
+    qRegisterMetaTypeStreamOperators<NotificationTypes::QTOZW_Notification_Code>("NotificationTypes::QTOZW_Notification_Code");
+
+    qRegisterMetaType<NotificationTypes::QTOZW_Notification_User>("NotificationTypes::QTOZW_Notification_User>");
+    qRegisterMetaTypeStreamOperators<NotificationTypes::QTOZW_Notification_User>("NotificationTypes::QTOZW_Notification_User>");
+
+    qRegisterMetaType<NotificationTypes::QTOZW_Notification_Controller_Error>("NotificationTypes::QTOZW_Notification_Controller_Error");
+    qRegisterMetaTypeStreamOperators<NotificationTypes::QTOZW_Notification_Controller_Error>("NotificationTypes::QTOZW_Notification_Controller_Error");
+
+    qRegisterMetaType<NotificationTypes::QTOZW_Notification_Controller_State>("NotificationTypes::QTOZW_Notification_Controller_State");
+    qRegisterMetaTypeStreamOperators<NotificationTypes::QTOZW_Notification_Controller_State>("NotificationTypes::QTOZW_Notification_Controller_State");
+
+    qRegisterMetaType<NotificationTypes::QTOZW_Notification_Controller_Cmd>("NotificationTypes::QTOZW_Notification_Controller_Cmd");
+    qRegisterMetaTypeStreamOperators<NotificationTypes::QTOZW_Notification_Controller_Cmd>("NotificationTypes::QTOZW_Notification_Controller_Cmd");
+
+
+//    qSetMessagePattern("[%{time yyyyMMdd h:mm:ss.zzz t}] %{category} %{file}:%{line}:%{function}: %{message}");
+    qSetMessagePattern("[%{time yyyyMMdd h:mm:ss.zzz t}] [%{category}] [%{type}]: %{message}");
 }
 
 QTOZWManager *QTOpenZwave::GetManager
@@ -50,4 +67,11 @@ QTOZWManager *QTOpenZwave::GetManager
         this->m_manager->setOZWUserPath(m_ozwuserpath);
     }
     return this->m_manager;
+}
+
+#define VAL(str) #str
+#define TOSTRING(str) VAL(str)
+
+QString QTOpenZwave::getVersion() {
+    return TOSTRING(LIB_VERSION);
 }

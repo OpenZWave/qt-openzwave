@@ -75,6 +75,7 @@ class QTOZWManager {
     SIGNAL(nodeProtocolInfo(quint8 node))
     SIGNAL(nodeEssentialNodeQueriesComplete(quint8 node))
     SIGNAL(nodeQueriesComplete(quint8 node))
+    SIGNAL(nodeGroupChanged(quint8 node, quint8 group))
     SIGNAL(driverReady(quint32 homeID))
     SIGNAL(driverFailed(quint32 homeID))
     SIGNAL(driverReset(quint32 homeID))
@@ -82,9 +83,9 @@ class QTOZWManager {
     SIGNAL(driverAllNodesQueriedSomeDead())
     SIGNAL(driverAllNodesQueried())
     SIGNAL(driverAwakeNodesQueried())
-    SIGNAL(controllerCommand(quint8 command))
-//    SIGNAL(ozwNotification(OpenZWave::Notification::NotificationCode event))
-// SIGNAL(ozwUserAlert(OpenZWave::Notification::UserAlertNotification event))
+    SIGNAL(controllerCommand(quint8 node, NotificationTypes::QTOZW_Notification_Controller_Cmd command, NotificationTypes::QTOZW_Notification_Controller_State state, NotificationTypes::QTOZW_Notification_Controller_Error error))
+    SIGNAL(ozwNotification(quint8 node, NotificationTypes::QTOZW_Notification_Code event))
+    SIGNAL(ozwUserAlert(quint8 node, NotificationTypes::QTOZW_Notification_User event, quint8 retry))
     SIGNAL(manufacturerSpecificDBReady())
 
     SIGNAL(starting());
@@ -93,6 +94,7 @@ class QTOZWManager {
     SIGNAL(error(QTOZWManagerErrorCodes errorcode))
 
     SLOT(bool open(QString serialPort))
+    SLOT(bool close())
     SLOT(bool refreshNodeInfo(quint8 _node))
     SLOT(bool requestNodeState(quint8 _node))
     SLOT(bool requestNodeDynamic(quint8 _node))
@@ -115,7 +117,7 @@ class QTOZWManager {
     SLOT(bool requestNodeNeighborUpdate(quint8 _node))
     SLOT(bool assignReturnRoute(quint8 _node))
     SLOT(bool deleteAllReturnRoute(quint8 _node))
-    SLOT(bool sendNodeInfomation(quint8 _node))
+    SLOT(bool sendNodeInformation(quint8 _node))
     SLOT(bool replaceFailedNode(quint8 _node))
     SLOT(bool requestNetworkUpdate(quint8 _node))
 
@@ -124,10 +126,32 @@ class QTOZWManager {
 
     SLOT(QString GetNodeQueryStage(quint8 _node))
     SLOT(NodeStatistics GetNodeStatistics(quint8 _node))
+    SLOT(DriverStatistics GetDriverStatistics())
+    SLOT(QVector<quint8> GetNodeNeighbors(quint8 const _node))
     SLOT(bool IsNodeFailed(quint8 _node))
     SLOT(bool checkLatestConfigFileRevision(quint8 const _node))
     SLOT(bool checkLatestMFSRevision())
     SLOT(bool downloadLatestConfigFileRevision(quint8 const _node))
     SLOT(bool downloadLatestMFSRevision())
+    SLOT(QString getCommandClassString(quint8 const _cc))
+
+    SLOT(QString getVersionAsString())
+    SLOT(QString getVersionLongAsString())
+    SLOT(quint8 getControllerNodeId())
+    SLOT(quint8 getSucNodeId())
+    SLOT(bool isPrimaryController())
+    SLOT(bool isStaticUpdateController())
+    SLOT(bool isBridgeController())
+    SLOT(bool hasExtendedTXStatus())
+    SLOT(QString getLibraryVersion())
+    SLOT(QString getLibraryTypeName())
+    SLOT(quint32 getSendQueueCount())
+    SLOT(QString getControllerPath())
+    SLOT(bool refreshValue(quint64))
+
+    SLOT(qint32 getPollInterval())
+    SLOT(void setPollInterval(qint32 interval, bool intervalBetweenPolls))
+
+    SLOT(void syncroniseNodeNeighbors(quint8 node))
 
 }

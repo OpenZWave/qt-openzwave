@@ -48,8 +48,9 @@ void QTOZW_Nodes_internal::addNode(quint8 _nodeID)
     newNode[QTOZW_Nodes::NodeFlags] = flags;
 
     this->beginInsertRows(QModelIndex(), this->rowCount(QModelIndex()), this->rowCount(QModelIndex()));
-    this->m_nodeData[this->rowCount(QModelIndex())] = newNode;
+    this->m_nodeData.push_back(newNode);
     this->endInsertRows();
+    qCInfo(nodeModel) << "Adding Node " << _nodeID << "At Row " << this->getNodeRow(_nodeID);
 }
 
 void QTOZW_Nodes_internal::setNodeData(quint8 _nodeID, QTOZW_Nodes::NodeColumns column, QVariant data, bool transaction)
@@ -59,11 +60,13 @@ void QTOZW_Nodes_internal::setNodeData(quint8 _nodeID, QTOZW_Nodes::NodeColumns 
         qCWarning(nodeModel) << "setNodeData: Node " << _nodeID << " does not exist";
         return;
     }
-    if (this->m_nodeData[row][column] != data) {
+    if (this->m_nodeData.at(row)[column] != data) {
         this->m_nodeData[row][column] = data;
         QVector<int> roles;
         roles << Qt::DisplayRole;
         if (!transaction) this->dataChanged(this->createIndex(row, column), this->createIndex(row, column), roles);
+        qCDebug(nodeModel) << "setNodeData " << _nodeID << ": " << column << ":" << data << " Transaction:" << transaction;
+
     }
 }
 
@@ -74,7 +77,7 @@ void QTOZW_Nodes_internal::setNodeFlags(quint8 _nodeID, QTOZW_Nodes::nodeFlags _
         qCWarning(nodeModel) << "setNodeData: Node " << _nodeID << " does not exist";
         return;
     }
-    QBitArray flag = this->m_nodeData[row][QTOZW_Nodes::NodeFlags].toBitArray();
+    QBitArray flag = this->m_nodeData.at(row)[QTOZW_Nodes::NodeFlags].toBitArray();
     if (flag.at(_flags) != _value) {
         flag.setBit(_flags, _value);
         this->m_nodeData[row][QTOZW_Nodes::NodeFlags] = flag;
@@ -84,22 +87,20 @@ void QTOZW_Nodes_internal::setNodeFlags(quint8 _nodeID, QTOZW_Nodes::nodeFlags _
     }
 }
 void QTOZW_Nodes_internal::delNode(quint8 _nodeID) {
-    QMap<int32_t, QMap<NodeColumns, QVariant> >::iterator it;
-    QMap<int32_t, QMap<NodeColumns, QVariant> > newNodeMap;
-    int32_t newrow = 0;
-    for (it = this->m_nodeData.begin(); it != this->m_nodeData.end(); ++it) {
-        if (it.value()[QTOZW_Nodes::NodeColumns::NodeID] == _nodeID) {
-            qCDebug(nodeModel) << "Removing Node " << it.value()[QTOZW_Nodes::NodeColumns::NodeID] << it.key();
-            this->beginRemoveRows(QModelIndex(), it.key(), it.key());
-            this->m_nodeData.erase(it);
+    QVector< QMap<NodeColumns, QVariant> >::iterator it;
+    int i = 0;
+    for (it = this->m_nodeData.begin(); it != this->m_nodeData.end();) {
+        if ((*it)[QTOZW_Nodes::NodeColumns::NodeID] == _nodeID) {
+            qCDebug(nodeModel) << "Removing Node " << (*it)[QTOZW_Nodes::NodeColumns::NodeID] << i;
+            this->beginRemoveRows(QModelIndex(), i, i);
+            it = this->m_nodeData.erase(it);
             this->endRemoveRows();
             continue;
         } else {
-            newNodeMap[newrow] = it.value();
-            newrow++;
+            it++;
         }
+        i++;
     }
-    this->m_nodeData.swap(newNodeMap);
 }
 
 void QTOZW_Nodes_internal::resetModel() {

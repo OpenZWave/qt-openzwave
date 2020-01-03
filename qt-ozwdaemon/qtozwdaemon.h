@@ -4,6 +4,7 @@
 #include <QObject>
 #include <QString>
 
+
 #include <qt-openzwave/qtopenzwave.h>
 #include <qt-openzwave/qtozwmanager.h>
 
@@ -15,14 +16,13 @@ public:
     explicit qtozwdaemon(QObject *parent = nullptr);
     QString getSerialPort() { return this->m_serialPort; }
     void setSerialPort(QString serialPort) { this->m_serialPort = serialPort;}
-
     void startOZW();
-
+    QTOZWManager *getManager();
+    QTOpenZwave *getQTOpenZWave();
 signals:
 
 public slots:
     void QTOZW_Ready();
-
 
 private:
     QTOpenZwave *m_openzwave;

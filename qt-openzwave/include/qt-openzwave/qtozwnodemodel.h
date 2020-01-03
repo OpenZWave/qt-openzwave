@@ -93,6 +93,6 @@ protected:
     QVariant getNodeData(quint8, NodeColumns);
     int32_t getNodeRow(quint8 _node);
 
-    QMap<int32_t, QMap<NodeColumns, QVariant> > m_nodeData;
+    QVector< QMap<NodeColumns, QVariant> > m_nodeData;
 };
 #endif // QTOZWNODEMODEL_H

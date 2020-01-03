@@ -1,6 +1,7 @@
 #include <QtDebug>
 #include "qtozwdaemon.h"
 
+
 qtozwdaemon::qtozwdaemon(QObject *parent) : QObject(parent)
 {
     this->m_openzwave = new QTOpenZwave(this);
@@ -17,5 +18,13 @@ void qtozwdaemon::startOZW() {
         qWarning() << "Serial Port is not Set";
         return;
     }
-    //this->m_qtozwmanager->open(this->getSerialPort());
+    this->m_qtozwmanager->open(this->getSerialPort());
+}
+
+QTOZWManager *qtozwdaemon::getManager() {
+    return this->m_qtozwmanager;
+}
+
+QTOpenZwave *qtozwdaemon::getQTOpenZWave() {
+    return this->m_openzwave;
 }

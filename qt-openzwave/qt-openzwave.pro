@@ -13,7 +13,7 @@ TEMPLATE = lib
 
 VERSION = 1.0.0
 
-CONFIG += silent file_copies
+CONFIG += silent file_copies force_debug_info
 !versionAtLeast(QT_VERSION, 5.11.2):error("Use at least Qt version 5.11.2")
 
 include(../qt-openzwave.pri)
@@ -30,7 +30,7 @@ DEFINES += QTOPENZWAVE_LIBRARY
 # any feature of Qt which has been marked as deprecated (the exact warnings
 # depend on your compiler). Please consult the documentation of the
 # deprecated API in order to know how to port your code away from it.
-DEFINES += QT_DEPRECATED_WARNINGS
+DEFINES += QT_DEPRECATED_WARNINGS QT_MESSAGELOGCONTEXT LIB_VERSION=$$VERSION
 
 # You can also make your code fail to compile if you use deprecated APIs.
 # In order to do so, uncomment the following line.
@@ -87,6 +87,10 @@ COPIES += copyrepheaders
 unix {
     target.path = /usr/local/lib
     INSTALLS += target
+    QMAKE_CXXFLAGS += -g
+    QMAKE_CFLAGS += -g
+    QMAKE_LFLAGS += -rdynamic
+    QMAKE_STRIP = echo
 }
 #LIBS += -L../../open-zwave -lopenzwave
 
@@ -94,6 +98,13 @@ macx {
     QMAKE_LFLAGS_SONAME = -Wl,-install_name,@rpath/
     QMAKE_POST_LINK=$$top_srcdir/updaterpath.sh $(TARGET)
 } 
+
+QMAKE_CFLAGS_RELEASE -= -O
+QMAKE_CFLAGS_RELEASE -= -O1
+QMAKE_CFLAGS_RELEASE -= -O2
+QMAKE_CXXFLAGS_RELEASE -= -O
+QMAKE_CXXFLAGS_RELEASE -= -O1
+QMAKE_CXXFLAGS_RELEASE -= -O2
 
 message(" ")
 message("Summary:")

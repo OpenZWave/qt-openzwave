@@ -32,6 +32,7 @@
 
 #include <QObject>
 #include "Notification.h"
+#include "Driver.h"
 
 class OZWNotification : public QObject {
     Q_OBJECT
@@ -64,9 +65,9 @@ signals:
     void driverAllNodesQueriedSomeDead();
     void driverAwakeNodesQueried();
     void driverAllNodesQueried();
-    void controllerCommand(quint8 command);
-    void ozwNotification(OpenZWave::Notification::NotificationCode event);
-    void ozwUserAlert(OpenZWave::Notification::UserAlertNotification event);
+    void controllerCommand(quint8 node, quint32 cmd, quint32 state, quint32 error);
+    void ozwNotification(quint8 node, quint32 event);
+    void ozwUserAlert(quint8 node, quint32 event, quint8 retry);
     void manufacturerSpecificDBReady();
     //-----------------------------------------------------------------------------
     // <OZWNotification::processNotification>

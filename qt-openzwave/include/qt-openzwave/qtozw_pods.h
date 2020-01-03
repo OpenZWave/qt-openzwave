@@ -52,8 +52,8 @@ struct NodeStatistics {
         quint32 receivedPackets; /**< Number of received Packets from the Node */
         quint32 receivedDupPackets; /**< Number of Duplicate Packets received from the Node */
         quint32 receivedUnsolicited; /**< Number of Unsolicited Packets received from the Node */
-        QString lastSentTimeStamp; /**< TimeStamp of the Last time we sent a packet to the Node */
-        QString lastReceivedTimeStamp; /**< Timestamp of the last time we received a packet from the Node */
+        QDateTime lastSentTimeStamp; /**< TimeStamp of the Last time we sent a packet to the Node */
+        QDateTime lastReceivedTimeStamp; /**< Timestamp of the last time we received a packet from the Node */
         quint32 lastRequestRTT; /**<  Last Round-Trip Time when we made a request to the Node */
         quint32 averageRequestRTT; /**< Average Round-Trip Time when we make requests to a Node */
         quint32 lastResponseRTT; /**< Last Round-Trip Time when we got a Response from a Node */
@@ -180,6 +180,87 @@ inline QDataStream &operator>>(QDataStream &ds, NodeStatistics &obj) {
 /** \endcond
  */
 
+
+/** \brief Statistics Relating to Communications with the Network
+ */
+struct DriverStatistics {
+    quint32 	m_SOFCnt;
+    quint32 	m_ACKWaiting;
+    quint32 	m_readAborts;
+    quint32 	m_badChecksum;
+    quint32 	m_readCnt;
+    quint32 	m_writeCnt;
+    quint32 	m_CANCnt;
+    quint32 	m_NAKCnt;
+    quint32 	m_ACKCnt;
+    quint32 	m_OOFCnt;
+    quint32 	m_dropped;
+    quint32 	m_retries;
+    quint32 	m_callbacks;
+    quint32 	m_badroutes;
+    quint32 	m_noack;
+    quint32 	m_netbusy;
+    quint32 	m_notidle;
+    quint32 	m_txverified;
+    quint32 	m_nondelivery;
+    quint32 	m_routedbusy;
+    quint32 	m_broadcastReadCnt;
+    quint32 	m_broadcastWriteCnt;
+};
+
+Q_DECLARE_METATYPE(DriverStatistics)
+
+inline QDataStream &operator<<(QDataStream &ds, const DriverStatistics &obj) {
+    ds << static_cast<quint32>(obj.m_SOFCnt);
+    ds << static_cast<quint32>(obj.m_ACKWaiting);
+    ds << static_cast<quint32>(obj.m_readAborts);
+    ds << static_cast<quint32>(obj.m_badChecksum);
+    ds << static_cast<quint32>(obj.m_readCnt);
+    ds << static_cast<quint32>(obj.m_writeCnt);
+    ds << static_cast<quint32>(obj.m_CANCnt);
+    ds << static_cast<quint32>(obj.m_NAKCnt);
+    ds << static_cast<quint32>(obj.m_ACKCnt);
+    ds << static_cast<quint32>(obj.m_OOFCnt);
+    ds << static_cast<quint32>(obj.m_dropped);
+    ds << static_cast<quint32>(obj.m_retries);
+    ds << static_cast<quint32>(obj.m_callbacks);
+    ds << static_cast<quint32>(obj.m_badroutes);
+    ds << static_cast<quint32>(obj.m_noack);
+    ds << static_cast<quint32>(obj.m_netbusy);
+    ds << static_cast<quint32>(obj.m_notidle);
+    ds << static_cast<quint32>(obj.m_txverified);
+    ds << static_cast<quint32>(obj.m_nondelivery);
+    ds << static_cast<quint32>(obj.m_routedbusy);
+    ds << static_cast<quint32>(obj.m_broadcastReadCnt);
+    ds << static_cast<quint32>(obj.m_broadcastWriteCnt);
+    return ds;
+}
+
+inline QDataStream &operator>>(QDataStream &ds, DriverStatistics &obj) {
+    ds >> obj.m_SOFCnt;
+    ds >> obj.m_ACKWaiting;
+    ds >> obj.m_readAborts;
+    ds >> obj.m_badChecksum;
+    ds >> obj.m_readCnt;
+    ds >> obj.m_writeCnt;
+    ds >> obj.m_CANCnt;
+    ds >> obj.m_NAKCnt;
+    ds >> obj.m_ACKCnt;
+    ds >> obj.m_OOFCnt;
+    ds >> obj.m_dropped;
+    ds >> obj.m_retries;
+    ds >> obj.m_callbacks;
+    ds >> obj.m_badroutes;
+    ds >> obj.m_noack;
+    ds >> obj.m_netbusy;
+    ds >> obj.m_notidle;
+    ds >> obj.m_txverified;
+    ds >> obj.m_nondelivery;
+    ds >> obj.m_routedbusy;
+    ds >> obj.m_broadcastReadCnt;
+    ds >> obj.m_broadcastWriteCnt;
+    return ds;
+}
 /** \brief Represents a ENUM list for a Single Option
  *
  *  Some of the Options available in the QTOZW_Options class are
@@ -268,6 +349,154 @@ inline QDataStream &operator>>(QDataStream &ds, OptionList &obj) {
 }
 /** \endcond
  */
+
+    class NotificationTypes : public QObject { 
+        Q_OBJECT;
+        public:
+        enum QTOZW_Notification_Code {
+            Notification_Code_MsgComplete = 0,
+            Notification_Code_MsgTimeout = 1,
+            Notification_Code_NoOperation = 2,
+            Notification_Code_NodeAwake = 3,
+            Notification_Code_NodeAsleep = 4,
+            Notification_Code_NodeDead = 5,
+            Notification_Code_NodeAlive = 6,
+            Notification_Code_count 
+        };
+        Q_ENUM(QTOZW_Notification_Code);
+
+        enum QTOZW_Notification_User {
+            Notification_User_None = 0,
+            Notification_User_ConfigOutOfDate = 1,
+            Notification_User_MFSOutOfDate = 2,
+            Notification_User_ConfigFileDownloadFailed = 3,
+            Notification_User_DNSError = 4,
+            Notification_User_NodeReloadRequired = 5,
+            Notification_User_UnsupportedController = 6,
+            Notification_User_ApplicationStatus_Retry = 7,
+            Notification_User_ApplicationStatus_Queued = 8,
+            Notification_User_ApplicationStatus_Rejected = 9,
+            Notification_User_count
+        };
+        Q_ENUM(QTOZW_Notification_User);
+
+        enum QTOZW_Notification_Controller_Error {
+            Ctrl_Error_None = 0,
+            Ctrl_Error_ButtonNotFound = 1,
+            Ctrl_Error_NodeNotFound = 2,
+            Ctrl_Error_NotBridge = 3,
+            Ctrl_Error_NotSUC = 4,
+            Ctrl_Error_NotSecondary = 5,
+            Ctrl_Error_NotPrimary = 6,
+            Ctrl_Error_IsPrimary = 7,
+            Ctrl_Error_NotFound = 8,
+            Ctrl_Error_Busy = 9,
+            Ctrl_Error_Failed = 10,
+            Ctrl_Error_Disabled = 11,
+            Ctrl_Error_OverFlow = 12,
+            Ctrl_Error_count
+        };
+        Q_ENUM(QTOZW_Notification_Controller_Error);
+        
+        enum QTOZW_Notification_Controller_State {
+            Ctrl_State_Normal = 0,
+            Ctrl_State_Starting = 1,
+            Ctrl_State_Cancel = 2,
+            Ctrl_State_Error = 3,
+            Ctrl_State_Waiting = 4,
+            Ctrl_State_Sleeping = 5,
+            Ctrl_State_InProgress = 6,
+            Ctrl_State_Completed = 7,
+            Ctrl_State_Failed = 8,
+            Ctrl_State_NodeOk = 9,
+            Ctrl_State_NodeFailed = 10,
+            Ctrl_State_count
+        };
+        Q_ENUM(QTOZW_Notification_Controller_State);
+
+        enum QTOZW_Notification_Controller_Cmd {
+            Ctrl_Cmd_None = 0,
+            Ctrl_Cmd_AddNode = 1,
+            Ctrl_Cmd_CreateNewPrimary = 2,
+            Ctrl_Cmd_ReceiveConfiguration = 3,
+            Ctrl_Cmd_RemoveNode = 4,
+            Ctrl_Cmd_RemoveFailedNode = 5,
+            Ctrl_Cmd_HasNodeFailed = 6,
+            Ctrl_Cmd_ReplaceFailedNode = 7,
+            Ctrl_Cmd_TransferPrimaryRole = 8,
+            Ctrl_Cmd_RequestNetworkUpdate = 9,
+            Ctrl_Cmd_RequestNodeNeighborUpdate = 10,
+            Ctrl_Cmd_AssignReturnRoute = 11,
+            Ctrl_Cmd_DeleteAllReturnRoute = 12,
+            Ctrl_Cmd_SendNodeInformation = 13,
+            Ctrl_Cmd_ReplicationSend = 14,
+            Ctrl_Cmd_CreateButton = 15,
+            Ctrl_Cmd_DeleteButton = 16,
+            Ctrl_Cmd_count
+        };
+        Q_ENUM(QTOZW_Notification_Controller_Cmd);
+    };
+
+Q_DECLARE_METATYPE(NotificationTypes::QTOZW_Notification_Code)
+
+inline QDataStream &operator<<(QDataStream &ds, const NotificationTypes::QTOZW_Notification_Code &obj) {
+    ds << static_cast<qint32>(obj);
+    return ds;
+}
+
+inline QDataStream &operator>>(QDataStream &ds, NotificationTypes::QTOZW_Notification_Code &obj) {
+    ds >> obj;
+    return ds;
+}
+
+Q_DECLARE_METATYPE(NotificationTypes::QTOZW_Notification_User)
+
+inline QDataStream &operator<<(QDataStream &ds, const NotificationTypes::QTOZW_Notification_User &obj) {
+    ds << static_cast<qint32>(obj);
+    return ds;
+}
+
+inline QDataStream &operator>>(QDataStream &ds, NotificationTypes::QTOZW_Notification_User &obj) {
+    ds >> obj;
+    return ds;
+}
+
+Q_DECLARE_METATYPE(NotificationTypes::QTOZW_Notification_Controller_Error)
+
+
+inline QDataStream &operator<<(QDataStream &ds, const NotificationTypes::QTOZW_Notification_Controller_Error &obj) {
+    ds << static_cast<qint32>(obj);
+    return ds;
+}
+
+inline QDataStream &operator>>(QDataStream &ds, NotificationTypes::QTOZW_Notification_Controller_Error &obj) {
+    ds >> obj;
+    return ds;
+}
+
+Q_DECLARE_METATYPE(NotificationTypes::QTOZW_Notification_Controller_State)
+
+inline QDataStream &operator<<(QDataStream &ds, const NotificationTypes::QTOZW_Notification_Controller_State &obj) {
+    ds << static_cast<qint32>(obj);
+    return ds;
+}
+
+inline QDataStream &operator>>(QDataStream &ds, NotificationTypes::QTOZW_Notification_Controller_State &obj) {
+    ds >> obj;
+    return ds;
+}
+
+Q_DECLARE_METATYPE(NotificationTypes::QTOZW_Notification_Controller_Cmd)
+
+inline QDataStream &operator<<(QDataStream &ds, const NotificationTypes::QTOZW_Notification_Controller_Cmd &obj) {
+    ds << static_cast<qint32>(obj);
+    return ds;
+}
+
+inline QDataStream &operator>>(QDataStream &ds, NotificationTypes::QTOZW_Notification_Controller_Cmd &obj) {
+    ds >> obj;
+    return ds;
+}
 
 
 #endif // QTOZW_PODS_H

@@ -26,4 +26,10 @@ ozwconfig.commands=cp -R ../../open-zwave/config config/ && cd config && $$[QT_I
         include/qt-openzwave/qt-openzwavedatabase.h
 
     INCLUDEPATH += include/
+    QMAKE_CXXFLAGS += -g1
+    target.path = /usr/local/lib/
+    INSTALLS += target
+    QMAKE_CXXFLAGS += -g1
+    QMAKE_LFLAGS += -rdynamic
 }
+

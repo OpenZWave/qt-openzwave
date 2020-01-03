@@ -114,6 +114,7 @@ public:
      */
     QTOZWManager *GetManager();
 
+    QString getVersion();
 private:
     QTOZWManager *m_manager;
     QDir m_ozwdbpath;

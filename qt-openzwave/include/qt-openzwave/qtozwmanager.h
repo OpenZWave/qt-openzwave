@@ -76,6 +76,7 @@ public:
 
     /* OpenZWave::Manager methods */
     bool open(QString serialPort);
+    bool close();
     bool refreshNodeInfo(quint8 _node);
     bool requestNodeState(quint8 _node);
     bool requestNodeDynamic(quint8 _node);
@@ -100,7 +101,7 @@ public:
     bool requestNodeNeighborUpdate(quint8 _node);
     bool assignReturnRoute(quint8 _node);
     bool deleteAllReturnRoute(quint8 _node);
-    bool sendNodeInfomation(quint8 _node);
+    bool sendNodeInformation(quint8 _node);
     bool replaceFailedNode(quint8 _node);
     bool requestNetworkUpdate(quint8 _node);
     QString GetMetaData(quint8 _node, QTOZWManagerSource::QTOZWMetaDataField _field);
@@ -108,12 +109,38 @@ public:
 
     QString GetNodeQueryStage(quint8 const _node);
     NodeStatistics GetNodeStatistics(quint8 const node);
+    DriverStatistics GetDriverStatistics(); 
+    QVector<quint8> GetNodeNeighbors(quint8 const node);
     bool IsNodeFailed(const quint8 _node);
 
     bool checkLatestConfigFileRevision(quint8 const _node);
     bool checkLatestMFSRevision();
     bool downloadLatestConfigFileRevision(quint8 const _node);
     bool downloadLatestMFSRevision();
+
+    QString getCommandClassString(quint8 const _cc);
+
+    QString getVersionAsString();
+    QString getVersionLongAsString();
+    quint8 getControllerNodeId();
+    quint8 getSucNodeId();
+    bool isPrimaryController();
+    bool isStaticUpdateController();
+    bool isBridgeController();
+    bool hasExtendedTXStatus();
+    QString getLibraryVersion();
+    QString getLibraryTypeName();
+    quint32 getSendQueueCount();
+    QString getControllerPath();
+
+    qint32 getPollInterval();
+
+    void setPollInterval(qint32 interval, bool intervalBetweenPolls);
+
+    void syncroniseNodeNeighbors(quint8 node);
+
+    bool refreshValue(quint64);
+
 
 /* Property Methods */
     QDir OZWDatabasePath() { return this->m_ozwdatabasepath; }
@@ -137,6 +164,7 @@ Q_SIGNALS:
     void nodeProtocolInfo(quint8 node);
     void nodeEssentialNodeQueriesComplete(quint8 node);
     void nodeQueriesComplete(quint8 node);
+    void nodeGroupChanged(quint8 node, quint8 group);
     void driverReady(quint32 homeID);
     void driverFailed(quint32 homeID);
     void driverReset(quint32 homeID);
@@ -144,9 +172,9 @@ Q_SIGNALS:
     void driverAllNodesQueriedSomeDead();
     void driverAllNodesQueried();
     void driverAwakeNodesQueried();
-    void controllerCommand(quint8 command);
-//    void ozwNotification(OpenZWave::Notification::NotificationCode event);
-// void ozwUserAlert(OpenZWave::Notification::UserAlertNotification event);
+    void controllerCommand(quint8 node, NotificationTypes::QTOZW_Notification_Controller_Cmd command, NotificationTypes::QTOZW_Notification_Controller_State state, NotificationTypes::QTOZW_Notification_Controller_Error error);
+    void ozwNotification(quint8 node, NotificationTypes::QTOZW_Notification_Code event);
+    void ozwUserAlert(quint8 node, NotificationTypes::QTOZW_Notification_User event, quint8 retry);
     void manufacturerSpecificDBReady();
 
     void starting();

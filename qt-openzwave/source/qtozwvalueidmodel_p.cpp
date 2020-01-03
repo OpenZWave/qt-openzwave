@@ -46,7 +46,7 @@ void QTOZW_ValueIds_internal::addValue(quint64 _vidKey)
     newValue[QTOZW_ValueIds::ValueFlags] = flags;
 
     this->beginInsertRows(QModelIndex(), this->rowCount(QModelIndex()), this->rowCount(QModelIndex()));
-    this->m_valueData[this->rowCount(QModelIndex())] = newValue;
+    this->m_valueData.push_back(newValue);
     this->endInsertRows();
 }
 
@@ -57,11 +57,12 @@ void QTOZW_ValueIds_internal::setValueData(quint64 _vidKey, QTOZW_ValueIds::Valu
         qCWarning(valueModel) << "setValueData: Value " << _vidKey << " does not exist";
         return;
     }
-    if (this->m_valueData[row][column] != data) {
+    if (this->m_valueData.at(row)[column] != data) {
         this->m_valueData[row][column] = data;
         QVector<int> roles;
         roles << Qt::DisplayRole;
         if (!transaction) this->dataChanged(this->createIndex(row, column), this->createIndex(row, column), roles);
+        //qDebug() << "Setting Data " << _vidKey << row <<  QMetaEnum::fromType<ValueIdColumns>().valueToKey(column) << data << this->m_valueData.value(row)[column] << this->m_valueData.at(row)[ValueIdColumns::ValueIDKey];
     }
 }
 
@@ -72,10 +73,10 @@ void QTOZW_ValueIds_internal::setValueFlags(quint64 _vidKey, QTOZW_ValueIds::Val
         qCWarning(valueModel) << "setValueFlags: Value " << _vidKey << " does not exist";
         return;
     }
-    if (this->m_valueData[row][QTOZW_ValueIds::ValueFlags].toBitArray().at(_flags) != _value) {
-        QBitArray flags = this->m_valueData[row][QTOZW_ValueIds::ValueFlags].value<QBitArray>();
+    if (this->m_valueData.at(row)[QTOZW_ValueIds::ValueFlags].toBitArray().at(_flags) != _value) {
+        QBitArray flags = this->m_valueData.value(row)[QTOZW_ValueIds::ValueFlags].value<QBitArray>();
         flags.setBit(_flags, _value);
-        this->m_valueData[row][QTOZW_ValueIds::ValueFlags] = flags;
+        this->m_valueData.value(row)[QTOZW_ValueIds::ValueFlags] = flags;
         QVector<int> roles;
         roles << Qt::DisplayRole;
         if (!transaction) this->dataChanged(this->createIndex(row, QTOZW_ValueIds::ValueFlags), this->createIndex(row, QTOZW_ValueIds::ValueFlags), roles);
@@ -83,41 +84,36 @@ void QTOZW_ValueIds_internal::setValueFlags(quint64 _vidKey, QTOZW_ValueIds::Val
 }
 
 void QTOZW_ValueIds_internal::delValue(quint64 _vidKey) {
-    QMap<int32_t, QMap<ValueIdColumns, QVariant> >::iterator it;
-    QMap<int32_t, QMap<ValueIdColumns, QVariant> > newValueMap;
-    int32_t newrow = 0;
-    for (it = this->m_valueData.begin(); it != this->m_valueData.end(); ++it) {
-        if (it.value()[QTOZW_ValueIds::ValueIdColumns::ValueIDKey] == _vidKey) {
-            qCDebug(valueModel) << "Removing Value " << it.value()[QTOZW_ValueIds::ValueIdColumns::Label] << it.key();
-            this->beginRemoveRows(QModelIndex(), it.key(), it.key());
-            this->m_valueData.erase(it);
+    QVector< QMap<ValueIdColumns, QVariant> >::iterator it;
+    int i = 0;
+    for (it = this->m_valueData.begin(); it != this->m_valueData.end();) {
+        if ((*it)[QTOZW_ValueIds::ValueIdColumns::ValueIDKey] == _vidKey) {
+            qCDebug(valueModel) << "delValue: Removing Value " << (*it)[QTOZW_ValueIds::ValueIdColumns::Label] << (*it)[QTOZW_ValueIds::ValueIdColumns::ValueIDKey] << i;
+            this->beginRemoveRows(QModelIndex(), i, i);
+            it = this->m_valueData.erase(it);
             this->endRemoveRows();
             continue;
         } else {
-            newValueMap[newrow] = it.value();
-            newrow++;
+            it++;
         }
+        i++;
     }
-    this->m_valueData.swap(newValueMap);
 }
 
 void QTOZW_ValueIds_internal::delNodeValues(quint8 _node) {
-    QMap<int32_t, QMap<ValueIdColumns, QVariant> >::iterator it;
-    QMap<int32_t, QMap<ValueIdColumns, QVariant> > newValueMap;
-    qint32 newrow = 0;
-    for (it = this->m_valueData.begin(); it != this->m_valueData.end(); ++it) {
-        if (it.value()[QTOZW_ValueIds::ValueIdColumns::Node] == _node) {
-            qCDebug(valueModel) << "Removing Value " << it.value()[QTOZW_ValueIds::ValueIdColumns::Label] << it.key();
-            this->beginRemoveRows(QModelIndex(), it.key(), it.key());
-            this->m_valueData.erase(it);
+    QVector< QMap<ValueIdColumns, QVariant> >::iterator it;
+    int i = 0;
+    for (it = this->m_valueData.begin(); it != this->m_valueData.end();) {
+        if ((*it)[QTOZW_ValueIds::ValueIdColumns::Node] == _node) {
+            qCDebug(valueModel) << "delNodeValue: Removing Value " << (*it)[QTOZW_ValueIds::ValueIdColumns::Label] << (*it)[QTOZW_ValueIds::ValueIdColumns::ValueIDKey] << i;
+            this->beginRemoveRows(QModelIndex(), i, i);
+            it = this->m_valueData.erase(it);
             this->endRemoveRows();
-            continue;
         } else {
-            newValueMap[newrow] = it.value();
-            newrow++;
+            it++;
         }
+        i++;
     }
-    this->m_valueData.swap(newValueMap);
 }
 
 void QTOZW_ValueIds_internal::resetModel() {
@@ -135,6 +131,9 @@ void QTOZW_ValueIds_internal::finishTransaction(quint64 _vidKey) {
     this->dataChanged(this->createIndex(row, 0), this->createIndex(row, QTOZW_ValueIds::ValueIdColumns::ValueIdCount -1));
 }
 
+QVariant QTOZW_ValueIds_internal::getValueData(quint64 node, ValueIdColumns column) {
+    return QTOZW_ValueIds::getValueData(node, column);
+}
 
 
 QString BitSettoQString(QBitArray ba) {

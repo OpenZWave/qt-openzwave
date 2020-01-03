@@ -49,6 +49,8 @@
 #include "Notification.h"
 #include "platform/Log.h"
 #include "OZWException.h"
+#include "command_classes/CommandClasses.h"
+
 
 
 class QTOZWManager_Internal : public QTOZWManagerSimpleSource
@@ -67,6 +69,7 @@ public:
 
 public Q_SLOTS:
     bool open(QString serialPort);
+    bool close();
     bool refreshNodeInfo(quint8 _node);
     bool requestNodeState(quint8 _node);
     bool requestNodeDynamic(quint8 _node);
@@ -91,7 +94,7 @@ public Q_SLOTS:
     bool requestNodeNeighborUpdate(quint8 _node);
     bool assignReturnRoute(quint8 _node);
     bool deleteAllReturnRoute(quint8 _node);
-    bool sendNodeInfomation(quint8 _node);
+    bool sendNodeInformation(quint8 _node);
     bool replaceFailedNode(quint8 _node);
     bool requestNetworkUpdate(quint8 _node);
     QString GetMetaData(quint8 _node, QTOZWManagerSource::QTOZWMetaDataField _field);
@@ -99,7 +102,10 @@ public Q_SLOTS:
 
     QString GetNodeQueryStage(quint8 const node);
     NodeStatistics GetNodeStatistics(quint8 const node);
+    DriverStatistics GetDriverStatistics();
 
+    QVector<quint8> GetNodeNeighbors(quint8 const node);
+    
     bool IsNodeFailed(quint8 const _node);
 
     bool checkLatestConfigFileRevision(quint8 const _node);
@@ -107,6 +113,27 @@ public Q_SLOTS:
     bool downloadLatestConfigFileRevision(quint8 const _node);
     bool downloadLatestMFSRevision();
 
+    QString getCommandClassString(quint8 const _cc);
+
+    QString getVersionAsString();
+    QString getVersionLongAsString();
+    quint8 getControllerNodeId();
+    quint8 getSucNodeId();
+    bool isPrimaryController();
+    bool isStaticUpdateController();
+    bool isBridgeController();
+    bool hasExtendedTXStatus();
+    QString getLibraryVersion();
+    QString getLibraryTypeName();
+    quint32 getSendQueueCount();
+    QString getControllerPath();
+
+    qint32 getPollInterval();
+
+    void setPollInterval(qint32 interval, bool intervalBetweenPolls);
+    void syncroniseNodeNeighbors(quint8 node);
+
+    bool refreshValue(quint64);
 
     /* these slots are called from our OZWNotification Class. Applications should not call them */
     void pvt_valueAdded(quint64 vidKey);
@@ -132,9 +159,9 @@ public Q_SLOTS:
     void pvt_driverAllNodesQueriedSomeDead();
     void pvt_driverAllNodesQueried();
     void pvt_driverAwakeNodesQueried();
-    void pvt_controllerCommand(quint8 command);
-    void pvt_ozwNotification(OpenZWave::Notification::NotificationCode event);
-    void pvt_ozwUserAlert(OpenZWave::Notification::UserAlertNotification event);
+    void pvt_controllerCommand(quint8 node, quint32 cmd, quint32 state, quint32 error);
+    void pvt_ozwNotification(quint8 node, quint32 event);
+    void pvt_ozwUserAlert(quint8 node, quint32 event, quint8 retry);
     void pvt_manufacturerSpecificDBReady();
 
     void pvt_nodeModelDataChanged(const QModelIndex &topLeft, const QModelIndex &bottomRight, const QVector<int> &roles);
@@ -157,7 +184,7 @@ private:
     QVector<quint8> m_validNodes;
     QVector<quint64> m_validValues;
     QMap<quint8, QMap<quint8, bool > > m_associationDefaultsSet;
-
+    QString m_SerialPort;
 };
 
 

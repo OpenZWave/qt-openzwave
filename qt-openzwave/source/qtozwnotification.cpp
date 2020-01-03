@@ -51,15 +51,6 @@ void OZWNotification::processNotification
     Q_UNUSED(_context);
     //qDebug() << QString(_notification->GetAsString().c_str());
     //qDebug() << _notification;
-#if 0
-    void valueAdded(quint64 vidKey);
-    void valueRemoved(quint64 vidKey);
-    void valueChanged(quint64 vidKey);
-    void valueRefreshed(quint64 vidKey);
-    void valuePollingEnabled(quint64 vidKey);
-    void valuePollingDisabled(quint64 vidKey);
-#endif
-
     switch( _notification->GetType() )
         {
         case OpenZWave::Notification::Type_ValueAdded:
@@ -160,7 +151,7 @@ void OZWNotification::processNotification
 
         case OpenZWave::Notification::Type_ControllerCommand:
         {
-            emit Get()->controllerCommand(_notification->GetEvent());
+            emit Get()->controllerCommand(_notification->GetNodeId(), _notification->GetCommand(), _notification->GetEvent(), _notification->GetNotification());
             break;
         }
 
@@ -190,7 +181,7 @@ void OZWNotification::processNotification
 
         case OpenZWave::Notification::Type_Notification:
         {
-            //emit Get()->ozwNotification(_notification->GetNotification());
+            emit Get()->ozwNotification(_notification->GetNodeId(), _notification->GetNotification());
             break;
         }
 
@@ -214,7 +205,10 @@ void OZWNotification::processNotification
 
         case OpenZWave::Notification::Type_UserAlerts:
         {
-
+            quint8 retry = 0;
+            if (static_cast<OpenZWave::Notification::UserAlertNotification>(_notification->GetUserAlertType()) == OpenZWave::Notification::Alert_ApplicationStatus_Retry)
+                retry = _notification->GetRetry();
+            emit Get()->ozwUserAlert(_notification->GetNodeId(), _notification->GetUserAlertType(), retry);
             break;
         }
 

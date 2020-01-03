@@ -94,17 +94,15 @@ void QTOZW_Associations_internal::setGroupFlags(quint8 _nodeID, quint8 _groupIDX
 };
 
 void QTOZW_Associations_internal::delNode(quint8 _nodeID) {
-    for (int i = 0; i <= rowCount(QModelIndex()); i++) {
-        if (this->m_associationData[i][associationColumns::NodeID] == _nodeID) {
-            qCDebug(associationModel) << "Removing Node " << this->m_associationData[i][associationColumns::NodeID] << i;
-            this->beginRemoveRows(QModelIndex(), i, i);
-            this->m_associationData.remove(i);
-            for (int j = i+1; i <= rowCount(QModelIndex()); j++) {
-                this->m_associationData[i] = this->m_associationData[j];
-            }
-            this->m_associationData.remove(rowCount(QModelIndex()));
+    QMap<qint32, QMap<QTOZW_Associations::associationColumns, QVariant> >::Iterator it;
+    for (it = this->m_associationData.begin(); it != this->m_associationData.end();) {
+        if (it.value()[associationColumns::NodeID] == _nodeID) {
+            qCDebug(associationModel) << "Removing Node " << it.value()[associationColumns::NodeID] << it.key();
+            this->beginRemoveRows(QModelIndex(), it.key(), it.key());
+            it = this->m_associationData.erase(it);
             this->endRemoveRows();
-            continue;
+        } else {
+            it++;
         }
     }
 }
@@ -116,7 +114,7 @@ void QTOZW_Associations_internal::addAssociation(quint8 _nodeID, quint8 _groupID
         return;
     }
     QString target;
-    target.append(QString::number(_targetNode)).append(":").append(QString::number(_targetInstance));
+    target.append(QString::number(_targetNode)).append(".").append(QString::number(_targetInstance));
     QStringList targetlist = this->m_associationData[row][associationColumns::Members].toStringList();
     if (targetlist.contains(target)) {
         qCWarning(associationModel) << "addAssociation: Target " << target << "already exists in Group " << _groupIDX << "for node " << _nodeID;
@@ -136,7 +134,7 @@ void QTOZW_Associations_internal::delAssociation(quint8 _nodeID, quint8 _groupID
         return;
     }
     QString target;
-    target.append(QString::number(_targetNode)).append(":").append(QString::number(_targetInstance));
+    target.append(QString::number(_targetNode)).append(".").append(QString::number(_targetInstance));
     QStringList targetlist = this->m_associationData[row][associationColumns::Members].toStringList();
     if (!targetlist.contains(target)) {
         qCWarning(associationModel) << "delAssociation: Target " << target << "does not exist in Group " << _groupIDX << "for node " << _nodeID;
@@ -156,7 +154,7 @@ bool QTOZW_Associations_internal::findAssociation(quint8 _nodeID, quint8 _groupI
         return false;
     }
     QString target;
-    target.append(QString::number(_targetNode)).append(":").append(QString::number(_targetInstance));
+    target.append(QString::number(_targetNode)).append(".").append(QString::number(_targetInstance));
     QStringList targetlist = this->m_associationData[row][associationColumns::Members].toStringList();
     if (!targetlist.contains(target)) {
         return false;

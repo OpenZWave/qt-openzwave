@@ -249,6 +249,7 @@ void QTOZWManager::connectSignals() {
     CONNECT_DPTR(nodeProtocolInfo);
     CONNECT_DPTR(nodeEssentialNodeQueriesComplete);
     CONNECT_DPTR(nodeQueriesComplete);
+    CONNECT_DPTR(nodeGroupChanged);
     CONNECT_DPTR(driverReady);
     CONNECT_DPTR(driverFailed);
     CONNECT_DPTR(driverReset);
@@ -257,8 +258,8 @@ void QTOZWManager::connectSignals() {
     CONNECT_DPTR(driverAllNodesQueried);
     CONNECT_DPTR(driverAwakeNodesQueried);
     CONNECT_DPTR(controllerCommand);
-//        CONNECT_DPTR(ozwNotification);
-//        CONNECT_DPTR(ozwUserAlert);
+    CONNECT_DPTR(ozwNotification);
+    CONNECT_DPTR(ozwUserAlert);
     CONNECT_DPTR(manufacturerSpecificDBReady);
     CONNECT_DPTR(starting);
     CONNECT_DPTR(started);
@@ -283,6 +284,9 @@ void QTOZWManager::connectSignals() {
 
 bool QTOZWManager::open(QString serialPort) {
     CALL_DPTR_RTN(open(serialPort), bool);
+}
+bool QTOZWManager::close() {
+    CALL_DPTR_RTN(close(), bool);
 }
 bool QTOZWManager::refreshNodeInfo(quint8 _node) {
     CALL_DPTR_RTN(refreshNodeInfo(_node), bool);
@@ -344,8 +348,8 @@ bool QTOZWManager::assignReturnRoute(quint8 _node) {
 bool QTOZWManager::deleteAllReturnRoute(quint8 _node) {
     CALL_DPTR_RTN(deleteAllReturnRoute(_node), bool);
 }
-bool QTOZWManager::sendNodeInfomation(quint8 _node) {
-    CALL_DPTR_RTN(sendNodeInfomation(_node), bool);
+bool QTOZWManager::sendNodeInformation(quint8 _node) {
+    CALL_DPTR_RTN(sendNodeInformation(_node), bool);
 }
 bool QTOZWManager::replaceFailedNode(quint8 _node) {
     CALL_DPTR_RTN(replaceFailedNode(_node), bool)
@@ -373,6 +377,15 @@ QString QTOZWManager::GetNodeQueryStage(const quint8 _node) {
 NodeStatistics QTOZWManager::GetNodeStatistics(const quint8 _node) {
     CALL_DPTR_RTN(GetNodeStatistics(_node), NodeStatistics);
 }
+
+DriverStatistics QTOZWManager::GetDriverStatistics() {
+    CALL_DPTR_RTN(GetDriverStatistics(), DriverStatistics);
+}
+
+QVector<quint8> QTOZWManager::GetNodeNeighbors(quint8 const _node) {
+    CALL_DPTR_RTN(GetNodeNeighbors(_node), QVector<quint8>);
+}
+
 bool QTOZWManager::IsNodeFailed(const quint8 _node) {
     CALL_DPTR_RTN(IsNodeFailed(_node), bool);
 }
@@ -387,6 +400,58 @@ bool QTOZWManager::downloadLatestConfigFileRevision(quint8 const _node) {
 }
 bool QTOZWManager::downloadLatestMFSRevision() {
     CALL_DPTR_RTN(downloadLatestMFSRevision(), bool);
+}
+
+QString QTOZWManager::getCommandClassString(quint8 const _cc) {
+    CALL_DPTR_RTN(getCommandClassString(_cc), QString);
+}
+QString QTOZWManager::getVersionAsString() {
+    CALL_DPTR_RTN(getVersionAsString(), QString);
+}
+QString QTOZWManager::getVersionLongAsString() {
+    CALL_DPTR_RTN(getVersionLongAsString(), QString);
+}
+quint8 QTOZWManager::getControllerNodeId() {
+    CALL_DPTR_RTN(getControllerNodeId(), quint8);
+}
+quint8 QTOZWManager::getSucNodeId() {
+    CALL_DPTR_RTN(getSucNodeId(), quint8);
+}
+bool QTOZWManager::isPrimaryController() {
+    CALL_DPTR_RTN(isPrimaryController(), bool);
+}
+bool QTOZWManager::isStaticUpdateController() {
+    CALL_DPTR_RTN(isStaticUpdateController(), bool);
+}
+bool QTOZWManager::isBridgeController() {
+    CALL_DPTR_RTN(isBridgeController(), bool);
+}
+bool QTOZWManager::hasExtendedTXStatus() {
+    CALL_DPTR_RTN(hasExtendedTXStatus(), bool);
+}
+QString QTOZWManager::getLibraryVersion() {
+    CALL_DPTR_RTN(getLibraryVersion(), QString);
+}
+QString QTOZWManager::getLibraryTypeName() {
+    CALL_DPTR_RTN(getLibraryTypeName(), QString);
+}
+quint32 QTOZWManager::getSendQueueCount() {
+    CALL_DPTR_RTN(getSendQueueCount(), quint32);
+}
+QString QTOZWManager::getControllerPath() {
+    CALL_DPTR_RTN(getControllerPath(), QString);
+}
+qint32 QTOZWManager::getPollInterval() {
+    CALL_DPTR_RTN(getPollInterval(), qint32);
+}
+void QTOZWManager::setPollInterval(qint32 interval, bool intervalBetweenPolls) {
+    CALL_DPTR(setPollInterval(interval, intervalBetweenPolls))
+}
+void QTOZWManager::syncroniseNodeNeighbors(quint8 node) {
+    CALL_DPTR(syncroniseNodeNeighbors(node));
+}
+bool QTOZWManager::refreshValue(quint64 vidKey) {
+    CALL_DPTR_RTN(refreshValue(vidKey), bool);
 }
 
 void QTOZWManager::setOZWDatabasePath(QDir path) {

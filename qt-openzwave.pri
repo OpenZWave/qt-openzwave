@@ -55,7 +55,7 @@ win32 {
         } else {
             equals(BUILDTYPE, "debug") {
                 exists ( $$absolute_path($$top_srcdir/../open-zwave/cpp/build/windows/vs2010/DebugDLL/OpenZWaved.dll )) {
-                    LIBS += -L$$absolute_path($$top_srcdir/../open-zwave/cpp/build/windows/vs2010/DebugDLL) -lopenzwaved
+                    LIBS += -L$$absolute_path($$top_srcdir/../open-zwave/cpp/build/windows/vs2010/DebugDLL) -lOpenZWaved
                     OZW_LIB_PATH = $$absolute_path($$top_srcdir/../open-zwave/cpp/build/windows/vs2010/ReleaseDLL)
             } else {
                     error("Can't find a copy of OpenZWaved.dll in the DebugDLL  Directory");
