@@ -10,9 +10,11 @@ CONFIG += ordered silent
 
 SUBDIRS += qt-openzwave \
     qt-openzwavedatabase \
-    qt-ozwdaemon \
-    qt-simpleclient
+    qt-ozwdaemon 
 
+Examples {
+	SUBDIRS += qt-simpleclient
+}
 win32 {
-    SUBDIRS -= qt-openzwavedatabase
+	SUBDIRS -= qt-openzwavedatabase
 }
