@@ -11,7 +11,7 @@ MAINTAINER Justin Hammond
 
 WORKDIR /opt
 
-RUN echo 'APT::Default-Release "stable";' > /etc/apt/apt.conf.d/99defaultrelease && echo 'deb     http://ftp.uk.debian.org/debian/    unstable main contrib non-free' > /etc/apt/sources.list.d/unstable.list && echo 'deb     http://ftp.uk.debian.org/debian/    experimental main contrib non-free' >> /etc/apt/sources.list.d/unstable.list && apt update
+RUN echo 'APT::Default-Release "stable";' > /etc/apt/apt.conf.d/99defaultrelease && echo 'deb     http://ftp.debian.org/debian/    unstable main contrib non-free' > /etc/apt/sources.list.d/unstable.list && echo 'deb     http://ftp.debian.org/debian/    experimental main contrib non-free' >> /etc/apt/sources.list.d/unstable.list && apt update
 RUN apt-get -y install rapidjson-dev git g++ cmake make pkgconf bash python wget joe mc libunwind-dev libcurl4-openssl-dev && apt-get -y -t unstable install qt5-default && apt-get -y -t unstable install qtbase5-private-dev && apt-get -y -t unstable install g++ && apt-get -y -t experimental install libqt5remoteobjects5-dev libqt5remoteobjects5-bin 
 ENV PATH=$PATH:/opt/depot_tools/
 RUN git clone https://chromium.googlesource.com/chromium/tools/depot_tools.git && mkdir breakpad && cd breakpad && fetch breakpad && cd src && ./configure --disable-processor && make && make install
@@ -24,7 +24,7 @@ FROM debian:buster-slim
 MAINTAINER Justin Hammond
 WORKDIR /opt
 
-RUN echo 'APT::Default-Release "stable";' > /etc/apt/apt.conf.d/99defaultrelease && echo 'deb     http://ftp.uk.debian.org/debian/    unstable main contrib non-free' > /etc/apt/sources.list.d/unstable.list && echo 'deb     http://ftp.uk.debian.org/debian/    experimental main contrib non-free' >> /etc/apt/sources.list.d/unstable.list && apt update
+RUN echo 'APT::Default-Release "stable";' > /etc/apt/apt.conf.d/99defaultrelease && echo 'deb     http://ftp.debian.org/debian/    unstable main contrib non-free' > /etc/apt/sources.list.d/unstable.list && echo 'deb     http://ftp.debian.org/debian/    experimental main contrib non-free' >> /etc/apt/sources.list.d/unstable.list && apt update
 RUN apt-get -y install libunwind8 libcurl4 
 RUN apt-get -y -t unstable install libqt5core5a libqt5network5
 RUN apt-get -y -t experimental install libqt5remoteobjects5
