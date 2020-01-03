@@ -3,6 +3,8 @@ This is a [QT](https://www.qt.io) Wrapper for OpenZWave and contains ozwdaemon -
 
 ## Home Assistant MQTT Client Adapter
 
+![Build Status](http://bamboo.my-ho.st/bamboo/plugins/servlet/wittified/build-status/OZW-OO)
+
 A [Docker Container](https://hub.docker.com/r/openzwave/ozwdaemon) to connect to the [new Z-Wave Integration for Home Assistant - python-openzwave-mqtt](https://github.com/cgarwood/python-openzwave-mqtt)
 
 Running:
