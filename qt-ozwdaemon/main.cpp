@@ -248,7 +248,6 @@ int main(int argc, char *argv[])
     qDebug() << "userPath: " << userPath;
 
     QSettings settings(userPath.append("/ozwdaemon.ini"), QSettings::IniFormat);
-    exit(-1);
 
 #ifdef HAVE_MQTT
     if (parser.isSet(MQTTServer)) {
