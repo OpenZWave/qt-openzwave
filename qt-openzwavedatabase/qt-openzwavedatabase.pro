@@ -10,7 +10,7 @@ CONFIG += silent file_copies resources_big
 
 ozwconfig.target=qt-openzwavedatabase.rcc
 ozwconfig.commands=cp -R ../../open-zwave/config config/ && cd config && $$[QT_INSTALL_BINS]/rcc -project -o ozwconfig.qrc && $$[QT_INSTALL_BINS]/rcc --name="ozwconfig" --root="/config/" ozwconfig.qrc --binary -o ../qt-openzwavedatabase.rcc
-ozwconfigdb.path = $$[QT_INSTALL_PREFIX]/share/OpenZWave/
+ozwconfigdb.path=$$[QT_INSTALL_PREFIX]/share/OpenZWave/
 ozwconfigdb.files=qt-openzwavedatabase.rcc
 
 !win32 {
