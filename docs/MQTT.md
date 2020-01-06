@@ -1,13 +1,13 @@
 MQTT Client for OpenZWave
 =========================
 
-Docker Repo: https://hub.docker.com/r/openzwave/ozw-mqtt
+Docker Repo: https://hub.docker.com/r/openzwave/ozwdaemon
 
 Copy the "config" folder from OZW to `/tmp/ozw/`.
 
 Start a container with the following command line:
 ```
-docker run -it --device=/dev/ttyUSB0 -v /tmp/ozw:/opt/ozw/config -e MQTT_SERVER="10.100.200.102" -e USBPATH=/dev/ttyUSB0 openzwave/ozw-mqtt:latest
+docker run -it --security-opt seccomp=unconfined --device=/dev/ttyUSB0 -v /tmp/ozw:/opt/ozw/config -e MQTT_SERVER="10.100.200.102" -e USBPATH=/dev/ttyUSB0 openzwave/ozwdaemon:latest
 ```
 
 (replace `MQTT_SERVER` with the IP address of the MQTT Server and all `/dev/ttyUSB0` entries with the path to your USB Stick.
