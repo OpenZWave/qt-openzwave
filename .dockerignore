@@ -1,0 +1,10 @@
+.git
+.cache
+Docker/Dockerfile
+**/*.o
+**/moc_*.cpp
+**/moc_*.o
+**/rep_*.cpp
+**/rep_*.o
+.qmake.stash
+qt-openzwavedatabase/config/**

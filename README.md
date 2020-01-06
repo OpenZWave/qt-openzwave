@@ -16,11 +16,14 @@ Running:
 -------------
 Start a container with the following command line:
 
-```docker run -it --device=/dev/ttyUSB0 -v /tmp/ozw:/opt/ozw/config -e MQTT_SERVER="10.100.200.102" -e USBPATH=/dev/ttyUSB0 openzwave/ozwdaemon:latest```
+```docker run -it --security-opt seccomp=unconfined --device=/dev/ttyUSB0 -v /tmp/ozw:/opt/ozw/config -e MQTT_SERVER="10.100.200.102" -e USBPATH=/dev/ttyUSB0 openzwave/ozwdaemon:latest```
 
 * replace MQTT_SERVER with the IP address of the MQTT Server 
 * replace all /dev/ttyUSB0 entries with the path to your USB Stick.
 * OpenZWave Config Files are copied on startup to the host directory specified by /tmp/ozw - You should replace it with a directory that is persistent. 
+
+the `--security-opt seccomp=unconfined` is needed to generate meaningfull
+backtraces, otherwise it will be difficult for us to debug.
 
 Please see [docs/MQTT.md](docs/MQTT.md) for further information
 
