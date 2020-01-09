@@ -21,7 +21,7 @@ bool MqttCommand_SetValue::processMessage(rapidjson::Document &msg) {
         return this->sendSimpleStatus(false, "Missing Field Value");
     }
 
-    quint64 vidKey = msg["ValueIDKey"].GetUint();
+    quint64 vidKey = msg["ValueIDKey"].GetUint64();
     QBitArray flags = this->getValueData(vidKey, QTOZW_ValueIds::ValueIdColumns::ValueFlags).value<QBitArray>();
     if (flags[QTOZW_ValueIds::ValueIDFlags::ReadOnly] == true) {
         return this->sendSimpleStatus(false, "ValueID is Read Only");
