@@ -380,7 +380,7 @@ void mqttpublisher::sendCommandUpdate(QString command, rapidjson::Document &js) 
 
 void mqttpublisher::sendAssociationUpdate(quint8 node, quint8 group, rapidjson::Document &js) {
     QT2JS::SetUInt64(js, "TimeStamp", QDateTime::currentSecsSinceEpoch());
-    this->m_client->publish(QMqttTopicName(getAssociationTopic(node, group)), QT2JS::getJSON(js), 0, false);
+    this->m_client->publish(QMqttTopicName(getAssociationTopic(node, group)), QT2JS::getJSON(js), 0, true);
     return;
 }
 

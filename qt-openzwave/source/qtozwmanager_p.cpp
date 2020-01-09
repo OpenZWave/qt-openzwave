@@ -841,6 +841,105 @@ bool QTOZWManager_Internal::refreshValue(quint64 vidKey) {
     return false;
 }
 
+bool QTOZWManager_Internal::AddAssociation (quint8 const _nodeId, quint8 const _groupIdx, QString const target) {
+    if (!this->checkHomeId())
+        return false;
+    if (!this->checkNodeId(_nodeId))
+        return false;
+    quint8 targetnode = 0;
+    quint8 targetinstance = 0;
+    QRegExp rx("^(\\d+)\\.(\\d+)$");
+    if (target.contains(rx)) {
+        targetnode = rx.cap(1).toInt();
+        targetinstance = rx.cap(2).toInt();
+        qCDebug(manager) << "Got a AddAssociation with a instance value" << target << " node: " << targetnode << " instance: " << targetinstance;
+    }
+    rx.setPattern("^(\\d+)$");
+    if (target.contains(rx)) {
+        targetnode = rx.cap(1).toInt();
+        targetinstance = 0;
+        qCDebug(manager) << "Got a AddAssociation with no instance value" << target << " node: " << targetnode;
+    }
+    if (targetnode == 0) {
+        qCWarning(manager) << "Couldn't find a valid Target in AddAssociation: " << target;
+        return false;
+    }
+    if (targetinstance > 0) {
+        try {
+            if (!this->m_manager->IsMultiInstance(this->homeId(), _nodeId, _groupIdx)) {
+                qCWarning(manager) << "AddAssociation: Association Group " << _groupIdx << "for node " << _nodeId << "does not support instances but a instance was specified:" << target << ". Removing";
+                targetinstance = 0;
+            }
+        } catch (OpenZWave::OZWException &e) {
+            emit this->error(QTOZWManagerErrorCodes::OZWException);
+            this->setErrorString(e.GetMsg().c_str());        
+            return false;
+        }
+    }          
+    if (this->m_associationsModel->findAssociation(_nodeId, _groupIdx, targetnode, targetinstance)) {
+        qCWarning(manager) << "AddAssociation: Association Group " << _groupIdx << "for node " << _nodeId << "already has a Assocation to " << target;
+        return false;
+    }
+    try {
+        this->m_manager->AddAssociation(this->homeId(), _nodeId, _groupIdx, targetnode, targetinstance);
+        return true;
+    } catch (OpenZWave::OZWException &e) {
+        emit this->error(QTOZWManagerErrorCodes::OZWException);
+        this->setErrorString(e.GetMsg().c_str());        
+    }
+    return false;
+}
+bool QTOZWManager_Internal::RemoveAssociation (quint8 const _nodeId, quint8 const _groupIdx, QString const target) {
+    if (!this->checkHomeId())
+        return false;
+    if (!this->checkNodeId(_nodeId))
+        return false;
+    quint8 targetnode = 0;
+    quint8 targetinstance = 0;
+    QRegExp rx("^(\\d+)\\.(\\d+)$");
+    if (target.contains(rx)) {
+        targetnode = rx.cap(1).toInt();
+        targetinstance = rx.cap(2).toInt();
+    }
+    rx.setPattern("^(\\d+)$");
+    if (target.contains(rx)) {
+        targetnode = rx.cap(1).toInt();
+        targetinstance = 0;
+    }
+    if (targetnode == 0) {
+        qCWarning(manager) << "Couldn't find a valid Target in RemoveAssocation: " << target;
+        return false;
+    }
+    if (targetinstance > 0) {
+        try {
+            if (!this->m_manager->IsMultiInstance(this->homeId(), _nodeId, _groupIdx)) {
+                qCWarning(manager) << "RemoveAssoication: Association Group " << _groupIdx << "for node " << _nodeId << "does not support instances but a instance was specified:" << target << ". Removing";
+                targetinstance = 0;
+            }
+        } catch (OpenZWave::OZWException &e) {
+            emit this->error(QTOZWManagerErrorCodes::OZWException);
+            this->setErrorString(e.GetMsg().c_str());        
+            return false;
+        }
+    }        
+
+    if (!this->m_associationsModel->findAssociation(_nodeId, _groupIdx, targetnode, targetinstance)) {
+        qCWarning(manager) << "RemoveAssociation: Association Group " << _groupIdx << "for node " << _nodeId << "does not have a Assocation to " << target;
+        return false;
+    }
+
+
+    try {
+        this->m_manager->RemoveAssociation(this->homeId(), _nodeId, _groupIdx, targetnode, targetinstance);
+        return true;
+    } catch (OpenZWave::OZWException &e) {
+        emit this->error(QTOZWManagerErrorCodes::OZWException);
+        this->setErrorString(e.GetMsg().c_str());        
+    }
+    return false;
+}
+
+
 
 
 QTOZW_Nodes *QTOZWManager_Internal::getNodeModel() {

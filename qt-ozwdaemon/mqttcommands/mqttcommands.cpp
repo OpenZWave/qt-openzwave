@@ -38,6 +38,8 @@
 #include "mqttcommands/syncroniseNodeNeighbors.h"
 #include "mqttcommands/enablePoll.h"
 #include "mqttcommands/refreshValue.h"
+#include "mqttcommands/addAssociation.h"
+#include "mqttcommands/removeAssociation.h"
 
 Q_LOGGING_CATEGORY(ozwmc, "ozw.mqtt.commands");
 
@@ -251,6 +253,8 @@ void MqttCommands::setupCommands() {
     this->Register(MqttCommand_SyncroniseNodeNeighbors::StaticGetCommand(), &MqttCommand_SyncroniseNodeNeighbors::Create);
 //    this->Register(MqttCommand_EnablePoll::StaticGetCommand(), &MqttCommand_EnablePoll::Create);    
     this->Register(MqttCommand_RefreshValue::StaticGetCommand(), &MqttCommand_RefreshValue::Create);
+    this->Register(MqttCommand_AddAssociation::StaticGetCommand(), &MqttCommand_AddAssociation::Create);
+    this->Register(MqttCommand_RemoveAssociation::StaticGetCommand(), &MqttCommand_RemoveAssociation::Create);
 }
 
 void MqttCommands::setupSubscriptions(QMqttClient *mqttclient, QString topTopic) {
