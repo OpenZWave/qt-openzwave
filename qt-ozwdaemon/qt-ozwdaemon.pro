@@ -59,7 +59,9 @@ qtHaveModule(mqtt) {
 			mqttcommands/setPollInterval.cpp \
 			mqttcommands/getPollINterval.cpp \
 			mqttcommands/syncroniseNodeNeighbors.cpp \
-			mqttcommands/refreshValue.cpp
+			mqttcommands/refreshValue.cpp \
+			mqttcommands/addAssociation.cpp \
+			mqttcommands/removeAssociation.cpp
 
 	HEADERS += mqttpublisher.h \
 			qtrj.h \
@@ -101,7 +103,10 @@ qtHaveModule(mqtt) {
 			mqttcommands/setPollInterval.h \
 			mqttcommands/getPollInterval.h\
 			mqttcommands/syncroniseNodeNeighbors.h \
-			mqttcommands/refreshValue.h
+			mqttcommands/refreshValue.h \
+			mqttcommands/addAssociation.h \
+			mqttcommands/removeAssociation.h
+
 
 } else {
 	warning("MQTT Qt Module Not Found. Not Building MQTT Client Capabilities")

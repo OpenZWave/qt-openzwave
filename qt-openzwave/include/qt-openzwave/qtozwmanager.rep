@@ -149,6 +149,11 @@ class QTOZWManager {
     SLOT(QString getControllerPath())
     SLOT(bool refreshValue(quint64))
 
+    SLOT(bool AddAssociation (quint8 const _nodeId, quint8 const _groupIdx, QString const target))
+    SLOT(bool RemoveAssociation (quint8 const _nodeId, quint8 const _groupIdx, QString const target))
+
+
+
     SLOT(qint32 getPollInterval())
     SLOT(void setPollInterval(qint32 interval, bool intervalBetweenPolls))
 

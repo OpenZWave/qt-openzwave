@@ -1177,3 +1177,56 @@ This allows a MQTT Client to set a value on a Device. As OZW supports many diffe
 
 ​	[testNetwork](#testNetwork)
 
+## addAssociation
+
+**Params**:
+
+​	"node" - uint8: The NodeID to test
+
+​	"group" - uint8: The Association Group you wish to add a member to
+
+   "target" - string: The Target Node you wish to send notifications to for this group. 
+
+**Returns**:
+
+​"addAssociation" - if OZW accepted the command
+
+**Notification**:
+
+​topic "nodeGroupChanged" Indicates the Memberships was successfully refreshed from the device
+
+**Notes**:
+
+    Note - The Target string can be specified as a single NodeID (eg, "1" or "1.0") or a NodeID​ and Instance as "<nodeid>.<instance>". This allows you to configure a device to send a notification to a different instance on Multi Channel Devices. You should ensure that the target device has a valid instance and supports the commands it will recieve. 
+    If you specify a instance (other than 0) for a target node, but the group does not support sending MultiChannel messages, the instance will be removed (or set to 0, which indicates the root node). 
+
+**See Also**:
+
+​	[removeAssociation](#removeAssociation)
+
+## removeAssociation
+
+**Params**:
+
+​	"node" - uint8: The NodeID to test
+
+​	"group" - uint8: The Association Group you wish to add a member to
+
+   "target" - string: The Target Node you wish remove from the Group Membership List. 
+
+**Returns**:
+
+​"removeAssociation" - if OZW accepted the command
+
+**Notification**:
+
+​topic "nodeGroupChanged" Indicates the Memberships was successfully refreshed from the device
+
+**Notes**:
+
+    Note - The Target string can be specified as a single NodeID (eg, "1" or "1.0") or a NodeID​ and Instance as "<nodeid>.<instance>". You should first check the membership list via the Association Topics for the device and only attempt to remove existing members. Attempting to remove a member that does exist will result in a error.
+
+**See Also**:
+
+​	[addAssociation](#addAssociation)
+

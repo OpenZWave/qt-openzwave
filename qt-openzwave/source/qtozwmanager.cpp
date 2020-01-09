@@ -453,6 +453,13 @@ void QTOZWManager::syncroniseNodeNeighbors(quint8 node) {
 bool QTOZWManager::refreshValue(quint64 vidKey) {
     CALL_DPTR_RTN(refreshValue(vidKey), bool);
 }
+bool QTOZWManager::AddAssociation (quint8 const _nodeId, quint8 const _groupIdx, QString const target) {
+    CALL_DPTR_RTN(AddAssociation(_nodeId, _groupIdx, target), bool);
+}
+bool QTOZWManager::RemoveAssociation (quint8 const _nodeId, quint8 const _groupIdx, QString const target) {
+    CALL_DPTR_RTN(RemoveAssociation(_nodeId, _groupIdx, target), bool);
+}
+
 
 void QTOZWManager::setOZWDatabasePath(QDir path) {
     if (path.exists())

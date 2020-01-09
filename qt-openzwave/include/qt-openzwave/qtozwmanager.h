@@ -141,6 +141,8 @@ public:
 
     bool refreshValue(quint64);
 
+    bool AddAssociation (quint8 const _nodeId, quint8 const _groupIdx, QString const target);
+    bool RemoveAssociation (quint8 const _nodeId, quint8 const _groupIdx, QString const target);
 
 /* Property Methods */
     QDir OZWDatabasePath() { return this->m_ozwdatabasepath; }

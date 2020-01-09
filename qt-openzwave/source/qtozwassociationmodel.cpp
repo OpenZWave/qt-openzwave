@@ -99,7 +99,41 @@ QVariant QTOZW_Associations::headerData(int section, Qt::Orientation orientation
     }
     return QVariant();
 }
+#if 0
+bool QTOZW_Associations::setData(const QModelIndex &index, const QVariant &value, int role) {
+    if (role != Qt::EditRole) {
+        return false;
+    }
+    switch (static_cast<associationColumns>(index.column())) {
+        case Members:
+//            if (this->m_valueData.at(index.row())[static_cast<ValueIdColumns>(index.column())] != value) {
+//                qCDebug(valueModel) << "setData Called for Row" << index.row() << " With Value" << value;
+//                this->m_valueData[index.row()][static_cast<ValueIdColumns>(index.column())] = value;
+//                QVector<int> roles;
+//                roles << Qt::DisplayRole << QTOZW_UserRoles::ModelDataChanged;
+//                this->dataChanged(index, index, roles);
+//            }
+        break;
+        default: 
+            qCWarning(valueModel) << "got a setData for a Column other than Value. Ignoring" << index.column();
+            return false;
+    }
+    return true;
+}
 
+Qt::ItemFlags QTOZW_Associations::flags(const QModelIndex &index) const {
+    if (!index.isValid())
+        return Qt::NoItemFlags;
+    switch (static_cast<associationColumns>(index.column())) {
+        case Members: {
+                return QAbstractTableModel::flags(index) | Qt::ItemIsEditable;
+        }
+        break;
+        default:
+            return QAbstractTableModel::flags(index);
+    }
+}
+#endif
 QVariant QTOZW_Associations::getassocationData(quint8 _node, quint8 _groupIDX, associationColumns _column) {
     int32_t row = this->getassocationRow(_node, _groupIDX);
     if (row >= 0)

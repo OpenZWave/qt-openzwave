@@ -1,4 +1,3 @@
-
 #include "qt-openzwave/qtozwmanager.h"
 #include "mqttAssociations.h"
 #include "qtrj.h"
