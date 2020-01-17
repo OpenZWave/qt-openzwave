@@ -785,7 +785,7 @@ void mqttpublisher::started(quint32 homeID) {
     QT2JS::SetString(this->m_ozwstatus, "Status", "started");
     QT2JS::SetUint(this->m_ozwstatus, "homeID", homeID);
     this->sendStatusUpdate();
-    this->m_statsTimer.start(10000);
+    this->m_statsTimer.start(settings->value("StatisticsUpdateInterval", 30000).toInt());
 }
 void mqttpublisher::stopped(quint32 homeID) {
     qCDebug(ozwmp) << "Publishing Event stopped";
