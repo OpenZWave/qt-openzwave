@@ -73,7 +73,7 @@ ldd $EXECUTABLE | awk '{print $3}' |
 			fi
 			
 		done
-		LIBS+=" /usr/local/lib/ozwdaemon"
+		LIBS+=" /usr/local/bin/ozwdaemon"
 		echo $LIBS
 		sentry-cli --auth-token $SENTRY_TOKEN upload-dif -o openzwave -p qt-openzwave $LIBS --wait
 	}

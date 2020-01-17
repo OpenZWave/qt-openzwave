@@ -1147,6 +1147,18 @@ bool QTOZWManager_Internal::convertValueID(quint64 vidKey) {
 
 void QTOZWManager_Internal::pvt_valueAdded(quint64 vidKey)
 {
+    try {
+        OpenZWave::ValueID vid(this->homeId(), vidKey);
+        if (!this->m_manager->IsValueValid(vid)) {
+            qCWarning(notifications) << "ValueAdded Notification for Key " << vidKey << " Is Invalid. Key Probably Deleted";
+            return;
+        }
+    } catch (OpenZWave::OZWException &e) {
+        qCWarning(notifications) << "OZW Exception: " << e.GetMsg().c_str() << " at " << e.GetFile().c_str() <<":" << e.GetLine();
+        this->setErrorString(e.GetMsg().c_str());
+        emit this->error(QTOZWManagerErrorCodes::OZWException);
+    }
+
     qCDebug(notifications) << "Notification pvt_valueAdded:" << vidKey;
     if (!this->m_validValues.contains(vidKey))
         this->m_validValues.push_back(vidKey);
