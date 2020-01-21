@@ -811,6 +811,36 @@ void QTOZWManager_Internal::setPollInterval(qint32 interval, bool intervalBetwee
     }
     return;
 }
+
+bool QTOZWManager_Internal::enablePoll(quint64 vidKey, quint8 intensity) {
+    if (!this->checkValueKey(vidKey))
+        return false;
+    try {
+        OpenZWave::ValueID vid(this->homeId(), vidKey);
+        bool ret =  this->m_manager->EnablePoll(vid, intensity);
+        this->m_valueModel->setValueFlags(vidKey, QTOZW_ValueIds::ValueIDFlags::ValuePolled, this->m_manager->IsValuePolled(vid), false);
+        return ret;
+    } catch (OpenZWave::OZWException &e) {
+        emit this->error(QTOZWManagerErrorCodes::OZWException);
+        this->setErrorString(e.GetMsg().c_str());
+    }
+    return false;
+}
+bool QTOZWManager_Internal::disablePoll(quint64 vidKey) {
+    if (!this->checkValueKey(vidKey))
+        return false;
+    try {
+        OpenZWave::ValueID vid(this->homeId(), vidKey);
+        bool ret = this->m_manager->DisablePoll(vid);
+        this->m_valueModel->setValueFlags(vidKey, QTOZW_ValueIds::ValueIDFlags::ValuePolled, this->m_manager->IsValuePolled(vid), false);
+        return ret;
+    } catch (OpenZWave::OZWException &e) {
+        emit this->error(QTOZWManagerErrorCodes::OZWException);
+        this->setErrorString(e.GetMsg().c_str());
+    }
+    return false;
+}
+
 void QTOZWManager_Internal::syncroniseNodeNeighbors(quint8 node) {
     if (!this->checkHomeId())
         return;

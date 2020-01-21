@@ -3,14 +3,25 @@ MQTT Client for OpenZWave
 
 Docker Repo: https://hub.docker.com/r/openzwave/ozwdaemon
 
-Copy the "config" folder from OZW to `/tmp/ozw/`.
+Make sure you have create a local folder where ozwdaemon can store the config files etc for your installation. In this example, /home/ozw/config/ is on your local machine. 
+
+If you are using Secure Communications, setup a Docker Secret:
+```
+printf "0x01,0x02,0x03,0x04,0x05,0x06,0x07,0x08,0x09,0x0A,0x0b,0x0c,0x0d,0x0e,0x0f,0x10" | docker secret create OZW_Network_Key -
+```
+* replace the Hex String with 16 Bytes to use as your Network Key.
 
 Start a container with the following command line:
 ```
-docker run -it --security-opt seccomp=unconfined --device=/dev/ttyUSB0 -v /tmp/ozw:/opt/ozw/config -e MQTT_SERVER="10.100.200.102" -e USBPATH=/dev/ttyUSB0 openzwave/ozwdaemon:latest
+docker run -it --security-opt seccomp=unconfined --device=/dev/ttyUSB0 -v /home/ozw/config:/opt/ozw/config -e MQTT_SERVER="10.100.200.102" -e USBPATH=/dev/ttyUSB0 --secret OZW_Network_Key openzwave/ozwdaemon:latest
 ```
 
-(replace `MQTT_SERVER` with the IP address of the MQTT Server and all `/dev/ttyUSB0` entries with the path to your USB Stick.
+* Update `MQTT_SERVER` with the IP address of the MQTT Server and all `/dev/ttyUSB0` entries with the path to your USB Stick.
+* If you are not running with a ZWave Network Key, remove the `--secret OZW_Network_Key` command
+
+
+(Alternatively, you can specify the Network Key via a Docker Enviroment, but this is less secure:
+`-e OZW_NETWORK_KEY="0x01,0x02,0x03,0x04,0x05,0x06,0x07,0x08,0x09,0x0A,0x0b,0x0c,0x0d,0x0e,0x0f,0x10"`)
 
 ## MQTT Topic Structure
 The MQTT Client for OZW will send messages to a MQTT Broker with a predifined topic structure. The structure of the messages are detailed in the sections below.
@@ -1230,3 +1241,40 @@ This allows a MQTT Client to set a value on a Device. As OZW supports many diffe
 
 ​	[addAssociation](#addAssociation)
 
+## enablePoll
+
+**Params**:
+
+​	"ValueIDKey" - uint64: The ValueID Key
+
+​	"Intensity" - uint8: The Intensity we should poll the value at
+
+**Returns**:
+
+​"enablePoll" - if OZW accepted the command
+
+**Notification**:
+
+The appropriate value key in the MQTT Topic should be updated with a updated IsPolled Value
+
+**See Also**:
+
+​	[disablePoll](#disablePoll)
+
+## disablePoll
+
+**Params**:
+
+​	"ValueIDKey" - uint64: The ValueID Key
+
+**Returns**:
+
+​"disablePoll" - if OZW accepted the command
+
+**Notification**:
+
+The appropriate value key in the MQTT Topic should be updated with a updated IsPolled Value
+
+**See Also**:
+
+​	[enablePoll](#enablePoll)

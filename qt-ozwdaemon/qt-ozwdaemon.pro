@@ -61,7 +61,9 @@ qtHaveModule(mqtt) {
 			mqttcommands/syncroniseNodeNeighbors.cpp \
 			mqttcommands/refreshValue.cpp \
 			mqttcommands/addAssociation.cpp \
-			mqttcommands/removeAssociation.cpp
+			mqttcommands/removeAssociation.cpp \
+			mqttcommands/enablePoll.cpp \
+			mqttcommands/disablePoll.cpp
 
 	HEADERS += mqttpublisher.h \
 			qtrj.h \
@@ -105,7 +107,9 @@ qtHaveModule(mqtt) {
 			mqttcommands/syncroniseNodeNeighbors.h \
 			mqttcommands/refreshValue.h \
 			mqttcommands/addAssociation.h \
-			mqttcommands/removeAssociation.h
+			mqttcommands/removeAssociation.h \
+			mqttcommands/enablePoll.h \
+			mqttcommands/disablePoll.h
 
 
 } else {
