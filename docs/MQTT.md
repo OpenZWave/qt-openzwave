@@ -1230,3 +1230,40 @@ This allows a MQTT Client to set a value on a Device. As OZW supports many diffe
 
 ​	[addAssociation](#addAssociation)
 
+## enablePoll
+
+**Params**:
+
+​	"ValueIDKey" - uint64: The ValueID Key
+
+​	"Intensity" - uint8: The Intensity we should poll the value at
+
+**Returns**:
+
+​"enablePoll" - if OZW accepted the command
+
+**Notification**:
+
+The appropriate value key in the MQTT Topic should be updated with a updated IsPolled Value
+
+**See Also**:
+
+​	[disablePoll](#disablePoll)
+
+## disablePoll
+
+**Params**:
+
+​	"ValueIDKey" - uint64: The ValueID Key
+
+**Returns**:
+
+​"disablePoll" - if OZW accepted the command
+
+**Notification**:
+
+The appropriate value key in the MQTT Topic should be updated with a updated IsPolled Value
+
+**See Also**:
+
+​	[enablePoll](#enablePoll)

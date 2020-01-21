@@ -37,6 +37,7 @@
 #include "mqttcommands/setPollInterval.h"
 #include "mqttcommands/syncroniseNodeNeighbors.h"
 #include "mqttcommands/enablePoll.h"
+#include "mqttcommands/disablePoll.h"
 #include "mqttcommands/refreshValue.h"
 #include "mqttcommands/addAssociation.h"
 #include "mqttcommands/removeAssociation.h"
@@ -251,7 +252,8 @@ void MqttCommands::setupCommands() {
     this->Register(MqttCommand_GetPollInterval::StaticGetCommand(), &MqttCommand_GetPollInterval::Create);
     this->Register(MqttCommand_SetPollInterval::StaticGetCommand(), &MqttCommand_SetPollInterval::Create);
     this->Register(MqttCommand_SyncroniseNodeNeighbors::StaticGetCommand(), &MqttCommand_SyncroniseNodeNeighbors::Create);
-//    this->Register(MqttCommand_EnablePoll::StaticGetCommand(), &MqttCommand_EnablePoll::Create);    
+    this->Register(MqttCommand_EnablePoll::StaticGetCommand(), &MqttCommand_EnablePoll::Create);
+    this->Register(MqttCommand_DisablePoll::StaticGetCommand(), &MqttCommand_DisablePoll::Create);    
     this->Register(MqttCommand_RefreshValue::StaticGetCommand(), &MqttCommand_RefreshValue::Create);
     this->Register(MqttCommand_AddAssociation::StaticGetCommand(), &MqttCommand_AddAssociation::Create);
     this->Register(MqttCommand_RemoveAssociation::StaticGetCommand(), &MqttCommand_RemoveAssociation::Create);
