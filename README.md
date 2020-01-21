@@ -25,7 +25,7 @@ Start a container with the following command line:
 the `--security-opt seccomp=unconfined` is needed to generate meaningfull
 backtraces, otherwise it will be difficult for us to debug.
 
-Please see [docs/MQTT.md](docs/MQTT.md) for further information
+Please see [docs/MQTT.md](docs/MQTT.md) for complete instructions, including settting up Network Keys etc
 
 ## QT Wrapper Interface
 
