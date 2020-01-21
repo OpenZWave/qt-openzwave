@@ -459,7 +459,12 @@ bool QTOZWManager::AddAssociation (quint8 const _nodeId, quint8 const _groupIdx,
 bool QTOZWManager::RemoveAssociation (quint8 const _nodeId, quint8 const _groupIdx, QString const target) {
     CALL_DPTR_RTN(RemoveAssociation(_nodeId, _groupIdx, target), bool);
 }
-
+bool QTOZWManager::enablePoll(quint64 vidKey, quint8 intensity) {
+    CALL_DPTR_RTN(enablePoll(vidKey, intensity), bool);
+}
+bool QTOZWManager::disablePoll(quint64 vidKey) {
+    CALL_DPTR_RTN(disablePoll(vidKey), bool);
+}
 
 void QTOZWManager::setOZWDatabasePath(QDir path) {
     if (path.exists())

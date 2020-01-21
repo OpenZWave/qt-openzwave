@@ -144,6 +144,9 @@ public:
     bool AddAssociation (quint8 const _nodeId, quint8 const _groupIdx, QString const target);
     bool RemoveAssociation (quint8 const _nodeId, quint8 const _groupIdx, QString const target);
 
+    bool enablePoll(quint64 vidKey, quint8 intensity);
+    bool disablePoll(quint64 vidKey);
+
 /* Property Methods */
     QDir OZWDatabasePath() { return this->m_ozwdatabasepath; }
     QDir OZWUserPath() { return this->m_ozwuserpath; }

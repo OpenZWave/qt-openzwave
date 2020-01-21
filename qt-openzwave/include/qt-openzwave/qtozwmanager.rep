@@ -156,7 +156,8 @@ class QTOZWManager {
 
     SLOT(qint32 getPollInterval())
     SLOT(void setPollInterval(qint32 interval, bool intervalBetweenPolls))
-
+    SLOT(bool enablePoll(quint64 vidKey, quint8 intensity))
+    SLOT(bool disablePoll(quint64 vidKey))
     SLOT(void syncroniseNodeNeighbors(quint8 node))
 
 }

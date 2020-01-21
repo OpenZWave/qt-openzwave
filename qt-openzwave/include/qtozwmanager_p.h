@@ -138,6 +138,8 @@ public Q_SLOTS:
     bool AddAssociation (quint8 const _nodeId, quint8 const _groupIdx, QString const target);
     bool RemoveAssociation (quint8 const _nodeId, quint8 const _groupIdx, QString const target);
 
+    bool enablePoll(quint64 vidKey, quint8 intensity);
+    bool disablePoll(quint64 vidKey);
 
     /* these slots are called from our OZWNotification Class. Applications should not call them */
     void pvt_valueAdded(quint64 vidKey);
