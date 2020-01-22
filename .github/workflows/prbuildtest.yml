@@ -1,4 +1,4 @@
-name: Docker Image Build
+name: ozwdaemon Docker Image Build Test
 
 on: 
   pull_request:
