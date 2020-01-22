@@ -94,7 +94,7 @@ void* context, bool succeeded) {
 
         std::string response, error;
         bool success = google_breakpad::HTTPUpload::SendRequest(url, parameters, files, proxy_host, proxy_userpasswd, "", &response, NULL, &error);
-        if (success) 
+        if (success)
             qWarning() << "Uploaded Crash minidump With ID: " <<  response.c_str();
         else
             qWarning() << "Failed to Upload Crash MiniDump in " << descriptor.path();
@@ -288,10 +288,14 @@ int main(int argc, char *argv[])
     if (bppath.isEmpty())
         bppath = QStandardPaths::standardLocations(QStandardPaths::TempLocation).at(0);
     qInfo() << "Using BreakPad - Crash Directory: " << bppath;
+    /* ensure path exists */
+    if (!QDir::exists(bppath)) {
+            QDir::mkpath(bppath);
+    }
     google_breakpad::MinidumpDescriptor descriptor(bppath.toStdString());
     google_breakpad::ExceptionHandler eh(descriptor, NULL, dumpCallback, static_cast<void *>(&daemon), true, -1);
-#else 
-    signal(SIGSEGV, backtrace); 
+#else
+    signal(SIGSEGV, backtrace);
     signal(SIGABRT, backtrace);
 #endif
 
