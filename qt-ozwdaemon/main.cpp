@@ -289,9 +289,9 @@ int main(int argc, char *argv[])
         bppath = QStandardPaths::standardLocations(QStandardPaths::TempLocation).at(0);
     qInfo() << "Using BreakPad - Crash Directory: " << bppath;
     /* ensure path exists */
-    QDir dir(bppath);
-    if (!dir.exists()) {
-            dir.mkpath();
+    QDir dir;
+    if (!dir.exists(bppath)) {
+            dir.mkpath(bppath);
     }
     google_breakpad::MinidumpDescriptor descriptor(bppath.toStdString());
     google_breakpad::ExceptionHandler eh(descriptor, NULL, dumpCallback, static_cast<void *>(&daemon), true, -1);
