@@ -118,7 +118,6 @@ bool MqttCommand_SetValue::processMessage(rapidjson::Document &msg) {
             break;
         }
         case QTOZW_ValueIds::ValueIdTypes::List: {
-            qDebug() << "Processing List";
             if (!msg["Value"].IsUint()) {
                 this->sendSimpleStatus(false, QString("Incorrect Field Type for Value: Not Integer: ").append(msg["Value"].GetType()));
                 qCWarning(ozwmcsv) << "Incorrect Field Type (Integer) for " << GetCommand() << ": Value: " << msg["Value"].GetType();
@@ -132,9 +131,7 @@ bool MqttCommand_SetValue::processMessage(rapidjson::Document &msg) {
                 return false;
             }
             list.selectedItem = list.labels[index];
-            qDebug() << list.selectedItem;
             data.setValue<QTOZW_ValueIDList>(list);
-            qDebug() << data;
             break;
         }
         case QTOZW_ValueIds::ValueIdTypes::Raw: {
