@@ -1135,7 +1135,7 @@ bool QTOZWManager_Internal::convertValueID(quint64 vidKey) {
             uint8* rawval;
             uint8 length; // strangely GetValueAsRaw wants uint8
             this->m_manager->GetValueAsRaw(vid, &rawval, &length);
-            QByteArray value(value, length);
+            QByteArray value((const char*)rawval, length);
             this->m_valueModel->setValueData(vidKey, QTOZW_ValueIds::ValueIdColumns::Value, QVariant::fromValue(value), true);
             this->m_valueModel->setValueData(vidKey, QTOZW_ValueIds::ValueIdColumns::Type, QTOZW_ValueIds::ValueIdTypes::Raw, true);
             this->m_valueModel->finishTransaction(vidKey);

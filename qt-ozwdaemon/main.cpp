@@ -7,17 +7,23 @@
 
 #include <signal.h>
 #include <stdlib.h>
+
+#ifndef _WIN32
 #include <unistd.h>
+#endif
 
 #include <QCoreApplication>
 #include <QLoggingCategory>
 #include <QCommandLineParser>
+#ifndef _WIN32
 #include <qt-openzwave/qt-openzwavedatabase.h>
+#endif
 #include "qtozwdaemon.h"
 #ifdef HAVE_MQTT
 #include "mqttpublisher.h"
 #endif
 
+#ifndef _WIN32
 #define UNW_LOCAL_ONLY
 #include <libunwind.h>
 #include <cxxabi.h>
@@ -104,6 +110,7 @@ void* context, bool succeeded) {
 }
 #endif
 
+#endif /* _WIN32 */
 int main(int argc, char *argv[])
 {
 
@@ -234,7 +241,7 @@ int main(int argc, char *argv[])
         }
     }
 
-
+#ifndef _WIN32
     if (dbPath.isEmpty()) {
         if (initConfigDatabase(PossibleDBPaths)) {
             copyConfigDatabase(QFileInfo("./").absoluteFilePath().append("/"));
@@ -244,6 +251,7 @@ int main(int argc, char *argv[])
             qWarning() << "Cant find qt-openzwavedatabase.rcc";
         }
     }
+#endif
     qDebug() << "DBPath: " << dbPath;
     qDebug() << "userPath: " << userPath;
 
@@ -283,6 +291,7 @@ int main(int argc, char *argv[])
     mqttpublisher.setOZWDaemon(&daemon);
 #endif
 
+#ifndef _WIN32
 #ifdef HAVE_BP
     QString bppath =  QString::fromLocal8Bit(qgetenv("BP_DB_PATH"));
     if (bppath.isEmpty())
@@ -299,7 +308,7 @@ int main(int argc, char *argv[])
     signal(SIGSEGV, backtrace);
     signal(SIGABRT, backtrace);
 #endif
-
+#endif
 
 
     daemon.setSerialPort(parser.value(serialPort));
