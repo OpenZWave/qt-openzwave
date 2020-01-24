@@ -4,7 +4,7 @@ top_builddir=$$shadowed($$PWD)
 unix {
     CONFIG-= no-pkg-config
     CONFIG+= link_pkgconfig
-    packagesExist("libopenzwave1") {
+    packagesExist("libopenzwave") {
 	PKGCONFIG += libopenzwave
 	OZW_DATABASE_PATH=$$system($$PKG_CONFIG --variable=sysconfdir libopenzwave)
     	message(" ")
@@ -17,7 +17,7 @@ unix {
     } else {
 	isEmpty(OZW_LIB_PATH) {
 		exists( $$top_srcdir/../open-zwave/cpp/src/) {
-			message("Found OZW in $$absolute_path($$top_srcdir/../open-zwave/cpp/src)")
+			message("Found OZW in $$absolute_path($$top_srcdir/../open-zwave/)")
                 	OZW_LIB_PATH = "$$absolute_path($$top_srcdir/../open-zwave/)"
                 	OZW_INCLUDE_PATH = $$absolute_path($$top_srcdir/../open-zwave/cpp/src/)
 			OZW_LIBS="-L$$OZW_LIB_PATH"

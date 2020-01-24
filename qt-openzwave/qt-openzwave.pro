@@ -54,24 +54,31 @@ SOURCES += source/qtopenzwave.cpp \
     source/qtozwvalueidmodel.cpp \
     source/qtozwvalueidmodel_p.cpp
 
-HEADERS += include/qt-openzwave/qtopenzwave.h \
-        include/qt-openzwave/qtozw_pods.h \
-        include/qt-openzwave/qtozwlog.h \
-        include/qt-openzwave/qtozwoptions.h \
-        include/qtozwlog_p.h \
-        include/qtozwoptions_p.h \
-        \  \
+HEADERS += include/qtozwassociationmodel_p.h \
         include/qtozw_logging.h \
-        include/qt-openzwave/qtozwassociationmodel.h \
-        include/qtozwassociationmodel_p.h \
+        include/qtozwlog_p.h \
         include/qtozwmanager_p.h \
         include/qtozwnodemodel_p.h \
-        include/qt-openzwave/qtozwproxymodels.h \
-        include/qt-openzwave/qtozwmanager.h \
         include/qtozwnotification.h \
-        include/qt-openzwave/qtozwnodemodel.h \
-        include/qt-openzwave/qtozwvalueidmodel.h \
+        include/qtozwoptions_p.h \
         include/qtozwvalueidmodel_p.h
+
+PUBLIC_HEADERS.files += include/qt-openzwave/qtopenzwave.h \
+        include/qt-openzwave/qtozwassociationmodel.h \
+        include/qt-openzwave/qtozwlog.h \
+        include/qt-openzwave/qtozwmanager.h \
+        include/qt-openzwave/qtozwnodemodel.h \
+        include/qt-openzwave/qtozwoptions.h \
+        include/qt-openzwave/qtozw_pods.h \
+        include/qt-openzwave/qtozwproxymodels.h \
+        include/qt-openzwave/qtozwvalueidmodel.h \
+	include/qt-openzwave/rep_qtozwmanager_replica.h \
+	include/qt-openzwave/rep_qtozwoptions_replica.h \
+	include/qt-openzwave/rep_qtozwmanager_source.h \
+	include/qt-openzwave/rep_qtozwoptions_source.h
+
+
+HEADERS += $$PUBLIC_HEADERS.files
 
 INCLUDEPATH += include/
 
@@ -85,8 +92,24 @@ copyrepheaders.depends = rep_qtozwmanager_replica.h rep_qtozwmanager_source.h re
 
 COPIES += copyrepheaders
 unix {
-    target.path = /usr/local/lib
+    isEmpty(PREFIX) {
+	PREFIX=/usr/local/
+    }	
+    isEmpty(LIBDIR) {
+	    target.path = $$[QT_INSTALL_LIBS]
+    } else {
+	target.path = $$PREFIX/$$LIBDIR
+    }	
+    isEmpty(INCDIR) {
+	    PUBLIC_HEADERS.path = $$[QT_INSTALL_HEADERS]/$$TARGET/
+    } else {
+	PUBLIC_HEADERS.path = $$PREFIX/$$INCDIR
+    }
+    message("Final Installation Directories:")
+    message("    LibDir: $$target.path")
+    message("    IncDir: $$PUBLIC_HEADERS.path")
     INSTALLS += target
+    INSTALLS += PUBLIC_HEADERS
     QMAKE_CXXFLAGS += -g -Wno-deprecated-copy
     QMAKE_CFLAGS += -g
     QMAKE_LFLAGS += -rdynamic
@@ -98,9 +121,11 @@ unix {
     QMAKE_PKGCONFIG_DESCRIPTION="QT5 Bindings for OpenZWave"
     QMAKE_PKGCONFIG_PREFIX=$$INSTALLBASE
     QMAKE_PKGCONFIG_LIBDIR=$$target.path
-    QMAKE_PKGCONFIG_INCDIR=$$headers.path
+    QMAKE_PKGCONFIG_INCDIR=$$PUBLIC_HEADERS.path
     QMAKE_PKGCONFIG_VERSION=$$VERSION
     QMAKE_PKGCONFIG_DESTDIR=pkgconfig
+    QMAKE_PKGCONFIG_REQUIRES+=libopenzwave
+    for(i, QT):QMAKE_PKGCONFIG_REQUIRES += $$replace(QT.$${i}.name, ^Qt, Qt$$section(QT.$${i}.VERSION, ., 0, 0))
 }
 
 macx {

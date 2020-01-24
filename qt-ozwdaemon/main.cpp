@@ -227,7 +227,8 @@ int main(int argc, char *argv[])
     PossibleDBPaths << "./config/";
     PossibleDBPaths <<  QDir::toNativeSeparators("../../../config/");
     PossibleDBPaths << QStandardPaths::standardLocations(QStandardPaths::AppDataLocation);
-
+    PossibleDBPaths << "/usr/share/qt5/";
+    
     foreach(path, PossibleDBPaths) {
         qDebug() << "Checking " << QFileInfo(QDir::toNativeSeparators(path+"/config/Options.xml")).absoluteFilePath() << " for options.xml";
         if (QFileInfo(QDir::toNativeSeparators(path+"/config/options.xml")).exists()) {
