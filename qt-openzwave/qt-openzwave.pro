@@ -14,7 +14,7 @@ TEMPLATE = lib
 VERSION = 1.0.0
 
 CONFIG += silent file_copies force_debug_info
-!versionAtLeast(QT_VERSION, 5.11.2):error("Use at least Qt version 5.11.2")
+!versionAtLeast(QT_VERSION, 5.12.0):error("Use at least Qt version 5.12.0")
 
 include(../qt-openzwave.pri)
 
@@ -91,8 +91,17 @@ unix {
     QMAKE_CFLAGS += -g
     QMAKE_LFLAGS += -rdynamic
     QMAKE_STRIP = echo
+
+    #create pkg-config file for qt-openzwave
+    CONFIG+= create_pc create_prl no_install_prl
+    QMAKE_PKGCONFIG_NAME=qt-openzwave
+    QMAKE_PKGCONFIG_DESCRIPTION="QT5 Bindings for OpenZWave"
+    QMAKE_PKGCONFIG_PREFIX=$$INSTALLBASE
+    QMAKE_PKGCONFIG_LIBDIR=$$target.path
+    QMAKE_PKGCONFIG_INCDIR=$$headers.path
+    QMAKE_PKGCONFIG_VERSION=$$VERSION
+    QMAKE_PKGCONFIG_DESTDIR=pkgconfig
 }
-#LIBS += -L../../open-zwave -lopenzwave
 
 macx {
     QMAKE_LFLAGS_SONAME = -Wl,-install_name,@rpath/
@@ -105,4 +114,5 @@ QMAKE_CFLAGS_RELEASE -= -O2
 QMAKE_CXXFLAGS_RELEASE -= -O
 QMAKE_CXXFLAGS_RELEASE -= -O1
 QMAKE_CXXFLAGS_RELEASE -= -O2
+
 
