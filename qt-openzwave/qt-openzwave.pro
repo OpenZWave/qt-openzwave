@@ -87,7 +87,7 @@ COPIES += copyrepheaders
 unix {
     target.path = /usr/local/lib
     INSTALLS += target
-    QMAKE_CXXFLAGS += -g
+    QMAKE_CXXFLAGS += -g -Wno-deprecated-copy
     QMAKE_CFLAGS += -g
     QMAKE_LFLAGS += -rdynamic
     QMAKE_STRIP = echo
@@ -106,9 +106,3 @@ QMAKE_CXXFLAGS_RELEASE -= -O
 QMAKE_CXXFLAGS_RELEASE -= -O1
 QMAKE_CXXFLAGS_RELEASE -= -O2
 
-message(" ")
-message("Summary:")
-message("    OpenZWave Path: $$OZW_LIB_PATH")
-message("    Include Path: $$INCLUDEPATH")
-message("    Library Path: $$LIBS")
-message(" ")

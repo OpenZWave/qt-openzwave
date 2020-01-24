@@ -1,38 +1,64 @@
 top_srcdir=$$PWD
 top_builddir=$$shadowed($$PWD)
 
-mac {
-    PKG_CONFIG = /usr/local/bin/pkg-config
-}
-
 unix {
-    system("$$PKG_CONFIG --exists openzwave"): USE_PKGCFG = TRUE
-    isEmpty(OZW_LIB_PATH) {
-        QT_CONFIG -= no-pkg-config
-        CONFIG += link_pkgconfig
-        if (USE_PKGCFG) {
-           PKGCONFIG += openzwave
-           message("Using Distribution copy of OZW")
-        } else {
-            exists( $$top_srcdir/../open-zwave/cpp/src/) {
-                message("Found OZW in $$absolute_path($$top_srcdir/../open-zwave/cpp/src)")
-                OZW_LIB_PATH = $$absolute_path($$top_srcdir/../open-zwave/)
-                INCLUDEPATH += $$absolute_path($$top_srcdir/../open-zwave/cpp/src/)/
-                LIBS += -L$$absolute_path($$top_srcdir/../open-zwave/) -lopenzwave
-            } else {
-                error("Can't Find a copy of OpenZwave")
-            }
-        }
+    CONFIG-= no-pkg-config
+    CONFIG+= link_pkgconfig
+    packagesExist("libopenzwave1") {
+	PKGCONFIG += libopenzwave
+	OZW_DATABASE_PATH=$$system($$PKG_CONFIG --variable=sysconfdir libopenzwave)
+    	message(" ")
+    	message("OpenZWave Summary:")
+	message("	Using OpenZWave from pkg-config:")
+	message("	CXXFLAGS: $$system($$PKG_CONFIG --cflags libopenzwave)")
+	message("	LDFLAGS: $$system($$PKG_CONFIG --libs libopenzwave)")
+	message("	DATABASE: $$system($$PKG_CONFIG --variable=sysconfdir libopenzwave)")
+	message(" ")
     } else {
-        exists($$OZW_LIB_PATH/cpp/src/) {
-            INCLUDEPATH += $$absolute_path($$OZW_LIB_PATH/cpp/src/)/
-            LIBS += -L$$absolute_path($$OZW_LIB_PATH) -lopenzwave
-            message("Using OZW from Path Supplied in OZW_LIB_PATH varible: $$OZW_LIB_PATH" )
-        } else {
-            error("Unable to find a copy of OZW in $$OZW_LIB_PATH")
-        }
-    }
+	isEmpty(OZW_LIB_PATH) {
+		exists( $$top_srcdir/../open-zwave/cpp/src/) {
+			message("Found OZW in $$absolute_path($$top_srcdir/../open-zwave/cpp/src)")
+                	OZW_LIB_PATH = "$$absolute_path($$top_srcdir/../open-zwave/)"
+                	OZW_INCLUDE_PATH = $$absolute_path($$top_srcdir/../open-zwave/cpp/src/)
+			OZW_LIBS="-L$$OZW_LIB_PATH"
+			OZW_LIBS+="-lopenzwave"
+			OZW_DATABASE_PATH = $$absolute_path($$top_srcdir/../open-zwave/config/)
 
+		} else {
+			error("Can't find OpenZWave Library")
+		}
+	} else {
+		!exists($$OZW_LIB_PATH/libopenzwave.so): error("Can't find libopenzwave.so")
+		!exists($$OZW_INCLUDE_PATH/Manager.h) {
+			!exists($$OZW_LIB_PATH/cpp/src/Manager.h) {
+				error("Can't find Manager.h")
+			} else {
+				OZW_INCLUDE_PATH=$$OZW_LIB_PATH/cpp/src/
+			}
+		}
+		!exists($$OZW_DATABASE_PATH/manufacturer_specific.xml) {
+			!exists($$OZW_LIB_PATH/config/manufacturer_specific.xml) {
+				error("Can't find manufacturer_specific.xml")
+			} else {
+				OZW_DATABASE_PATH=$$absolute_path($$OZW_LIB_PATH/config/)
+			}
+		}
+		OZW_LIB_PATH=$$absolute_path($$OZW_LIB_PATH)
+		OZW_INCLUDE_PATH=$$absolute_path($$OZW_INCLUDE_PATH)
+		OZW_LIBS="-L$$OZW_LIB_PATH"
+		OZW_LIBS+="-lopenzwave"
+		OZW_DATABASE_PATH=$$absolute_path($$OZW_DATABASE_PATH)
+	}	
+    	message(" ")
+    	message("OpenZWave Summary:")
+    	message("    OpenZWave Library Path: $$OZW_LIB_PATH")
+    	message("    OpenZWave Include Path: $$OZW_INCLUDE_PATH")
+    	message("    OpenZWave Libs Command: $$OZW_LIBS")
+	message("    OpenZWave Database Path: $$OZW_DATABASE_PATH")
+    	message(" ")
+	INCLUDEPATH+=$$OZW_INCLUDE_PATH
+	LIBS+=$$OZW_LIBS
+    }
 }
 
 win32 {

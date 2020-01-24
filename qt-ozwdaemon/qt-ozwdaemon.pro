@@ -149,12 +149,17 @@ unix {
 	target.path = /usr/local/bin
 	INSTALLS += target
 	PKGCONFIG += libunwind libcurl
-    LIBS += -lresolv -L../qt-openzwave/ -lqt-openzwave -L../qt-openzwavedatabase/ -lqt-openzwavedatabase
-    INCLUDEPATH += ../qt-openzwavedatabase/include/
-    QMAKE_CXXFLAGS += -g
-    QMAKE_CFLAGS += -g
-    QMAKE_LFLAGS += -rdynamic
-    QMAKE_STRIP = echo
+    	LIBS += -lresolv -L../qt-openzwave/ -lqt-openzwave -L../qt-openzwavedatabase/ -lqt-openzwavedatabase
+    	INCLUDEPATH += ../qt-openzwavedatabase/include/
+    	QMAKE_CXXFLAGS += -g -Wno-deprecated-copy
+    	QMAKE_CFLAGS += -g
+    	QMAKE_LFLAGS += -rdynamic
+    	QMAKE_STRIP = echo
+    	qtConfig(static) {
+		QMAKE_LFLAGS += -static
+		LIBS += -lopenzwave -Wl,--allow-multiple-definition
+ 		# this is a static build
+    	}
 }
 win32 {
     LIBS += -lDnsapi -L../qt-openzwave/$$BUILDTYPE/ -lqt-openzwave1
