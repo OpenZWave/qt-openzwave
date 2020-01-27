@@ -29,7 +29,7 @@ WORKDIR /opt
 RUN echo 'APT::Default-Release "stable";' > /etc/apt/apt.conf.d/99defaultrelease && echo 'deb     http://ftp.debian.org/debian/    unstable main contrib non-free' > /etc/apt/sources.list.d/unstable.list && echo 'deb     http://ftp.debian.org/debian/    experimental main contrib non-free' >> /etc/apt/sources.list.d/unstable.list && apt update && apt-get -y install libunwind8 libcurl4 && apt-get -y -t unstable install libqt5core5a libqt5network5 && apt-get -y -t experimental install libqt5remoteobjects5 && apt-get clean && rm -rf /var/lib/apt/lists/* && mkdir -p /opt/ozw/config/crashes/
 
 COPY --from=builder /usr/local/bin/* /usr/local/bin/
-COPY --from=builder /usr/lib/x86_64-linux-gnu/libqt-* /usr/lib/x86_64-linux-gnu/
+COPY --from=builder /usr/lib/*/libqt-* /usr/local/lib/
 COPY --from=builder /usr/local/lib*/libopenzwave* /usr/local/lib/
 COPY --from=builder /usr/lib/*/libQt5Mqtt* /usr/local/lib/
 COPY --from=builder /opt/qt-openzwave/tools/* /usr/local/bin/
