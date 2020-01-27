@@ -3,12 +3,12 @@ QT += widgets remoteobjects testlib
 
 TARGET = ../simpleclient
 
-CONFIG += silent
+#CONFIG += silent
 DEFINES  += remote
 
-unix {
-    QMAKE_POST_LINK += "if [ ! -e config ]; then ln -s $$OZW_LIB_PATH/config config; fi"
-}
+#unix {
+#    QMAKE_POST_LINK += "if [ ! -e config ]; then ln -s $$OZW_LIB_PATH/config config; fi"
+#}
 
 win32 {
     RC_ICONS += res/ozw_logo.ico
@@ -37,6 +37,12 @@ include(../qt-openzwave.pri)
 
 unix {
     LIBS += -lresolv -L../qt-openzwave/ -lqt-openzwave
+    QMAKE_CXXFLAGS += -Wno-deprecated-copy
+        qtConfig(static) {
+                QMAKE_LFLAGS += -static-libgcc
+                LIBS += -lopenzwave -Wl,--allow-multiple-definition
+                # this is a static build
+        }
 }
 win32 {
     LIBS += -lDnsapi -L../qt-openzwave/$$BUILDTYPE/ -lqt-openzwave1

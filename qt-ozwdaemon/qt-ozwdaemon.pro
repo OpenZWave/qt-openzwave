@@ -148,21 +148,21 @@ unix {
 	# Default rules for deployment.
 	target.path = /usr/local/bin
 	INSTALLS += target
-	PKGCONFIG += libunwind libcurl
-    LIBS += -lresolv -L../qt-openzwave/ -lqt-openzwave -L../qt-openzwavedatabase/ -lqt-openzwavedatabase
-    INCLUDEPATH += ../qt-openzwavedatabase/include/
-    QMAKE_CXXFLAGS += -g
-    QMAKE_CFLAGS += -g
-    QMAKE_LFLAGS += -rdynamic
-    QMAKE_STRIP = echo
+	!macx: PKGCONFIG += libunwind libcurl
+    	LIBS += -lresolv -L../qt-openzwave/ -lqt-openzwave -L../qt-openzwavedatabase/ -lqt-openzwavedatabase
+    	INCLUDEPATH += ../qt-openzwavedatabase/include/
+    	QMAKE_CXXFLAGS += -g 
+    	QMAKE_CFLAGS += -g
+    	QMAKE_LFLAGS += -rdynamic
+    	QMAKE_STRIP = echo
+    	qtConfig(static) {
+		QMAKE_LFLAGS += -static
+		LIBS += -lopenzwave -Wl,--allow-multiple-definition
+ 		# this is a static build
+    	}
 }
 win32 {
     LIBS += -lDnsapi -L../qt-openzwave/$$BUILDTYPE/ -lqt-openzwave1
-}
-
-macx {
-    ICON = res/ozw_logo.icns
-    QMAKE_POST_LINK=$$top_srcdir/updaterpath.sh $(TARGET)
 }
 
 QMAKE_CFLAGS_RELEASE -= -O
