@@ -23,7 +23,7 @@
 #include "mqttpublisher.h"
 #endif
 
-#if defined(_Q_OS_LINUX)
+#if defined(Q_OS_LINUX)
 #define UNW_LOCAL_ONLY
 #include <libunwind.h>
 #include <cxxabi.h>
