@@ -110,7 +110,7 @@ unix {
     message("    IncDir: $$PUBLIC_HEADERS.path")
     INSTALLS += target
     INSTALLS += PUBLIC_HEADERS
-    QMAKE_CXXFLAGS += -g -Wno-deprecated-copy
+    QMAKE_CXXFLAGS += -g
     QMAKE_CFLAGS += -g
     QMAKE_LFLAGS += -rdynamic
     QMAKE_STRIP = echo
@@ -127,11 +127,6 @@ unix {
     QMAKE_PKGCONFIG_REQUIRES+=libopenzwave
     for(i, QT):QMAKE_PKGCONFIG_REQUIRES += $$replace(QT.$${i}.name, ^Qt, Qt$$section(QT.$${i}.VERSION, ., 0, 0))
 }
-
-macx {
-    QMAKE_LFLAGS_SONAME = -Wl,-install_name,@rpath/
-    QMAKE_POST_LINK=$$top_srcdir/updaterpath.sh $(TARGET)
-} 
 
 QMAKE_CFLAGS_RELEASE -= -O
 QMAKE_CFLAGS_RELEASE -= -O1

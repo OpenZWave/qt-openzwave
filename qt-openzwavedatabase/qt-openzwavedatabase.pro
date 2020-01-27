@@ -60,7 +60,7 @@ clean.depends=extraclean
     QMAKE_EXTRA_TARGETS += clean extraclean ozwconfig
     PRE_TARGETDEPS += qt-openzwavedatabase.rcc
     QMAKE_STRIP=@echo
-    QMAKE_CXXFLAGS += -g1 -Wno-deprecated-copy
+    QMAKE_CXXFLAGS += -g1
     QMAKE_LFLAGS += -rdynamic
 
     macx {

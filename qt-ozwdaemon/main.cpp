@@ -23,7 +23,7 @@
 #include "mqttpublisher.h"
 #endif
 
-#ifndef _WIN32
+#if defined(_Q_OS_LINUX)
 #define UNW_LOCAL_ONLY
 #include <libunwind.h>
 #include <cxxabi.h>
@@ -110,7 +110,7 @@ void* context, bool succeeded) {
 }
 #endif
 
-#endif /* _WIN32 */
+#endif /* Q_OS_LINUX */
 int main(int argc, char *argv[])
 {
 
@@ -242,7 +242,7 @@ int main(int argc, char *argv[])
         }
     }
 
-#ifndef _WIN32
+#if defined(Q_OS_LINUX) 
     if (dbPath.isEmpty()) {
         if (initConfigDatabase(PossibleDBPaths)) {
             copyConfigDatabase(QFileInfo("./").absoluteFilePath().append("/"));
@@ -292,7 +292,7 @@ int main(int argc, char *argv[])
     mqttpublisher.setOZWDaemon(&daemon);
 #endif
 
-#ifndef _WIN32
+#if defined(Q_OS_LINUX)
 #ifdef HAVE_BP
     QString bppath =  QString::fromLocal8Bit(qgetenv("BP_DB_PATH"));
     if (bppath.isEmpty())

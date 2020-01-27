@@ -1,6 +1,12 @@
 top_srcdir=$$PWD
 top_builddir=$$shadowed($$PWD)
-
+unix { 
+    macx {
+        ICON = res/ozw_logo.icns
+        QMAKE_POST_LINK=$$top_srcdir/tools/updaterpath.sh $(TARGET)
+    }
+    !macx: QMAKE_CXXFLAGS += -Wno-deprecated-copy
+}
 unix {
     CONFIG-= no-pkg-config
     CONFIG+= link_pkgconfig
