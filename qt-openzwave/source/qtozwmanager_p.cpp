@@ -582,7 +582,8 @@ QVector<quint8> QTOZWManager_Internal::GetNodeNeighbors(quint8 const _node) {
         for (int i = 0; i < size; i++) {
             data.append(neighbours[i]);
         }
-        delete[] neighbours;
+        if (size) 
+            delete[] neighbours;
         return data;
     } catch (OpenZWave::OZWException &e) {
         emit this->error(QTOZWManagerErrorCodes::OZWException);
