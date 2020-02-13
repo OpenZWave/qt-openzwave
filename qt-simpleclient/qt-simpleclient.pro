@@ -55,5 +55,5 @@ macx {
     LIBOZW.files = ../../open-zwave/libopenzwave-1.6.dylib ../qt-openzwave/libqt-openzwave.1.dylib
     LIBOZW.path = Contents/Frameworks/
     QMAKE_BUNDLE_DATA += BUNDLE LIBOZW
-    QMAKE_POST_LINK=$$top_srcdir/updaterpath.sh $(TARGET)
+    #QMAKE_POST_LINK=$$top_srcdir/updaterpath.sh $(TARGET)
 }

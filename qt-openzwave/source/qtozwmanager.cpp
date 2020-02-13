@@ -116,7 +116,7 @@ bool QTOZWManager::initilizeReplica(QUrl remote) {
         QObject::connect(qobject_cast<QAbstractItemModelReplica*>(this->m_valueModel), &QAbstractItemModelReplica::initialized, this, &QTOZWManager::onValueInitialized);
         this->m_associationModel= this->m_replicaNode->acquireModel("QTOZW_associationModel", QtRemoteObjects::InitialAction::PrefetchData);
         QObject::connect(qobject_cast<QAbstractItemModelReplica*>(this->m_associationModel), &QAbstractItemModelReplica::initialized, this, &QTOZWManager::onAssociationInitialized);
-        this->m_logModel = this->m_replicaNode->acquireModel("QTOZW_logModel", QtRemoteObjects::InitialAction::FetchRootSize);
+        this->m_logModel = this->m_replicaNode->acquireModel("QTOZW_logModel", QtRemoteObjects::InitialAction::PrefetchData);
         QObject::connect(qobject_cast<QAbstractItemModelReplica*>(this->m_logModel), &QAbstractItemModelReplica::initialized, this, &QTOZWManager::onLogInitialized);
     }
     return true;
@@ -133,11 +133,13 @@ void QTOZWManager::onSourceError(QRemoteObjectHost::ErrorCode error) {
 }
 
 void QTOZWManager::onManagerStateChange(QRemoteObjectReplica::State state) {
+    qCDebug(manager) << "Manager State Change: " << state;
     this->m_managerState = state;
     this->checkReplicaReady();
 }
 
 void QTOZWManager::onOptionsStateChange(QRemoteObjectReplica::State state) {
+    qCDebug(manager) << "Options State Change: " << state;
     this->m_optionsState = state;
     this->checkReplicaReady();
 }
@@ -161,13 +163,19 @@ void QTOZWManager::onLogInitialized() {
 }
 
 void QTOZWManager::checkReplicaReady() {
+    qCDebug(manager) << "checkReplicaReady: Manager:" << this->m_managerState << "Options:" << this->m_optionsState << "Nodes:" << this->m_nodeState << "Values" << this->m_valuesState << "Associations:" << this->m_associationsState << "Logs:" << this->m_logState;
     if ((this->m_managerState == QRemoteObjectReplica::State::Valid) &&
             (this->m_optionsState == QRemoteObjectReplica::State::Valid) &&
                 (this->m_nodeState == true) &&
                     (this->m_valuesState == true) &&
                         (this->m_associationsState == true) &&
+#if 0
                             (this->m_logState == true)) {
+#else 
+                            (true)) { 
+#endif
         /* have to connect all the d_ptr SIGNALS to our SIGNALS now */
+        qCInfo(manager) << "checkReplicaReady is Ready!";
         connectSignals();
         emit this->ready();
     }
