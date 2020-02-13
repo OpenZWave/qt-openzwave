@@ -30,7 +30,9 @@
 #include <QDebug>
 #include <QAbstractItemModel>
 #include <QAbstractItemModelReplica>
+#include <QWebSocket>
 #include "qt-openzwave/qtozwmanager.h"
+#include "qt-openzwave/websocketiodevice.h"
 #include "qtozwmanager_p.h"
 #include "qtozw_logging.h"
 
@@ -82,7 +84,12 @@ bool QTOZWManager::initilizeSource(bool enableServer) {
     this->d_ptr_internal->setLogModel(t_logModel);
     this->m_ozwoptions = new QTOZWOptions(QTOZWOptions::connectionType::Local, this);
     if (enableServer) {
-        this->m_sourceNode = new QRemoteObjectHost(QUrl(QStringLiteral("tcp://0.0.0.0:1983")), this);
+        this->m_webSockServer = new QWebSocketServer(QStringLiteral("WS QtRO"), QWebSocketServer::NonSecureMode, this);
+        this->m_webSockServer->listen(QHostAddress::Any, 1983);
+        this->m_sourceNode = new QRemoteObjectHost(this);
+        this->m_sourceNode->setHostUrl(this->m_webSockServer->serverAddress().toString(), QRemoteObjectHost::AllowExternalRegistration);
+        QObject::connect(this->m_webSockServer, &QWebSocketServer::newConnection, this, &QTOZWManager::newConnection);
+
         QObject::connect(this->m_sourceNode, &QRemoteObjectHost::error, this, &QTOZWManager::onSourceError);
         //this->m_sourceNode->setHeartbeatInterval(1000);
         this->m_sourceNode->enableRemoting<QTOZWManagerSourceAPI>(this->d_ptr_internal);
@@ -99,13 +106,63 @@ bool QTOZWManager::initilizeSource(bool enableServer) {
     return true;
 }
 
+void QTOZWManager::newConnection() {
+    while (QWebSocket *conn = this->m_webSockServer->nextPendingConnection()) {
+#ifdef WS_USE_SSL
+        // Always use secure connections when available
+        QSslConfiguration sslConf;
+        QFile certFile(QStringLiteral(":/sslcert/server.crt"));
+        if (!certFile.open(QIODevice::ReadOnly))
+            qFatal("Can't open client.crt file");
+        sslConf.setLocalCertificate(QSslCertificate{certFile.readAll()});
+
+        QFile keyFile(QStringLiteral(":/sslcert/server.key"));
+        if (!keyFile.open(QIODevice::ReadOnly))
+            qFatal("Can't open client.key file");
+        sslConf.setPrivateKey(QSslKey{keyFile.readAll(), QSsl::Rsa});
+
+        sslConf.setPeerVerifyMode(QSslSocket::VerifyPeer);
+        conn->setSslConfiguration(sslConf);
+        QObject::connect(conn, &QWebSocket::sslErrors, conn, &QWebSocket::deleteLater);
+#endif
+        QObject::connect(conn, &QWebSocket::disconnected, conn, &QWebSocket::deleteLater);
+        QObject::connect(conn,  QOverload<QAbstractSocket::SocketError>::of(&QWebSocket::error), conn, &QWebSocket::deleteLater);
+        auto ioDevice = new WebSocketIoDevice(conn);
+        QObject::connect(conn, &QWebSocket::destroyed, ioDevice, &WebSocketIoDevice::deleteLater);
+        this->m_sourceNode->addHostSideConnection(ioDevice);
+    }
+}
+
+
+
 bool QTOZWManager::initilizeReplica(QUrl remote) {
     initilizeBase();
     this->m_connectionType = connectionType::Remote;
     this->m_replicaNode = new QRemoteObjectNode(this);
     this->m_ozwoptions = new QTOZWOptions(QTOZWOptions::connectionType::Remote, this);
     QObject::connect(this->m_replicaNode, &QRemoteObjectNode::error, this, &QTOZWManager::onReplicaError);
-    if (this->m_replicaNode->connectToNode(remote)) {
+    this->m_webSockClient = new QWebSocket();
+    this->m_webSockIoClient = new WebSocketIoDevice(this->m_webSockClient, this);
+#ifdef WS_USE_SSL
+    // Always use secure connections when available
+    QSslConfiguration sslConf;
+    QFile certFile(QStringLiteral(":/sslcert/client.crt"));
+    if (!certFile.open(QIODevice::ReadOnly))
+        qFatal("Can't open client.crt file");
+    sslConf.setLocalCertificate(QSslCertificate{certFile.readAll()});
+
+    QFile keyFile(QStringLiteral(":/sslcert/client.key"));
+    if (!keyFile.open(QIODevice::ReadOnly))
+        qFatal("Can't open client.key file");
+    sslConf.setPrivateKey(QSslKey{keyFile.readAll(), QSsl::Rsa});
+
+    sslConf.setPeerVerifyMode(QSslSocket::VerifyPeer);
+    webSocket->setSslConfiguration(sslConf);
+#endif
+    this->m_replicaNode->addClientSideConnection(this->m_webSockIoClient);
+    this->m_webSockClient->open(remote);
+    if (1)
+//    if (this->m_replicaNode->connectToNode(remote)) {
         this->d_ptr_replica = this->m_replicaNode->acquire<QTOZWManagerReplica>("QTOZWManager");
         QObject::connect(this->d_ptr_replica, &QTOZWManagerReplica::stateChanged, this, &QTOZWManager::onManagerStateChange);
         this->m_ozwoptions->initilizeReplica(this->m_replicaNode);
@@ -118,7 +175,6 @@ bool QTOZWManager::initilizeReplica(QUrl remote) {
         QObject::connect(qobject_cast<QAbstractItemModelReplica*>(this->m_associationModel), &QAbstractItemModelReplica::initialized, this, &QTOZWManager::onAssociationInitialized);
         this->m_logModel = this->m_replicaNode->acquireModel("QTOZW_logModel", QtRemoteObjects::InitialAction::PrefetchData);
         QObject::connect(qobject_cast<QAbstractItemModelReplica*>(this->m_logModel), &QAbstractItemModelReplica::initialized, this, &QTOZWManager::onLogInitialized);
-    }
     return true;
 }
 

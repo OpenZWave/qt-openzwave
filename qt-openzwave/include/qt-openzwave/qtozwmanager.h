@@ -33,12 +33,14 @@
 #include <QObject>
 #include <QUrl>
 #include <QtRemoteObjects>
+#include <QWebSocketServer>
 
 #include "qt-openzwave/rep_qtozwmanager_source.h"
 #include "qt-openzwave/qtozwoptions.h"
 #include "qt-openzwave/qtozwnodemodel.h"
 #include "qt-openzwave/qtozwvalueidmodel.h"
 #include "qt-openzwave/qtozwassociationmodel.h"
+#include "qt-openzwave/websocketiodevice.h"
 
 enum QTOZW_UserRoles {
     ModelDataChanged = Qt::UserRole
@@ -204,12 +206,15 @@ private Q_SLOTS:
 
 
 private:
-
+    void newConnection();
     void checkReplicaReady();
     void connectSignals();
     connectionType m_connectionType;
     QRemoteObjectNode *m_replicaNode;
     QRemoteObjectHost *m_sourceNode;
+    QWebSocketServer *m_webSockServer;
+    QWebSocket *m_webSockClient;
+    WebSocketIoDevice *m_webSockIoClient;
     QTOZWManager_Internal *d_ptr_internal;
     QTOZWManagerReplica *d_ptr_replica;
     QTOZWOptions *m_ozwoptions;

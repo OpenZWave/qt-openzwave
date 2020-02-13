@@ -7,7 +7,7 @@
 
 QT       -= gui
 QT       += remoteobjects testlib
-#QT       += websockets
+QT       += websockets
 
 TEMPLATE = lib
 
@@ -52,7 +52,8 @@ SOURCES += source/qtopenzwave.cpp \
     source/qtozwproxymodels.cpp \
     source/qtozwnodemodel.cpp \
     source/qtozwvalueidmodel.cpp \
-    source/qtozwvalueidmodel_p.cpp
+    source/qtozwvalueidmodel_p.cpp \
+    source/websocketiodevice.cpp
 
 HEADERS += include/qtozwassociationmodel_p.h \
         include/qtozw_logging.h \
@@ -75,7 +76,8 @@ PUBLIC_HEADERS.files += include/qt-openzwave/qtopenzwave.h \
 	include/qt-openzwave/rep_qtozwmanager_replica.h \
 	include/qt-openzwave/rep_qtozwoptions_replica.h \
 	include/qt-openzwave/rep_qtozwmanager_source.h \
-	include/qt-openzwave/rep_qtozwoptions_source.h
+	include/qt-openzwave/rep_qtozwoptions_source.h \
+	include/qt-openzwave/websocketiodevice.h
 
 
 HEADERS += $$PUBLIC_HEADERS.files

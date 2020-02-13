@@ -1,5 +1,5 @@
 
-QT += widgets remoteobjects testlib
+QT += widgets remoteobjects testlib websockets
 
 TARGET = ../simpleclient
 

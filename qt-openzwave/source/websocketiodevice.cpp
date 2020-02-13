@@ -1,9 +1,9 @@
 /****************************************************************************
 **
-** Copyright (C) 2017 The Qt Company Ltd.
+** Copyright (C) 2019 Ford Motor Company
 ** Contact: https://www.qt.io/licensing/
 **
-** This file is part of the examples of the Qt Toolkit.
+** This file is part of the QtRemoteObjects module of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:BSD$
 ** Commercial License Usage
@@ -50,154 +50,50 @@
 
 #include "websocketiodevice.h"
 
-#include <QtCore/QDebug>
+#include <QWebSocket>
 
-void WebSocketIODevice::print() {
-    qDebug() << m_socket->errorString();
-    qDebug() << m_socket->state();
-}
-WebSocketIODevice::WebSocketIODevice(QObject *parent)
+WebSocketIoDevice::WebSocketIoDevice(QWebSocket *webSocket, QObject *parent)
     : QIODevice(parent)
+    , m_socket(webSocket)
 {
-    m_socket = new QWebSocket(QString(), QWebSocketProtocol::VersionLatest, this);
-    connect(m_socket, &QWebSocket::connected, this, &WebSocketIODevice::onSocketConnected);
-    connect(m_socket, &QWebSocket::disconnected, this, &WebSocketIODevice::onSocketDisconnected);
-    connect(m_socket, &QWebSocket::binaryMessageReceived, this, &WebSocketIODevice::handleBinaryMessage);
-    connect(m_socket, &QWebSocket::stateChanged, this, &WebSocketIODevice::print);
-    connect(m_socket, &QWebSocket::aboutToClose, this, &WebSocketIODevice::onAboutToClose);
-    connect(this, &WebSocketIODevice::readyRead, this, &WebSocketIODevice::print);
-
+    open(QIODevice::ReadWrite);
+    connect(webSocket, &QWebSocket::disconnected, this, &WebSocketIoDevice::disconnected);
+    connect(webSocket, &QWebSocket::binaryMessageReceived, this, [this](const QByteArray &message){
+        m_buffer.append(message);
+        emit readyRead();
+    });
+    connect(webSocket, &QWebSocket::bytesWritten, this, &WebSocketIoDevice::bytesWritten);
 }
 
-WebSocketIODevice::WebSocketIODevice(QWebSocket *socket, QObject *parent)
-    :QIODevice (parent),
-    m_socket(socket)
+qint64 WebSocketIoDevice::bytesAvailable() const
 {
-    m_socket = socket;
-    m_socket->setParent(this);
-    connect(m_socket, &QWebSocket::connected, this, &WebSocketIODevice::onSocketConnected);
-    connect(m_socket, &QWebSocket::disconnected, this, &WebSocketIODevice::onSocketDisconnected);
-    connect(m_socket, &QWebSocket::binaryMessageReceived, this, &WebSocketIODevice::handleBinaryMessage);
-    connect(m_socket, &QWebSocket::stateChanged, this, &WebSocketIODevice::print);
-    connect(m_socket, &QWebSocket::aboutToClose, this, &WebSocketIODevice::onAboutToClose);
+    return QIODevice::bytesAvailable() + m_buffer.size();
 }
 
-bool WebSocketIODevice::open(QIODevice::OpenMode mode)
+bool WebSocketIoDevice::isSequential() const
 {
-    // Cannot use an URL because of missing sub protocol support
-    // Have to use QNetworkRequest, see QTBUG-38742
-    QNetworkRequest request;
-    request.setUrl(m_url);
-    request.setRawHeader("Sec-WebSocket-Protocol", m_protocol.constData());
-    qDebug() << m_url;
-    m_socket->open(request);
-    qDebug() << "Made Request";
-    return QIODevice::open(mode);
+    return true;
 }
 
-void WebSocketIODevice::close()
+void WebSocketIoDevice::close()
 {
-    m_socket->close();
-    QIODevice::close();
+    if (m_socket)
+        m_socket->close();
 }
 
-qint64 WebSocketIODevice::readData(char *data, qint64 maxlen)
+qint64 WebSocketIoDevice::readData(char *data, qint64 maxlen)
 {
-    qint64 bytesToRead = qMin(maxlen, (qint64)m_buffer.size());
-    memcpy(data, m_buffer.constData(), bytesToRead);
-    m_buffer = m_buffer.right(m_buffer.size() - bytesToRead);
-    qDebug() << "readData";
-    return bytesToRead;
+    auto sz = std::min(int(maxlen), m_buffer.size());
+    if (sz <= 0)
+        return sz;
+    memcpy(data, m_buffer.constData(), size_t(sz));
+    m_buffer.remove(0, sz);
+    return sz;
 }
 
-qint64 WebSocketIODevice::writeData(const char *data, qint64 len)
+qint64 WebSocketIoDevice::writeData(const char *data, qint64 len)
 {
-    QByteArray msg(data, len);
-    const int length = m_socket->sendBinaryMessage(msg);
- qDebug() << "writeData " << msg;
-    return length;
-}
-
-void WebSocketIODevice::setUrl(const QUrl &url)
-{
-    m_url = url;
-}
-
-void WebSocketIODevice::setProtocol(const QByteArray &data)
-{
-    m_protocol = data;
-}
-
-void WebSocketIODevice::handleBinaryMessage(const QByteArray &msg)
-{
-    m_buffer.append(msg);
-    qDebug() << "binaryMessage" << msg;
-    emit readyRead();
-}
-
-void WebSocketIODevice::onSocketConnected()
-{
-    emit connected();
-}
-
-void WebSocketIODevice::onSocketDisconnected()
-{
-    emit disconnected();
-}
-
-void WebSocketIODevice::onAboutToClose()
-{
-    emit aboutToClose();
-}
-
-
-
-WebSocketServer::WebSocketServer(quint16 port, QObject *parent) :
-    QObject(parent),
-    m_pWebSocketServer(new QWebSocketServer(QStringLiteral("OpenZWave"),
-                      QWebSocketServer::NonSecureMode, this))
-{
-    if (m_pWebSocketServer->listen(QHostAddress::Any, port)) {
-        qDebug() << "WebSocketServer "<< m_pWebSocketServer->serverName() << " listening on port" << port;
-        connect(m_pWebSocketServer, &QWebSocketServer::newConnection,
-                this, &WebSocketServer::onNewConnection);
-        connect(m_pWebSocketServer, &QWebSocketServer::closed, this, &WebSocketServer::closed);
-        connect(m_pWebSocketServer, &QWebSocketServer::closed, this, [this]() {
-            qDebug() << "WebSocket closed.";
-        });
-        connect(m_pWebSocketServer, &QWebSocketServer::serverError, this, [this]() {
-            qDebug() << "WebSocket Error.";
-        });
-        connect(m_pWebSocketServer, &QWebSocketServer::acceptError, this, [this]() {
-            qDebug() << "WebSocket acceptError.";
-        });
-        connect(m_pWebSocketServer, &QWebSocketServer::acceptError, this, [this]() {
-            qDebug() << "WebSocket acceptError.";
-        });
-
-
-    }
-}
-
-WebSocketServer::~WebSocketServer()
-{
-    m_pWebSocketServer->close();
-    qDeleteAll(m_clients.begin(), m_clients.end());
-}
-
-void WebSocketServer::onNewConnection()
-{
-    QWebSocket *pSocket = m_pWebSocketServer->nextPendingConnection();
-    m_clients << new WebSocketIODevice(pSocket, this);
-    qDebug() << "New Connection" << pSocket;
-    emit newConnection();
-}
-
-WebSocketIODevice *WebSocketServer::nextPendingConnection()
-{
-    if (!m_clients.isEmpty())
-        return m_clients.takeLast();
-
-    qDebug() << "nextPendingConnection called with Empty List";
-    return nullptr;
+    if (m_socket)
+        return m_socket->sendBinaryMessage(QByteArray{data, int(len)});
+    return -1;
 }
