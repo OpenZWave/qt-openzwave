@@ -10,7 +10,7 @@ This is a [QT](https://www.qt.io) Wrapper for OpenZWave and contains ozwdaemon -
 </p>
   
 
-A [Docker Container](https://hub.docker.com/r/openzwave/ozwdaemon) to connect to the [new Z-Wave Integration for Home Assistant - python-openzwave-mqtt](https://github.com/cgarwood/python-openzwave-mqtt)
+A [Docker Container](https://hub.docker.com/r/openzwave/ozwdaemon) to connect to the [new Z-Wave Integration for Home Assistant - python-openzwave-mqtt](https://github.com/cgarwood/homeassistant-zwave_mqtt)
 
 Running:
 -------------

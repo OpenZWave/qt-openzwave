@@ -350,7 +350,7 @@ inline QDataStream &operator>>(QDataStream &ds, OptionList &obj) {
 /** \endcond
  */
 
-    class NotificationTypes : public QObject { 
+    class QTOPENZWAVESHARED_EXPORT NotificationTypes : public QObject {
         Q_OBJECT;
         public:
         enum QTOZW_Notification_Code {
