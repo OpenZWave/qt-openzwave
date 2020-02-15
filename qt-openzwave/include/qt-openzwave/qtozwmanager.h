@@ -203,10 +203,25 @@ private Q_SLOTS:
     void setStarted();
     void setStopped();
 
+    /* websocketserver Slots */
+    void newConnection();
+    void acceptError(QAbstractSocket::SocketError socketError);
+    void serverError(QWebSocketProtocol::CloseCode closeCode);
+    void peerVerifyError(const QSslError &error);
+    void sslErrors(const QList<QSslError> &errors);
+    void peerError(QAbstractSocket::SocketError error);
+    void peerDisconnected();
+
+    /* websocket Client Slots */
+    void clientConnected();
+    void clientDisconnected();
+    void clientError(QAbstractSocket::SocketError error);
+    void clientSSlErrors(const QList<QSslError> &errors);
+    void clientStateChanged(QAbstractSocket::SocketState state);
+
 
 
 private:
-    void newConnection();
     void checkReplicaReady();
     void connectSignals();
     connectionType m_connectionType;

@@ -85,21 +85,31 @@ bool QTOZWManager::initilizeSource(bool enableServer) {
     this->m_ozwoptions = new QTOZWOptions(QTOZWOptions::connectionType::Local, this);
     if (enableServer) {
         this->m_webSockServer = new QWebSocketServer(QStringLiteral("WS QtRO"), QWebSocketServer::NonSecureMode, this);
-        this->m_webSockServer->listen(QHostAddress::Any, 1983);
-        this->m_sourceNode = new QRemoteObjectHost(this);
-        this->m_sourceNode->setHostUrl(this->m_webSockServer->serverAddress().toString(), QRemoteObjectHost::AllowExternalRegistration);
         QObject::connect(this->m_webSockServer, &QWebSocketServer::newConnection, this, &QTOZWManager::newConnection);
+        QObject::connect(this->m_webSockServer, &QWebSocketServer::acceptError, this, &QTOZWManager::acceptError);
+        QObject::connect(this->m_webSockServer, &QWebSocketServer::serverError, this, &QTOZWManager::serverError);
+        QObject::connect(this->m_webSockServer, &QWebSocketServer::peerVerifyError, this, &QTOZWManager::peerVerifyError);
+        QObject::connect(this->m_webSockServer, &QWebSocketServer::sslErrors, this, &QTOZWManager::sslErrors);
 
-        QObject::connect(this->m_sourceNode, &QRemoteObjectHost::error, this, &QTOZWManager::onSourceError);
-        //this->m_sourceNode->setHeartbeatInterval(1000);
-        this->m_sourceNode->enableRemoting<QTOZWManagerSourceAPI>(this->d_ptr_internal);
-        this->m_ozwoptions->initilizeSource(this->m_sourceNode);
-        QVector<int> roles;
-        roles << Qt::DisplayRole << Qt::EditRole << Qt::ToolTipRole;
-        this->m_sourceNode->enableRemoting(this->d_ptr_internal->getNodeModel(), "QTOZW_nodeModel", roles);
-        this->m_sourceNode->enableRemoting(this->d_ptr_internal->getValueModel(), "QTOZW_valueModel", roles);
-        this->m_sourceNode->enableRemoting(this->d_ptr_internal->getAssociationModel(), "QTOZW_associationModel", roles);
-        this->m_sourceNode->enableRemoting(this->d_ptr_internal->getLogModel(), "QTOZW_Log");
+        if (!this->m_webSockServer->listen(QHostAddress::Any, 1983)) {
+            qCWarning(manager) << "Couldn't Start WebSocket Server Listening On Socket" << this->m_webSockServer->errorString();
+            /* we continue on, just in case */
+        } else {
+            this->m_sourceNode = new QRemoteObjectHost(this);
+            this->m_sourceNode->setHostUrl(this->m_webSockServer->serverAddress().toString(), QRemoteObjectHost::AllowExternalRegistration);
+
+
+            QObject::connect(this->m_sourceNode, &QRemoteObjectHost::error, this, &QTOZWManager::onSourceError);
+            //this->m_sourceNode->setHeartbeatInterval(1000);
+            this->m_sourceNode->enableRemoting<QTOZWManagerSourceAPI>(this->d_ptr_internal);
+            this->m_ozwoptions->initilizeSource(this->m_sourceNode);
+            QVector<int> roles;
+            roles << Qt::DisplayRole << Qt::EditRole << Qt::ToolTipRole;
+            this->m_sourceNode->enableRemoting(this->d_ptr_internal->getNodeModel(), "QTOZW_nodeModel", roles);
+            this->m_sourceNode->enableRemoting(this->d_ptr_internal->getValueModel(), "QTOZW_valueModel", roles);
+            this->m_sourceNode->enableRemoting(this->d_ptr_internal->getAssociationModel(), "QTOZW_associationModel", roles);
+            this->m_sourceNode->enableRemoting(this->d_ptr_internal->getLogModel(), "QTOZW_Log");
+        }
     }
     connectSignals();
     emit this->ready();
@@ -125,6 +135,7 @@ void QTOZWManager::newConnection() {
         conn->setSslConfiguration(sslConf);
         QObject::connect(conn, &QWebSocket::sslErrors, conn, &QWebSocket::deleteLater);
 #endif
+        qCInfo(manager) << "New Client WebSocket Connection" << conn->peerAddress();
         QObject::connect(conn, &QWebSocket::disconnected, conn, &QWebSocket::deleteLater);
         QObject::connect(conn,  QOverload<QAbstractSocket::SocketError>::of(&QWebSocket::error), conn, &QWebSocket::deleteLater);
         auto ioDevice = new WebSocketIoDevice(conn);
@@ -133,6 +144,24 @@ void QTOZWManager::newConnection() {
     }
 }
 
+void QTOZWManager::acceptError(QAbstractSocket::SocketError socketError) {
+    qCWarning(manager) << "Accept Error on WebSocket Server Port" << socketError << this->m_webSockServer->errorString();
+}
+void QTOZWManager::serverError(QWebSocketProtocol::CloseCode closeCode) {
+    qCWarning(manager) << "Server Error on WebSocket Server Port" << closeCode << this->m_webSockServer->errorString();
+}
+void QTOZWManager::peerVerifyError(const QSslError &error) {
+    qCWarning(manager) << "peer Verify Error on WebSocket Server Port" << error << this->m_webSockServer->errorString();
+}
+void QTOZWManager::sslErrors(const QList<QSslError> &errors) {
+    qCWarning(manager) << "SSL Errors on WebSocket Server Port" << errors << this->m_webSockServer->errorString();
+}
+void QTOZWManager::peerError(QAbstractSocket::SocketError error) {
+    qCWarning(manager) << "Client Peer WebSocket Error " << error;
+}
+void QTOZWManager::peerDisconnected() {
+    qCWarning(manager) << "Client Peer WebSocket Disconnected ";
+}
 
 
 bool QTOZWManager::initilizeReplica(QUrl remote) {
@@ -141,8 +170,16 @@ bool QTOZWManager::initilizeReplica(QUrl remote) {
     this->m_replicaNode = new QRemoteObjectNode(this);
     this->m_ozwoptions = new QTOZWOptions(QTOZWOptions::connectionType::Remote, this);
     QObject::connect(this->m_replicaNode, &QRemoteObjectNode::error, this, &QTOZWManager::onReplicaError);
+
     this->m_webSockClient = new QWebSocket();
+    QObject::connect(this->m_webSockClient, &QWebSocket::connected, this, &QTOZWManager::clientConnected);
+    QObject::connect(this->m_webSockClient, &QWebSocket::disconnected, this, &QTOZWManager::clientDisconnected);
+    QObject::connect(this->m_webSockClient, QOverload<QAbstractSocket::SocketError>::of(&QWebSocket::error), this, &QTOZWManager::clientError);
+    QObject::connect(this->m_webSockClient, &QWebSocket::sslErrors, this, &QTOZWManager::clientSSlErrors);
+    QObject::connect(this->m_webSockClient, &QWebSocket::stateChanged, this, &QTOZWManager::clientStateChanged);
+
     this->m_webSockIoClient = new WebSocketIoDevice(this->m_webSockClient, this);
+
 #ifdef WS_USE_SSL
     // Always use secure connections when available
     QSslConfiguration sslConf;
@@ -160,23 +197,45 @@ bool QTOZWManager::initilizeReplica(QUrl remote) {
     webSocket->setSslConfiguration(sslConf);
 #endif
     this->m_replicaNode->addClientSideConnection(this->m_webSockIoClient);
+
+    qCDebug(manager) << "Attempting Connection to " << remote;
+
     this->m_webSockClient->open(remote);
-    if (1)
-//    if (this->m_replicaNode->connectToNode(remote)) {
-        this->d_ptr_replica = this->m_replicaNode->acquire<QTOZWManagerReplica>("QTOZWManager");
-        QObject::connect(this->d_ptr_replica, &QTOZWManagerReplica::stateChanged, this, &QTOZWManager::onManagerStateChange);
-        this->m_ozwoptions->initilizeReplica(this->m_replicaNode);
-        QObject::connect(this->m_ozwoptions, &QTOZWOptions::onOptionStateChange, this, &QTOZWManager::onOptionsStateChange);
-        this->m_nodeModel = this->m_replicaNode->acquireModel("QTOZW_nodeModel", QtRemoteObjects::InitialAction::PrefetchData);
-        QObject::connect(qobject_cast<QAbstractItemModelReplica*>(this->m_nodeModel), &QAbstractItemModelReplica::initialized, this, &QTOZWManager::onNodeInitialized);
-        this->m_valueModel= this->m_replicaNode->acquireModel("QTOZW_valueModel", QtRemoteObjects::InitialAction::PrefetchData);
-        QObject::connect(qobject_cast<QAbstractItemModelReplica*>(this->m_valueModel), &QAbstractItemModelReplica::initialized, this, &QTOZWManager::onValueInitialized);
-        this->m_associationModel= this->m_replicaNode->acquireModel("QTOZW_associationModel", QtRemoteObjects::InitialAction::PrefetchData);
-        QObject::connect(qobject_cast<QAbstractItemModelReplica*>(this->m_associationModel), &QAbstractItemModelReplica::initialized, this, &QTOZWManager::onAssociationInitialized);
-        this->m_logModel = this->m_replicaNode->acquireModel("QTOZW_logModel", QtRemoteObjects::InitialAction::PrefetchData);
-        QObject::connect(qobject_cast<QAbstractItemModelReplica*>(this->m_logModel), &QAbstractItemModelReplica::initialized, this, &QTOZWManager::onLogInitialized);
+
+    qCDebug(manager) << this->m_webSockClient->state();
+
     return true;
 }
+
+void QTOZWManager::clientConnected() {
+    qCInfo(manager) << "WebSocket Client Connected to " << this->m_webSockClient->peerName() << this->m_webSockClient->peerAddress() << this->m_webSockClient->peerPort();
+    this->d_ptr_replica = this->m_replicaNode->acquire<QTOZWManagerReplica>("QTOZWManager");
+    QObject::connect(this->d_ptr_replica, &QTOZWManagerReplica::stateChanged, this, &QTOZWManager::onManagerStateChange);
+    this->m_ozwoptions->initilizeReplica(this->m_replicaNode);
+    QObject::connect(this->m_ozwoptions, &QTOZWOptions::onOptionStateChange, this, &QTOZWManager::onOptionsStateChange);
+    this->m_nodeModel = this->m_replicaNode->acquireModel("QTOZW_nodeModel", QtRemoteObjects::InitialAction::PrefetchData);
+    QObject::connect(qobject_cast<QAbstractItemModelReplica*>(this->m_nodeModel), &QAbstractItemModelReplica::initialized, this, &QTOZWManager::onNodeInitialized);
+    this->m_valueModel= this->m_replicaNode->acquireModel("QTOZW_valueModel", QtRemoteObjects::InitialAction::PrefetchData);
+    QObject::connect(qobject_cast<QAbstractItemModelReplica*>(this->m_valueModel), &QAbstractItemModelReplica::initialized, this, &QTOZWManager::onValueInitialized);
+    this->m_associationModel= this->m_replicaNode->acquireModel("QTOZW_associationModel", QtRemoteObjects::InitialAction::PrefetchData);
+    QObject::connect(qobject_cast<QAbstractItemModelReplica*>(this->m_associationModel), &QAbstractItemModelReplica::initialized, this, &QTOZWManager::onAssociationInitialized);
+    this->m_logModel = this->m_replicaNode->acquireModel("QTOZW_logModel", QtRemoteObjects::InitialAction::PrefetchData);
+    QObject::connect(qobject_cast<QAbstractItemModelReplica*>(this->m_logModel), &QAbstractItemModelReplica::initialized, this, &QTOZWManager::onLogInitialized);
+}
+void QTOZWManager::clientDisconnected() {
+    qCInfo(manager) << "WebSocket Client Disconnected from " << this->m_webSockClient->peerName() << this->m_webSockClient->peerAddress() << this->m_webSockClient->peerPort();
+}
+void QTOZWManager::clientError(QAbstractSocket::SocketError error) {
+    qCWarning(manager) << "WebSocket Client Error " << error << this->m_webSockServer->errorString();
+}
+void QTOZWManager::clientSSlErrors(const QList<QSslError> &errors) {
+    qCWarning(manager) << "WebSocket Client SSL Error " << errors;
+}
+
+void QTOZWManager::clientStateChanged(QAbstractSocket::SocketState state) {
+    qCInfo(manager) << "WebSocket Client State Changed: " << state;
+}
+
 
 void QTOZWManager::onReplicaError(QRemoteObjectNode::ErrorCode error) {
     qCWarning(manager) << "Replica Error: " << error;
