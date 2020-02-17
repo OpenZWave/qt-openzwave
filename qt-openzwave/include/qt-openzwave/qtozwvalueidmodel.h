@@ -38,6 +38,7 @@ struct QTOZW_ValueIDList {
     QList< quint32 > values;
     QStringList labels;
     QString selectedItem;
+    quint32 selectedItemId;
 };
 QDataStream & operator<<( QDataStream & dataStream, const QTOZW_ValueIDList & list );
 QDataStream & operator>>(QDataStream & dataStream, QTOZW_ValueIDList & list);

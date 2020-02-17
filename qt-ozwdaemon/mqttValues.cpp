@@ -193,6 +193,11 @@ bool mqttValueIDModel::encodeValue(rapidjson::Document &value, quint64 vidKey) {
                     rapidjson::Value(vidlist.selectedItem.toStdString().c_str(), value.GetAllocator()).Move(),
                     value.GetAllocator()
                 );
+                var.AddMember(
+                    rapidjson::Value("Selected_id", value.GetAllocator()).Move(),
+                    vidlist.selectedItemId,
+                    value.GetAllocator()
+                );
                 value.AddMember(
                     rapidjson::Value("Value", value.GetAllocator()).Move(),
                     var,
@@ -205,7 +210,12 @@ bool mqttValueIDModel::encodeValue(rapidjson::Document &value, quint64 vidKey) {
                 if (selected != vidlist.selectedItem) {
                     value["Value"]["Selected"].SetString(vidlist.selectedItem.toStdString().c_str(), value.GetAllocator());
                     changed = true;
-                } else {
+                }
+                if (value["Value"]["Selected_id"].GetUint() != vidlist.selectedItemId) {
+                    value["Value"]["Selected_id"].SetUint(vidlist.selectedItemId);
+                    changed = true;
+                }
+                if (!changed) {
                     qCDebug(ozwmpvalue) << "List Selected Value has Not Changed: " << vidlist.selectedItem;
                 }
             }

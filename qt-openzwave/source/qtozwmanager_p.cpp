@@ -1845,6 +1845,24 @@ void QTOZWManager_Internal::pvt_valueModelDataChanged(const QModelIndex &topLeft
             case OpenZWave::ValueID::ValueType_List:
             {
                 QTOZW_ValueIDList list = topLeft.data().value<QTOZW_ValueIDList>();
+                QString selectedlabel;
+                int pos;
+                quint32 selecteditemid = list.selectedItemId;
+                if (list.values.contains(selecteditemid)) {
+                    pos = list.values.indexOf(selecteditemid);
+                    if (pos <= list.labels.size()) {
+                        selectedlabel = list.labels.at(pos);
+                        if (selectedlabel != list.selectedItem) {
+                            qCWarning(valueModel) << "selecteditemid != selecteditem in pvt_valueModelDataChanged - Prefering selecteditem";
+                            pos = list.labels.indexOf(selectedlabel);
+                            selecteditemid = list.values.at(pos);
+                        }
+                    } else {
+                        qCWarning(valueModel) << "selectedItemID is not in the List - pvt_valueModelDataChanged";
+                    }
+                } else {
+                    qCWarning(valueModel) << "seletectedItemID Cant be found in our Value List - pvt_valueModelDataChanged";
+                }
                 this->m_manager->SetValueListSelection(vid, list.selectedItem.toStdString().c_str());
                 return;
             }

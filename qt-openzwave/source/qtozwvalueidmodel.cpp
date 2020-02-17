@@ -36,12 +36,12 @@
 
 QDataStream & operator<<( QDataStream & dataStream, const QTOZW_ValueIDList & list )
 {
-    dataStream << list.values << list.labels << list.selectedItem;
+    dataStream << list.values << list.labels << list.selectedItem << list.selectedItemId;
     return dataStream;
 }
 
 QDataStream & operator>>(QDataStream & dataStream, QTOZW_ValueIDList & list) {
-    dataStream >> list.values >> list.labels >> list.selectedItem;
+    dataStream >> list.values >> list.labels >> list.selectedItem >> list.selectedItemId;
     return dataStream;
 }
 
