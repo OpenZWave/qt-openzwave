@@ -131,6 +131,7 @@ bool MqttCommand_SetValue::processMessage(rapidjson::Document &msg) {
                 return false;
             }
             list.selectedItem = list.labels[index];
+            list.selectedItemId = index;
             data.setValue<QTOZW_ValueIDList>(list);
             break;
         }

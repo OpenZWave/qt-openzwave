@@ -19,7 +19,7 @@ RUN git clone https://github.com/qt/qtmqtt.git && cd qtmqtt && git checkout 5.12
 RUN git clone https://github.com/OpenZWave/open-zwave.git && cd open-zwave && make -j4 && make install
 COPY . /opt/qt-openzwave/
 RUN cd qt-openzwave && if [ -f Makefile ]; then /usr/lib/qt5/bin/qmake -r; make distclean; fi && /usr/lib/qt5/bin/qmake -r "CONFIG+=BreakPad" &&  make -j4 && make install
- 
+
 FROM debian:buster-slim
 
 LABEL maintainer="justin@dynam.ac"
@@ -36,7 +36,7 @@ COPY --from=builder /opt/qt-openzwave/tools/* /usr/local/bin/
 COPY --from=builder /usr/share/qt5/qt-openzwavedatabase.rcc /usr/share/qt5/
 RUN mkdir -p /opt/ozw/config/crashes/
 ENV LD_LIBRARY_PATH="/usr/local/lib:/usr/local/lib64:$LD_LIBRARY_PATH"
-ENV USBPATH="/dev/ttyUSB0"
+ENV USB_PATH="/dev/ttyUSB0"
 ENV MQTT_SERVER="localhost"
 ENV MQTT_PORT="1883"
 ENV OZW_INSTANCE="1"
@@ -44,4 +44,4 @@ ENV BP_DB_PATH="/opt/ozw/config/crashes/"
 WORKDIR /opt/ozw/
 EXPOSE 1983
 VOLUME ["/opt/ozw/config/"]
-ENTRYPOINT /usr/local/bin/ozwdaemon -s $USBPATH -c /opt/ozw/config/ -u /opt/ozw/config/ --mqtt-server $MQTT_SERVER --mqtt-port $MQTT_PORT --stop-on-failure --mqtt-instance $OZW_INSTANCE
+ENTRYPOINT /usr/local/bin/ozwdaemon -s $USB_PATH -c /opt/ozw/config/ -u /opt/ozw/config/ --mqtt-server $MQTT_SERVER --mqtt-port $MQTT_PORT --stop-on-failure --mqtt-instance $OZW_INSTANCE
