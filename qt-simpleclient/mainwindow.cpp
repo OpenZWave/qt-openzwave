@@ -65,7 +65,7 @@ void MainWindow::startRemote(QString url) {
     QUrl server;
     server.setHost(url);
     server.setPort(1983);
-    server.setScheme("tcp");
+    server.setScheme("ws");
     qDebug() << server;
     this->m_qtozwmanager->initilizeReplica(server);
 

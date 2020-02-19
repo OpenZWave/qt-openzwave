@@ -1,9 +1,9 @@
 /****************************************************************************
 **
-** Copyright (C) 2017 The Qt Company Ltd.
+** Copyright (C) 2019 Ford Motor Company
 ** Contact: https://www.qt.io/licensing/
 **
-** This file is part of the examples of the Qt Toolkit.
+** This file is part of the QtRemoteObjects module of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:BSD$
 ** Commercial License Usage
@@ -49,155 +49,201 @@
 ****************************************************************************/
 
 #include "websocketiodevice.h"
+#include "qtozw_logging.h"
 
-#include <QtCore/QDebug>
+#include <QWebSocket>
 
-void WebSocketIODevice::print() {
-    qDebug() << m_socket->errorString();
-    qDebug() << m_socket->state();
-}
-WebSocketIODevice::WebSocketIODevice(QObject *parent)
-    : QIODevice(parent)
+WebSocketIoDevice::WebSocketIoDevice(QWebSocket *webSocket, bool client, QString auth, QObject *parent) :
+    QIODevice(parent),
+    m_socket(webSocket),
+    m_client(client),
+    m_state(Stage_None),
+    m_auth(auth),
+    m_version(0),
+    m_authattempts(0)
 {
-    m_socket = new QWebSocket(QString(), QWebSocketProtocol::VersionLatest, this);
-    connect(m_socket, &QWebSocket::connected, this, &WebSocketIODevice::onSocketConnected);
-    connect(m_socket, &QWebSocket::disconnected, this, &WebSocketIODevice::onSocketDisconnected);
-    connect(m_socket, &QWebSocket::binaryMessageReceived, this, &WebSocketIODevice::handleBinaryMessage);
-    connect(m_socket, &QWebSocket::stateChanged, this, &WebSocketIODevice::print);
-    connect(m_socket, &QWebSocket::aboutToClose, this, &WebSocketIODevice::onAboutToClose);
-    connect(this, &WebSocketIODevice::readyRead, this, &WebSocketIODevice::print);
-
-}
-
-WebSocketIODevice::WebSocketIODevice(QWebSocket *socket, QObject *parent)
-    :QIODevice (parent),
-    m_socket(socket)
-{
-    m_socket = socket;
-    m_socket->setParent(this);
-    connect(m_socket, &QWebSocket::connected, this, &WebSocketIODevice::onSocketConnected);
-    connect(m_socket, &QWebSocket::disconnected, this, &WebSocketIODevice::onSocketDisconnected);
-    connect(m_socket, &QWebSocket::binaryMessageReceived, this, &WebSocketIODevice::handleBinaryMessage);
-    connect(m_socket, &QWebSocket::stateChanged, this, &WebSocketIODevice::print);
-    connect(m_socket, &QWebSocket::aboutToClose, this, &WebSocketIODevice::onAboutToClose);
-}
-
-bool WebSocketIODevice::open(QIODevice::OpenMode mode)
-{
-    // Cannot use an URL because of missing sub protocol support
-    // Have to use QNetworkRequest, see QTBUG-38742
-    QNetworkRequest request;
-    request.setUrl(m_url);
-    request.setRawHeader("Sec-WebSocket-Protocol", m_protocol.constData());
-    qDebug() << m_url;
-    m_socket->open(request);
-    qDebug() << "Made Request";
-    return QIODevice::open(mode);
-}
-
-void WebSocketIODevice::close()
-{
-    m_socket->close();
-    QIODevice::close();
-}
-
-qint64 WebSocketIODevice::readData(char *data, qint64 maxlen)
-{
-    qint64 bytesToRead = qMin(maxlen, (qint64)m_buffer.size());
-    memcpy(data, m_buffer.constData(), bytesToRead);
-    m_buffer = m_buffer.right(m_buffer.size() - bytesToRead);
-    qDebug() << "readData";
-    return bytesToRead;
-}
-
-qint64 WebSocketIODevice::writeData(const char *data, qint64 len)
-{
-    QByteArray msg(data, len);
-    const int length = m_socket->sendBinaryMessage(msg);
- qDebug() << "writeData " << msg;
-    return length;
-}
-
-void WebSocketIODevice::setUrl(const QUrl &url)
-{
-    m_url = url;
-}
-
-void WebSocketIODevice::setProtocol(const QByteArray &data)
-{
-    m_protocol = data;
-}
-
-void WebSocketIODevice::handleBinaryMessage(const QByteArray &msg)
-{
-    m_buffer.append(msg);
-    qDebug() << "binaryMessage" << msg;
-    emit readyRead();
-}
-
-void WebSocketIODevice::onSocketConnected()
-{
-    emit connected();
-}
-
-void WebSocketIODevice::onSocketDisconnected()
-{
-    emit disconnected();
-}
-
-void WebSocketIODevice::onAboutToClose()
-{
-    emit aboutToClose();
-}
-
-
-
-WebSocketServer::WebSocketServer(quint16 port, QObject *parent) :
-    QObject(parent),
-    m_pWebSocketServer(new QWebSocketServer(QStringLiteral("OpenZWave"),
-                      QWebSocketServer::NonSecureMode, this))
-{
-    if (m_pWebSocketServer->listen(QHostAddress::Any, port)) {
-        qDebug() << "WebSocketServer "<< m_pWebSocketServer->serverName() << " listening on port" << port;
-        connect(m_pWebSocketServer, &QWebSocketServer::newConnection,
-                this, &WebSocketServer::onNewConnection);
-        connect(m_pWebSocketServer, &QWebSocketServer::closed, this, &WebSocketServer::closed);
-        connect(m_pWebSocketServer, &QWebSocketServer::closed, this, [this]() {
-            qDebug() << "WebSocket closed.";
-        });
-        connect(m_pWebSocketServer, &QWebSocketServer::serverError, this, [this]() {
-            qDebug() << "WebSocket Error.";
-        });
-        connect(m_pWebSocketServer, &QWebSocketServer::acceptError, this, [this]() {
-            qDebug() << "WebSocket acceptError.";
-        });
-        connect(m_pWebSocketServer, &QWebSocketServer::acceptError, this, [this]() {
-            qDebug() << "WebSocket acceptError.";
-        });
-
-
+    open(QIODevice::ReadWrite);
+    connect(webSocket, &QWebSocket::disconnected, this, &WebSocketIoDevice::disconnected);
+    connect(webSocket, &QWebSocket::textMessageReceived, this, &WebSocketIoDevice::processTextMessage);
+    if (!m_client) {
+        /* if we are the server, send our Protocol Message */
+        /* PROTOCOL <VERSION>*/
+        QString msg("PROTOCOL 1 ");
+        webSocket->sendTextMessage(msg);
+        m_state = Stage_Protocol;
     }
 }
 
-WebSocketServer::~WebSocketServer()
+void WebSocketIoDevice::processTextMessage(const QString &msg) {
+    /* State Machine for Client */
+    if (msg.section(" ", 1, 1) == "ERROR") {
+        qCWarning(qtrowebsocket) << "Got Error Message From Peer: " << msg;
+        emit this->authError(msg);
+        m_socket->close(QWebSocketProtocol::CloseCodeNormal);
+        return;
+    } 
+    if (m_client) { 
+        switch (m_state) {
+            case Stage_None: {
+                /* we are expecting a PROTOCOL Message */
+                QString Cmd = msg.section(" ", 0, 0);
+                if (Cmd != "PROTOCOL") {
+                    qCWarning(qtrowebsocket) << "Got Invalid Command " << msg << " In Stage_None";
+                    m_socket->sendTextMessage("ERROR Protocol Violation");
+                    emit this->authError(QString("Got Invalid Command %1 In Stage_None").arg(msg));
+                    m_socket->close(QWebSocketProtocol::CloseCodeProtocolError);
+                    return;
+                }
+                m_version = msg.section(" ", 1, 1).toInt();
+                /* future Vesions - Check Version */
+                m_socket->sendTextMessage("PROTOCOL OK");
+                m_state = Stage_Authenticate;
+                break;
+            }
+            case Stage_Authenticate: {
+                QString Cmd = msg.section(" ", 0, 0);
+                if (Cmd == "AUTH") {
+                    QString auth("AUTH ");
+                    if (!m_auth.isEmpty()) {
+                        auth = auth.append(m_auth);
+                    }                      
+                    m_socket->sendTextMessage(auth);
+                } else if (Cmd == "START") {
+                    m_state = Stage_Authenticated;
+                    connect(m_socket, &QWebSocket::binaryMessageReceived, this, [this](const QByteArray &message){
+                        m_buffer.append(message);
+                        emit readyRead();
+                    });
+                    connect(m_socket, &QWebSocket::bytesWritten, this, &WebSocketIoDevice::bytesWritten);
+                    emit this->authenticated();                        
+                } else {
+                    m_socket->sendTextMessage("ERROR Protocol Violation");
+                    qCWarning(qtrowebsocket) << "Got Invalid Command " << msg << " In Stage_Authenticate";
+                    emit this->authError(QString("Got Invalid Command %1 In Stage_Authenticate").arg(msg));
+                    m_socket->close(QWebSocketProtocol::CloseCodeProtocolError);
+                }
+                break;
+            }
+            case Stage_Protocol:
+            case Stage_Authenticated:
+            {
+                qCWarning(qtrowebsocket) << "Invalid Stage in Client Connection Negiation";
+                m_socket->sendTextMessage("ERROR Protocol Violation");
+                emit this->authError(QString("Got Invalid Command %1 In Stage_Authenticate").arg(msg));
+                m_socket->close(QWebSocketProtocol::CloseCodeProtocolError);
+                break;
+            }
+        }
+    } else {
+        /* State Machine for Server */
+        switch (m_state) {
+            case Stage_Protocol: {
+                QString Cmd = msg.section(" ", 0, 0);
+                if (Cmd == "PROTOCOL") {
+                    if (msg.section(" ", 1, 1) == "OK") {
+                        m_socket->sendTextMessage("AUTH");
+                        m_state = Stage_Authenticate;
+                    } else {
+                        qCWarning(qtrowebsocket) << "Protocol Negiation Failed... " << msg;
+                        emit this->authError(QString("Protocol Negiation Failed... %1").arg(msg));
+                        m_socket->sendTextMessage("ERROR Protocol Violation");
+                        m_socket->close(QWebSocketProtocol::CloseCodeProtocolError);
+                        return;
+                    }
+                } else {
+                    m_socket->sendTextMessage("ERROR Protocol Violation");
+                    qCWarning(qtrowebsocket) << "Got Invalid Command " << msg << " In Stage_Protocol";
+                    emit this->authError(QString("Got Invalid Command %1 In Stage_Protocol").arg(msg));
+                    m_socket->close(QWebSocketProtocol::CloseCodeProtocolError);
+                }
+                break;
+            }
+            case Stage_Authenticate: {
+                QString Cmd = msg.section(" ", 0, 0);
+                if (Cmd == "AUTH") {
+                    if (!m_auth.isEmpty()) { 
+                        if (msg.section(" ", 1, 1) == m_auth) {
+                            m_socket->sendTextMessage("START");
+                            m_state = Stage_Authenticated;
+                            connect(m_socket, &QWebSocket::binaryMessageReceived, this, [this](const QByteArray &message){
+                                m_buffer.append(message);
+                                emit readyRead();
+                            });
+                            connect(m_socket, &QWebSocket::bytesWritten, this, &WebSocketIoDevice::bytesWritten);
+                            emit this->authenticated();                        
+                        } else {
+                            /* three attempts, starting at 0 */
+                            if (m_authattempts < 2) {
+                                m_socket->sendTextMessage("AUTH");
+                                m_authattempts++;
+                            } else {
+                                qCWarning(qtrowebsocket) << "Closing WebSocket Server as Failed Auth Attempts";
+                                emit this->authError(QString("Exceeded Authentication Attempts %1").arg(m_authattempts+1));
+                                m_socket->sendTextMessage("ERROR Too Many Authentication Attempts");
+                                m_socket->close(QWebSocketProtocol::CloseCodeProtocolError);
+                            }
+                        }
+                    } else { 
+                        /* no Authentication is required */
+                        m_socket->sendTextMessage("START");
+                        m_state = Stage_Authenticated;
+                        connect(m_socket, &QWebSocket::binaryMessageReceived, this, [this](const QByteArray &message){
+                            m_buffer.append(message);
+                            emit readyRead();
+                        });
+                        connect(m_socket, &QWebSocket::bytesWritten, this, &WebSocketIoDevice::bytesWritten);
+                        emit this->authenticated();                        
+                    }
+                } else {
+                    m_socket->sendTextMessage("ERROR Protocol Violation");
+                    qCWarning(qtrowebsocket) << "Got Invalid Command " << msg << " In Stage_Protocol";
+                    emit this->authError(QString("Got Invalid Command %1 In Stage_Autheticate").arg(msg));
+                    m_socket->close(QWebSocketProtocol::CloseCodeProtocolError);
+                }
+                break;
+            }
+            case Stage_None:
+            case Stage_Authenticated:
+            {
+                qCWarning(qtrowebsocket) << "Invalid Stage in Client Connection Negiation";
+                m_socket->sendTextMessage("ERROR Protocol Violation");
+                emit this->authError(QString("Got Invalid Command %1 In Stage_Authenticate").arg(msg));
+                m_socket->close(QWebSocketProtocol::CloseCodeProtocolError);
+                break;
+            }
+
+        }
+    }
+}
+qint64 WebSocketIoDevice::bytesAvailable() const
 {
-    m_pWebSocketServer->close();
-    qDeleteAll(m_clients.begin(), m_clients.end());
+    return QIODevice::bytesAvailable() + m_buffer.size();
 }
 
-void WebSocketServer::onNewConnection()
+bool WebSocketIoDevice::isSequential() const
 {
-    QWebSocket *pSocket = m_pWebSocketServer->nextPendingConnection();
-    m_clients << new WebSocketIODevice(pSocket, this);
-    qDebug() << "New Connection" << pSocket;
-    emit newConnection();
+    return true;
 }
 
-WebSocketIODevice *WebSocketServer::nextPendingConnection()
+void WebSocketIoDevice::close()
 {
-    if (!m_clients.isEmpty())
-        return m_clients.takeLast();
+    if (m_socket)
+        m_socket->close();
+}
 
-    qDebug() << "nextPendingConnection called with Empty List";
-    return nullptr;
+qint64 WebSocketIoDevice::readData(char *data, qint64 maxlen)
+{
+    auto sz = std::min(int(maxlen), m_buffer.size());
+    if (sz <= 0)
+        return sz;
+    memcpy(data, m_buffer.constData(), size_t(sz));
+    m_buffer.remove(0, sz);
+    return sz;
+}
+
+qint64 WebSocketIoDevice::writeData(const char *data, qint64 len)
+{
+    if (m_socket)
+        return m_socket->sendBinaryMessage(QByteArray{data, int(len)});
+    return -1;
 }

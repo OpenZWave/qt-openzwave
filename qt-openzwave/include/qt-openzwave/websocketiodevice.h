@@ -1,9 +1,9 @@
 /****************************************************************************
 **
-** Copyright (C) 2017 The Qt Company Ltd.
+** Copyright (C) 2019 Ford Motor Company
 ** Contact: https://www.qt.io/licensing/
 **
-** This file is part of the examples of the Qt Toolkit.
+** This file is part of the QtRemoteObjects module of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:BSD$
 ** Commercial License Usage
@@ -51,68 +51,51 @@
 #ifndef WEBSOCKETIODEVICE_H
 #define WEBSOCKETIODEVICE_H
 
-#include <QtCore/QIODevice>
-#include <QtWebSockets/QWebSocket>
-#include <QtWebSockets/QWebSocketServer>
+#include <QBuffer>
+#include <QIODevice>
+#include <QPointer>
+#include <QDebug>
 
-class WebSocketIODevice : public QIODevice
+class QWebSocket;
+
+class WebSocketIoDevice : public QIODevice
 {
     Q_OBJECT
 public:
-    WebSocketIODevice(QObject *parent = nullptr);
-    WebSocketIODevice(QWebSocket *socket, QObject *parent = nullptr);
+    enum connectionState {
+        Stage_None,
+        Stage_Protocol,
+        Stage_Authenticate,
+        Stage_Authenticated
+    };
+    Q_ENUM(connectionState);
 
-    bool open(OpenMode mode) override;
+    WebSocketIoDevice(QWebSocket *webSocket, bool client, QString auth, QObject *parent = nullptr);
+
+signals:
+    void disconnected();
+    void authenticated();
+    void authError(QString);
+
+    // QIODevice interface
+public:
+    qint64 bytesAvailable() const override;
+    bool isSequential() const override;
     void close() override;
-    void print();
+
+protected:
     qint64 readData(char *data, qint64 maxlen) override;
     qint64 writeData(const char *data, qint64 len) override;
-    qint64 write(const char *data, qint64 len) {return writeData(data, len);}
-
-    void setUrl(const QUrl &url);
-    void setProtocol(const QByteArray &data);
-    bool isOpen() const { qDebug() << "IsOpen" << QIODevice::isOpen(); return QIODevice::isOpen(); }
-Q_SIGNALS:
-    void connected();
-    void disconnected();
-    void aboutToClose();
-    void readyRead();
-
-public slots:
-    void handleBinaryMessage(const QByteArray &msg);
-private slots:
-    void onSocketConnected();
-    void onSocketDisconnected();
-    void onAboutToClose();
+    void processTextMessage(const QString &message);
 
 private:
-    QByteArray m_protocol;
+    QPointer<QWebSocket> m_socket;
     QByteArray m_buffer;
-    QWebSocket *m_socket;
-    QUrl m_url;
+    bool m_client;
+    connectionState m_state;
+    QString m_auth;
+    int m_version;
+    int m_authattempts;
 };
-
-
-class WebSocketServer : public QObject
-{
-    Q_OBJECT
-public:
-    WebSocketServer(quint16 port, QObject *parent = nullptr);
-    ~WebSocketServer();
-
-    WebSocketIODevice *nextPendingConnection();
-
-Q_SIGNALS:
-    void closed();
-    void newConnection();
-
-private Q_SLOTS:
-    void onNewConnection();
-
-private:
-    QWebSocketServer *m_pWebSocketServer;
-    QList<WebSocketIODevice *> m_clients;
-};
-
 
 #endif // WEBSOCKETIODEVICE_H

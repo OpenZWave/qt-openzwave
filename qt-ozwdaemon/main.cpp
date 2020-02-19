@@ -189,13 +189,11 @@ int main(int argc, char *argv[])
         exit(-1);
     }
 
-#if 0
-    QLoggingCategory::setFilterRules("qt.remoteobjects.debug=true\n"
-                                     "qt.remoteobjects.warning=true\n"
-                                     "qt.remoteobjects.models.debug=true\n"
-                                     "qt.remoteobjects.models.debug=true\n"
-                                     "qt.remoteobjects.io.debug=true\n"
-                                     "default.debug=true");
+#if 1
+    QLoggingCategory::setFilterRules("*.debug=true\n" 
+                                     "qt.remoteobjects.debug=false\n"
+                                     "qt.remoteobjects.models.debug=false\n"
+                                     "qt.remoteobjects.io.debug=false");
 #else
     QLoggingCategory::setFilterRules("*.debug=true");
 #endif

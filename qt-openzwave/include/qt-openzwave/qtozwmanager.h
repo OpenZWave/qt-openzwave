@@ -33,12 +33,14 @@
 #include <QObject>
 #include <QUrl>
 #include <QtRemoteObjects>
+#include <QWebSocketServer>
 
 #include "qt-openzwave/rep_qtozwmanager_source.h"
 #include "qt-openzwave/qtozwoptions.h"
 #include "qt-openzwave/qtozwnodemodel.h"
 #include "qt-openzwave/qtozwvalueidmodel.h"
 #include "qt-openzwave/qtozwassociationmodel.h"
+#include "qt-openzwave/websocketiodevice.h"
 
 enum QTOZW_UserRoles {
     ModelDataChanged = Qt::UserRole
@@ -57,9 +59,26 @@ public:
         Invalid
     };
     Q_ENUM(connectionType)
+    enum connectionStatus {
+        UnconnectedState,
+        HostLookupState,
+        ConnectingState,
+        ConnectedState,
+        BoundState,
+        ClosingState,
+        ListeningState,
+        GotManagerData,
+        GotOptionData,
+        GotNodeData,
+        GotValueData,
+        GotAssociationData,
+        GotLogData,
+        ConnectionErrorState
+    };
+    Q_ENUM(connectionStatus);
     Q_PROPERTY(QDir OZWDatabasePath READ OZWDatabasePath WRITE setOZWDatabasePath)
     Q_PROPERTY(QDir OZWUserPath READ OZWUserPath WRITE setOZWUserPath)
-
+    Q_PROPERTY(QString m_clientAuth READ getClientAuth WRITE setClientAuth)
 
     QTOZWManager(QObject *parent = nullptr);
     bool initilizeBase();
@@ -153,6 +172,9 @@ public:
     void setOZWDatabasePath(QDir path);
     void setOZWUserPath(QDir path);
 
+    void setClientAuth(QString auth) { this->m_clientAuth = auth; }
+    QString getClientAuth() { return this->m_clientAuth; }
+
 
 Q_SIGNALS:
     void ready();
@@ -185,6 +207,7 @@ Q_SIGNALS:
     void starting();
     void started(quint32 homeID);
     void stopped(quint32 homeID);
+    void remoteConnectionStatus(connectionStatus status, QAbstractSocket::SocketError error);
 //    void error(QTOZWErrorCodes errorcode);
 
 
@@ -201,15 +224,38 @@ private Q_SLOTS:
     void setStarted();
     void setStopped();
 
+    /* websocketserver Slots */
+    void newConnection();
+    void acceptError(QAbstractSocket::SocketError socketError);
+    void serverError(QWebSocketProtocol::CloseCode closeCode);
+    void peerVerifyError(const QSslError &error);
+    void sslErrors(const QList<QSslError> &errors);
+    void peerError(QAbstractSocket::SocketError error);
+    void peerDisconnected();
+    void serverAuthenticated();
+    void serverAuthError(QString error);
+    void serverDisconnected();
+
+    /* websocket Client Slots */
+    void clientConnected();
+    void clientDisconnected();
+    void clientError(QAbstractSocket::SocketError error);
+    void clientSSlErrors(const QList<QSslError> &errors);
+    void clientStateChanged(QAbstractSocket::SocketState state);
+    void clientAuthenticated();
+    void clientAuthError(QString error);
+
 
 
 private:
-
     void checkReplicaReady();
     void connectSignals();
     connectionType m_connectionType;
     QRemoteObjectNode *m_replicaNode;
     QRemoteObjectHost *m_sourceNode;
+    QWebSocketServer *m_webSockServer;
+    QWebSocket *m_webSockClient;
+    WebSocketIoDevice *m_webSockIoClient;
     QTOZWManager_Internal *d_ptr_internal;
     QTOZWManagerReplica *d_ptr_replica;
     QTOZWOptions *m_ozwoptions;
@@ -228,6 +274,7 @@ private:
     bool m_running;
     QDir m_ozwdatabasepath;
     QDir m_ozwuserpath;
+    QString m_clientAuth;
 };
 
 
