@@ -13,7 +13,7 @@ printf "0x01,0x02,0x03,0x04,0x05,0x06,0x07,0x08,0x09,0x0A,0x0b,0x0c,0x0d,0x0e,0x
 
 Start a container with the following command line:
 ```
-docker run -it --security-opt seccomp=unconfined --device=/dev/ttyUSB0 -v /home/ozw/config:/opt/ozw/config -e MQTT_SERVER="10.100.200.102" -e USBPATH=/dev/ttyUSB0 --secret OZW_Network_Key openzwave/ozwdaemon:latest
+docker run -it --security-opt seccomp=unconfined --device=/dev/ttyUSB0 -v /home/ozw/config:/opt/ozw/config -e MQTT_SERVER="10.100.200.102" -e USB_PATH=/dev/ttyUSB0 --secret OZW_Network_Key openzwave/ozwdaemon:latest
 ```
 
 * Update `MQTT_SERVER` with the IP address of the MQTT Server and all `/dev/ttyUSB0` entries with the path to your USB Stick.
