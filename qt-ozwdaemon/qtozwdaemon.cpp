@@ -36,12 +36,31 @@ qtozwdaemon::qtozwdaemon(QObject *parent) : QObject(parent)
         qInfo() << "We Have what appears to be a valid Network Key - Passing to OZW";
     }
 
+    QString AuthKey = qgetenv("OZW_AUTH_KEY");
+    
+    QFile ak_file("/run/secrets/OZW_Auth_Key");
+    if (ak_file.open(QIODevice::ReadOnly | QIODevice::Text)) {
+        AuthKey = ak_file.readLine().trimmed();
+        ak_file.close();
+    } else {
+        qInfo() << "Didn't Find Auth Key File. Skipping";
+    }
+    if (!AuthKey.isEmpty()) {
+        qInfo() << "Using Remote Authentication Key";
+    }
+
+
+
+
     this->m_openzwave = new QTOpenZwave(this);
     this->m_qtozwmanager = this->m_openzwave->GetManager();
     QObject::connect(this->m_qtozwmanager, &QTOZWManager::ready, this, &qtozwdaemon::QTOZW_Ready);
     this->m_qtozwmanager->initilizeSource(true);
     if (!NetworkKey.isEmpty()) {
         this->m_qtozwmanager->getOptions()->setNetworkKey(NetworkKey);
+    }
+    if (!AuthKey.isEmpty()) { 
+        this->m_qtozwmanager->setClientAuth(AuthKey);
     }
 }
 

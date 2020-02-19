@@ -59,9 +59,26 @@ public:
         Invalid
     };
     Q_ENUM(connectionType)
+    enum connectionStatus {
+        UnconnectedState,
+        HostLookupState,
+        ConnectingState,
+        ConnectedState,
+        BoundState,
+        ClosingState,
+        ListeningState,
+        GotManagerData,
+        GotOptionData,
+        GotNodeData,
+        GotValueData,
+        GotAssociationData,
+        GotLogData,
+        ConnectionErrorState
+    };
+    Q_ENUM(connectionStatus);
     Q_PROPERTY(QDir OZWDatabasePath READ OZWDatabasePath WRITE setOZWDatabasePath)
     Q_PROPERTY(QDir OZWUserPath READ OZWUserPath WRITE setOZWUserPath)
-
+    Q_PROPERTY(QString m_clientAuth READ getClientAuth WRITE setClientAuth)
 
     QTOZWManager(QObject *parent = nullptr);
     bool initilizeBase();
@@ -155,6 +172,9 @@ public:
     void setOZWDatabasePath(QDir path);
     void setOZWUserPath(QDir path);
 
+    void setClientAuth(QString auth) { this->m_clientAuth = auth; }
+    QString getClientAuth() { return this->m_clientAuth; }
+
 
 Q_SIGNALS:
     void ready();
@@ -187,6 +207,7 @@ Q_SIGNALS:
     void starting();
     void started(quint32 homeID);
     void stopped(quint32 homeID);
+    void remoteConnectionStatus(connectionStatus status, QAbstractSocket::SocketError error);
 //    void error(QTOZWErrorCodes errorcode);
 
 
@@ -211,6 +232,9 @@ private Q_SLOTS:
     void sslErrors(const QList<QSslError> &errors);
     void peerError(QAbstractSocket::SocketError error);
     void peerDisconnected();
+    void serverAuthenticated();
+    void serverAuthError(QString error);
+    void serverDisconnected();
 
     /* websocket Client Slots */
     void clientConnected();
@@ -218,6 +242,8 @@ private Q_SLOTS:
     void clientError(QAbstractSocket::SocketError error);
     void clientSSlErrors(const QList<QSslError> &errors);
     void clientStateChanged(QAbstractSocket::SocketState state);
+    void clientAuthenticated();
+    void clientAuthError(QString error);
 
 
 
@@ -248,6 +274,7 @@ private:
     bool m_running;
     QDir m_ozwdatabasepath;
     QDir m_ozwuserpath;
+    QString m_clientAuth;
 };
 
 

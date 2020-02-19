@@ -54,6 +54,7 @@
 #include <QBuffer>
 #include <QIODevice>
 #include <QPointer>
+#include <QDebug>
 
 class QWebSocket;
 
@@ -61,10 +62,20 @@ class WebSocketIoDevice : public QIODevice
 {
     Q_OBJECT
 public:
-    WebSocketIoDevice(QWebSocket *webSocket, QObject *parent = nullptr);
+    enum connectionState {
+        Stage_None,
+        Stage_Protocol,
+        Stage_Authenticate,
+        Stage_Authenticated
+    };
+    Q_ENUM(connectionState);
+
+    WebSocketIoDevice(QWebSocket *webSocket, bool client, QString auth, QObject *parent = nullptr);
 
 signals:
     void disconnected();
+    void authenticated();
+    void authError(QString);
 
     // QIODevice interface
 public:
@@ -75,10 +86,16 @@ public:
 protected:
     qint64 readData(char *data, qint64 maxlen) override;
     qint64 writeData(const char *data, qint64 len) override;
+    void processTextMessage(const QString &message);
 
 private:
     QPointer<QWebSocket> m_socket;
     QByteArray m_buffer;
+    bool m_client;
+    connectionState m_state;
+    QString m_auth;
+    int m_version;
+    int m_authattempts;
 };
 
 #endif // WEBSOCKETIODEVICE_H

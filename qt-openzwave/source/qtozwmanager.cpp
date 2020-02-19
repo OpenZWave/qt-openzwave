@@ -41,7 +41,8 @@ QTOZWManager::QTOZWManager(QObject *parent)
     : QObject(parent),
     m_running(false),
     m_ozwdatabasepath(""),
-    m_ozwuserpath("")
+    m_ozwuserpath(""),
+    m_clientAuth("")
 {
 
 }
@@ -138,9 +139,40 @@ void QTOZWManager::newConnection() {
         qCInfo(manager) << "New Client WebSocket Connection" << conn->peerAddress();
         QObject::connect(conn, &QWebSocket::disconnected, conn, &QWebSocket::deleteLater);
         QObject::connect(conn,  QOverload<QAbstractSocket::SocketError>::of(&QWebSocket::error), conn, &QWebSocket::deleteLater);
-        auto ioDevice = new WebSocketIoDevice(conn);
+        WebSocketIoDevice *ioDevice = new WebSocketIoDevice(conn, false, m_clientAuth, this);
         QObject::connect(conn, &QWebSocket::destroyed, ioDevice, &WebSocketIoDevice::deleteLater);
+        QObject::connect(ioDevice, &WebSocketIoDevice::authenticated, this, &QTOZWManager::serverAuthenticated);
+        QObject::connect(ioDevice, &WebSocketIoDevice::authError, this, &QTOZWManager::serverAuthError);
+        QObject::connect(ioDevice, &WebSocketIoDevice::disconnected, this, &QTOZWManager::serverDisconnected);
+    }
+}
+
+void QTOZWManager::serverDisconnected() {
+    WebSocketIoDevice *ioDevice = qobject_cast<WebSocketIoDevice*>(QObject::sender());
+    if (ioDevice) {
+        qCInfo(manager) << "Client Connection Disconnected!";
+    } else {
+        qCWarning(manager) << "Missing Sender Object in serverDisconnected";
+    }
+
+}
+
+void QTOZWManager::serverAuthenticated() {
+    WebSocketIoDevice *ioDevice = qobject_cast<WebSocketIoDevice*>(QObject::sender());
+    if (ioDevice) {
+        qCInfo(manager) << "Client Connection Authenticated!";
         this->m_sourceNode->addHostSideConnection(ioDevice);
+    } else {
+        qCWarning(manager) << "Missing Sender Object in serverAuthenticated";
+    }
+}
+
+void QTOZWManager::serverAuthError(QString error) {
+    WebSocketIoDevice *ioDevice = qobject_cast<WebSocketIoDevice*>(QObject::sender());
+    if (ioDevice) {
+        qCInfo(manager) << "Client Connection Authentication Failure" << error;
+    } else {
+        qCWarning(manager) << "Missing Sender Object in serverAuthError";
     }
 }
 
@@ -174,12 +206,13 @@ bool QTOZWManager::initilizeReplica(QUrl remote) {
     this->m_webSockClient = new QWebSocket();
     QObject::connect(this->m_webSockClient, &QWebSocket::connected, this, &QTOZWManager::clientConnected);
     QObject::connect(this->m_webSockClient, &QWebSocket::disconnected, this, &QTOZWManager::clientDisconnected);
-    QObject::connect(this->m_webSockClient, QOverload<QAbstractSocket::SocketError>::of(&QWebSocket::error), this, &QTOZWManager::clientError);
+    QObject::connect(this->m_webSockClient, SIGNAL(error(QAbstractSocket::SocketError)), this, SLOT(clientError(QAbstractSocket::SocketError)));
     QObject::connect(this->m_webSockClient, &QWebSocket::sslErrors, this, &QTOZWManager::clientSSlErrors);
     QObject::connect(this->m_webSockClient, &QWebSocket::stateChanged, this, &QTOZWManager::clientStateChanged);
 
-    this->m_webSockIoClient = new WebSocketIoDevice(this->m_webSockClient, this);
-
+    this->m_webSockIoClient = new WebSocketIoDevice(this->m_webSockClient, true, m_clientAuth, this);
+    QObject::connect(this->m_webSockIoClient, &WebSocketIoDevice::authenticated, this, &QTOZWManager::clientAuthenticated);
+    QObject::connect(this->m_webSockIoClient, &WebSocketIoDevice::authError, this, &QTOZWManager::clientAuthError);
 #ifdef WS_USE_SSL
     // Always use secure connections when available
     QSslConfiguration sslConf;
@@ -196,15 +229,19 @@ bool QTOZWManager::initilizeReplica(QUrl remote) {
     sslConf.setPeerVerifyMode(QSslSocket::VerifyPeer);
     webSocket->setSslConfiguration(sslConf);
 #endif
-    this->m_replicaNode->addClientSideConnection(this->m_webSockIoClient);
-
     qCDebug(manager) << "Attempting Connection to " << remote;
 
     this->m_webSockClient->open(remote);
 
-    qCDebug(manager) << this->m_webSockClient->state();
-
     return true;
+}
+void QTOZWManager::clientAuthenticated() {
+    qCDebug(manager) << "WebSocket Client Authenticated!";
+    this->m_replicaNode->addClientSideConnection(this->m_webSockIoClient);
+}
+
+void QTOZWManager::clientAuthError(QString error) {
+    qCWarning(manager) << "WebSocket Client Authentication Error: " << error;
 }
 
 void QTOZWManager::clientConnected() {
@@ -226,14 +263,15 @@ void QTOZWManager::clientDisconnected() {
     qCInfo(manager) << "WebSocket Client Disconnected from " << this->m_webSockClient->peerName() << this->m_webSockClient->peerAddress() << this->m_webSockClient->peerPort();
 }
 void QTOZWManager::clientError(QAbstractSocket::SocketError error) {
-    qCWarning(manager) << "WebSocket Client Error " << error << this->m_webSockServer->errorString();
+    qCWarning(manager) << "WebSocket Client Error " << error;
+    emit remoteConnectionStatus(connectionStatus::ConnectionErrorState, error);
 }
 void QTOZWManager::clientSSlErrors(const QList<QSslError> &errors) {
     qCWarning(manager) << "WebSocket Client SSL Error " << errors;
 }
-
 void QTOZWManager::clientStateChanged(QAbstractSocket::SocketState state) {
     qCInfo(manager) << "WebSocket Client State Changed: " << state;
+    emit remoteConnectionStatus(static_cast<connectionStatus>(state), QAbstractSocket::UnknownSocketError);
 }
 
 
@@ -250,30 +288,40 @@ void QTOZWManager::onSourceError(QRemoteObjectHost::ErrorCode error) {
 void QTOZWManager::onManagerStateChange(QRemoteObjectReplica::State state) {
     qCDebug(manager) << "Manager State Change: " << state;
     this->m_managerState = state;
+    if (state == QRemoteObjectReplica::State::Valid) {
+        emit remoteConnectionStatus(connectionStatus::GotManagerData, QAbstractSocket::UnknownSocketError);
+    }
     this->checkReplicaReady();
 }
 
 void QTOZWManager::onOptionsStateChange(QRemoteObjectReplica::State state) {
     qCDebug(manager) << "Options State Change: " << state;
     this->m_optionsState = state;
+    if (state == QRemoteObjectReplica::State::Valid) {
+        emit remoteConnectionStatus(connectionStatus::GotOptionData, QAbstractSocket::UnknownSocketError);
+    }
     this->checkReplicaReady();
 }
 
 void QTOZWManager::onNodeInitialized() {
     this->m_nodeState = true;
+    emit remoteConnectionStatus(connectionStatus::GotNodeData, QAbstractSocket::UnknownSocketError);
     this->checkReplicaReady();
 }
 void QTOZWManager::onValueInitialized() {
     this->m_valuesState = true;
+    emit remoteConnectionStatus(connectionStatus::GotValueData, QAbstractSocket::UnknownSocketError);
     this->checkReplicaReady();
 }
 void QTOZWManager::onAssociationInitialized() {
     this->m_associationsState = true;
+    emit remoteConnectionStatus(connectionStatus::GotAssociationData, QAbstractSocket::UnknownSocketError);
     this->checkReplicaReady();
 }
 
 void QTOZWManager::onLogInitialized() {
     this->m_logState = true;
+    emit remoteConnectionStatus(connectionStatus::GotLogData, QAbstractSocket::UnknownSocketError);
     this->checkReplicaReady();
 }
 
