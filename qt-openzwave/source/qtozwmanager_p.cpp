@@ -1091,6 +1091,7 @@ bool QTOZWManager_Internal::convertValueID(quint64 vidKey) {
                 std::string selectedItem;
                 this->m_manager->GetValueListSelection(vid, &selectedItem);
                 vidlist.selectedItem = QString::fromStdString(selectedItem);
+                this->m_manager->GetValueListSelection(vid, (int32*)&vidlist.selectedItemId);
                 this->m_valueModel->setValueData(vidKey, QTOZW_ValueIds::ValueIdColumns::Value, QVariant::fromValue(vidlist), true);
             }
             this->m_valueModel->setValueData(vidKey, QTOZW_ValueIds::ValueIdColumns::Type, QTOZW_ValueIds::ValueIdTypes::List, true);
