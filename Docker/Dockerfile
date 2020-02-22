@@ -33,7 +33,7 @@ RUN echo 'APT::Default-Release "stable";' > /etc/apt/apt.conf.d/99defaultrelease
     && apt-get -y install libunwind8 libcurl4 binutils \
     && apt-get -y -t unstable install libqt5core5a libqt5network5 libqt5websockets5 \
     && apt-get -y -t experimental install libqt5remoteobjects5 \
-    && strip --remove-section=.note.ABI-tag /usr/lib/x86_64-linux-gnu/libQt5Core.so.5 \
+    && strip --remove-section=.note.ABI-tag /usr/lib/*/libQt5Core.so.5 \
     && apt-get -y purge binutils \
     && apt-get -y autoremove \
     && apt-get clean \
