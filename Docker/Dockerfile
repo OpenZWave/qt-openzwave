@@ -44,4 +44,4 @@ ENV BP_DB_PATH="/opt/ozw/config/crashes/"
 WORKDIR /opt/ozw/
 EXPOSE 1983
 VOLUME ["/opt/ozw/config/"]
-ENTRYPOINT /usr/local/bin/ozwdaemon -s $USB_PATH -c /opt/ozw/config/ -u /opt/ozw/config/ --mqtt-server $MQTT_SERVER --mqtt-port $MQTT_PORT --stop-on-failure --mqtt-instance $OZW_INSTANCE
+ENTRYPOINT /usr/local/bin/ozwdaemon -s $USB_PATH -c /opt/ozw/config/ -u /opt/ozw/config/ --mqtt-server $MQTT_SERVER --mqtt-port $MQTT_PORT --mqtt-username $MQTT_USERNAME --mqtt-password $MQTT_PASSWORD --stop-on-failure --mqtt-instance $OZW_INSTANCE
