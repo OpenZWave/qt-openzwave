@@ -17,9 +17,24 @@ mqttpublisher::mqttpublisher(QSettings *settings, QObject *parent) : QObject(par
     this->m_client->setHostname(settings->value("MQTTServer", "127.0.0.1").toString());
     this->m_client->setPort(static_cast<quint16>(settings->value("MQTTPort", 1883).toInt()));
     this->m_client->setClientId("qt-openzwave");
-    if (settings->contains("MQTTUsername") && settings->contains("MQTTPassword")) {
+    if (settings->contains("MQTTUsername")) {
+        QString mqttpass = qgetenv("MQTT_PASSWORD");
+    
+        QFile mp_file("/run/secrets/MQTT_PASSWORD");
+        if (mp_file.open(QIODevice::ReadOnly | QIODevice::Text)) {
+            mqttpass = mp_file.readLine().trimmed();
+            mp_file.close();
+        } else {
+            qInfo() << "Docker MQTT_PASSWORD Secret Missing....";
+            if (!mqttpass.isEmpty())
+                qInfo() << "Using MQTT_PASSWORD from Enviroment";
+        }
+        if (mqttpass.isEmpty()) {
+            qWarning() << "Couldn't Find MQTT_PASSWORD enviroment variable or Docker Secret File";
+            exit(-1);
+        }
         this->m_client->setUsername(settings->value("MQTTUsername", "").toString());
-        this->m_client->setPassword(settings->value("MQTTPassword", "").toString());
+        this->m_client->setPassword(mqttpass);
     }
     this->m_ozwstatus.SetObject();
 
