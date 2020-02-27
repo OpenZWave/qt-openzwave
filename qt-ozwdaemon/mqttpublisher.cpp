@@ -19,7 +19,7 @@ mqttpublisher::mqttpublisher(QSettings *settings, QObject *parent) : QObject(par
     this->m_client->setClientId("qt-openzwave");
     if (settings->contains("MQTTUsername") && settings->contains("MQTTPassword")) {
         this->m_client->setUsername(settings->value("MQTTUsername", "").toString());
-	this->m_client->setPassword(settings->value("MQTTPassword", "").toString());
+        this->m_client->setPassword(settings->value("MQTTPassword", "").toString());
     }
     this->m_ozwstatus.SetObject();
 
