@@ -57,4 +57,4 @@ ENV BP_DB_PATH="/opt/ozw/config/crashes/"
 WORKDIR /opt/ozw/
 EXPOSE 1983
 VOLUME ["/opt/ozw/config/"]
-ENTRYPOINT /startozwdaemon.sh
+ENTRYPOINT ["/startozwdaemon.sh"]
