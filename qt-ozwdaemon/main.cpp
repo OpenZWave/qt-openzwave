@@ -160,6 +160,13 @@ int main(int argc, char *argv[])
 
     parser.addOption(MQTTPort);
 
+    QCommandLineOption MQTTUsername(QStringList() << "mqtt-username",
+        "MQTT Server Username - Please set the MQTT_PASSWORD enviroment variable to the password for this account",
+        "Username"
+    );
+
+    parser.addOption(MQTTUsername);
+
     QCommandLineOption MQTTInstance(QStringList() << "mqtt-instance",
         "OpenZWave Instance Number - Defaults to 1",
         "Number"
@@ -262,6 +269,9 @@ int main(int argc, char *argv[])
     }
     if (parser.isSet(MQTTPort)) {
         settings.setValue("MQTTPort", parser.value(MQTTPort).toInt());
+    }
+    if (parser.isSet(MQTTUsername)) {
+        settings.setValue("MQTTUsername", parser.value(MQTTUsername));
     }
     if (parser.isSet(MQTTInstance)) {
         settings.setValue("Instance", parser.value(MQTTInstance).toInt());
