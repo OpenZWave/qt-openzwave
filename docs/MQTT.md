@@ -19,9 +19,14 @@ docker run -it --security-opt seccomp=unconfined --device=/dev/ttyUSB0 -v /home/
 * Update `MQTT_SERVER` with the IP address of the MQTT Server and all `/dev/ttyUSB0` entries with the path to your USB Stick.
 * If you are not running with a ZWave Network Key, remove the `--secret OZW_Network_Key` command
 
-
 (Alternatively, you can specify the Network Key via a Docker Enviroment, but this is less secure:
 `-e OZW_NETWORK_KEY="0x01,0x02,0x03,0x04,0x05,0x06,0x07,0x08,0x09,0x0A,0x0b,0x0c,0x0d,0x0e,0x0f,0x10"`)
+
+* if you require a MQTT Username/Password to connect to your MQTT Server, set the enviroment varible MQTT_SERVER to the hostname, and either the a Docker Secret called MQTT_PASSWORD or a enviroment variable of the same name. eg:
+```<...> -e MQTT_USERNAME=ozw --secret MQTT_PASSWORD <...>```
+
+```<...> -e MQTT_USERNAME=ozw -e MQTT_PASSWORD="blah" <...>```
+
 
 ## MQTT Topic Structure
 The MQTT Client for OZW will send messages to a MQTT Broker with a predifined topic structure. The structure of the messages are detailed in the sections below.
