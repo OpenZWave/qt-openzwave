@@ -85,6 +85,7 @@ win32 {
     exists( $$top_srcdir/../open-zwave/cpp/src/) {
         message("Found OZW in $$absolute_path($$top_srcdir/../open-zwave/cpp/src)")
         INCLUDEPATH += $$absolute_path($$top_srcdir/../open-zwave/cpp/src/)/
+		OZW_DATABASE_PATH = $$absolute_path($$top_srcdir/../open-zwave/config/)
         equals(BUILDTYPE, "release") {
             exists( $$absolute_path($$top_srcdir/../open-zwave/cpp/build/windows/vs2010/ReleaseDLL/OpenZWave.dll ) ) {
                 LIBS += -L$$absolute_path($$top_srcdir/../open-zwave/cpp/build/windows/vs2010/ReleaseDLL) -lopenzwave

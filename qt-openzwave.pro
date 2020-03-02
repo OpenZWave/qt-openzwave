@@ -15,6 +15,6 @@ SUBDIRS += qt-openzwave \
 Examples {
 	SUBDIRS += qt-simpleclient
 }
-win32 {
-	SUBDIRS -= qt-openzwavedatabase
-}
+#win32 {
+#	SUBDIRS -= qt-openzwavedatabase
+#}
