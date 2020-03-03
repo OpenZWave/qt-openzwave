@@ -17,27 +17,27 @@ CONFIG += dll
 DEFINES += QTOZWDATABASE_SHARED_LIBRARY
 
 win32:QMAKE_DEL_DIR  = rmdir /s /q
+win32:QMAKE_DEL_FILE = del /q
 
 ozwconfig.target=qt-openzwavedatabase.rcc
 ozwconfig.commands+=echo "Generating qt-openzwavedatabase.rcc:"
-ozwconfig.commands+=&& $(DEL_FILE) qt-openzwavedatabase.rcc 
-ozwconfig.commands+=&& $(COPY_DIR) $$shell_path($$OZW_DATABASE_PATH) $$shell_path(config/) 
-ozwconfig.commands+=&& cd config
-ozwconfig.commands+=&& $$[QT_INSTALL_BINS]/rcc -project -o ozwconfig.qrc
-ozwconfig.commands+=&& $$[QT_INSTALL_BINS]/rcc --name="ozwconfig" --root="$$shell_path(/config/)" ozwconfig.qrc --binary -o $$shell_path(../qt-openzwavedatabase.rcc)
+ozwconfig.commands+=&& $(DEL_FILE) $$shell_path($$OUT_PWD/qt-openzwavedatabase.rcc) 
+ozwconfig.commands+=&& $(COPY_DIR) $$shell_path($$OZW_DATABASE_PATH) $$shell_path($$OUT_PWD/config/) 
+ozwconfig.commands+=&& cd $$shell_path($$OUT_PWD/config/) 
+ozwconfig.commands+=&& $$[QT_INSTALL_BINS]/rcc -project -o $$shell_path($$OUT_PWD/config/ozwconfig.qrc)
+ozwconfig.commands+=&& $$[QT_INSTALL_BINS]/rcc --name="ozwconfig" --root="/config/" $$shell_path($$OUT_PWD/config/ozwconfig.qrc) --binary -o $$shell_path($$OUT_PWD/qt-openzwavedatabase.rcc)
 ozwconfig.commands+=&& echo "Done"
 
 ozwrccdb.files+=qt-openzwavedatabase.rcc
 ozwrccdb.CONFIG+=no_check_exist
 
-extraclean.commands=$(DEL_FILE) qt-openzwavedatabase.rcc
+extraclean.commands=-$(DEL_FILE) qt-openzwavedatabase.rcc
 extraclean.commands+=&& $(DEL_DIR) config
 clean.depends=extraclean
 
 
 SOURCES += source/qt-openzwavedatabase.cpp
-HEADERS += \
-    include/qt-openzwave/qt-openzwavedatabase.h
+HEADERS += include/qt-openzwave/qt-openzwavedatabase.h
 
 INCLUDEPATH += include/
 isEmpty(PREFIX) {
