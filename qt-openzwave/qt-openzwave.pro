@@ -6,7 +6,7 @@
 
 
 QT       -= gui
-QT       += remoteobjects testlib
+QT       += remoteobjects 
 QT       += websockets
 
 TEMPLATE = lib
