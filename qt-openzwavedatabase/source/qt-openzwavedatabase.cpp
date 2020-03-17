@@ -2,11 +2,13 @@
 #include <QDebug>
 #include <QResource>
 #include <QStandardPaths>
+#include <QCoreApplication>
 #include "qt-openzwave/qt-openzwavedatabase.h"
 
 Q_LOGGING_CATEGORY(qtozwdatabase, "ozw.database");
 
 bool initConfigDatabase(QStringList path) {
+
     for (int i = 0; i < path.size(); ++i) {
         QString test = path.at(i);
         test.append("/qt-openzwavedatabase.rcc");
@@ -16,6 +18,12 @@ bool initConfigDatabase(QStringList path) {
             return true;
         }
     }
+#if defined(Q_OS_OSX)
+    if (QResource::registerResource(QCoreApplication::applicationDirPath() + "/../Resources/qt-openzwavedatabase.rcc")) {
+        qCInfo(qtozwdatabase) << "Found qt-openzwavedatabase.rcc at " << QCoreApplication::applicationDirPath() + "/../Resources/";
+        return true;
+    }
+#endif
     if (QResource::registerResource("qt-openzwavedatabase/qt-openzwavedatabase.rcc")) {
         qCInfo(qtozwdatabase) << "Found qt-openzwavedatabase.rcc at qt-openzwavedatabase/qt-openzwavedatabase.rcc";
         return true;
