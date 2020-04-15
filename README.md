@@ -21,24 +21,25 @@ Start a container with one of the following examples:
 ```docker run -it --security-opt seccomp=unconfined --device=/dev/ttyUSB0 -v /tmp/ozw/config:/opt/ozw -e MQTT_SERVER="10.100.200.102" -e USB_PATH=/dev/ttyUSB0 openzwave/ozwdaemon:latest```
 
 **Docker-compose example:** 
-``` version: '3'
+``` yaml
+version: '3'
 services:
-qt-openzwave:
-image: openzwave/ozwdaemon:latest
-container_name: "qt-openzwave"
-security_opt:
-- seccomp:unconfined
-devices:
-- "/dev/ttyUSB0:/dev/ttyUSB0"
-volumes:
-- /tmp/ozw:/opt/ozw/config
-environment:
-MQTT_SERVER: "192.168.0.1"
-MQTT_USERNAME: "my-username"
-MQTT_PASSWORD: "my-password"
-USB_PATH: "/dev/ttyUSB0"
-OZW_NETWORK_KEY: "0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00"
-restart: unless-stopped 
+  qt-openzwave:
+    image: openzwave/ozwdaemon:latest
+    container_name: "qt-openzwave"
+    security_opt:
+      - seccomp:unconfined
+    devices:
+      - "/dev/ttyUSB0:/dev/ttyUSB0"
+    volumes:
+      - /tmp/ozw:/opt/ozw/config
+    environment:
+      MQTT_SERVER: "192.168.0.1"
+      MQTT_USERNAME: "my-username"
+      MQTT_PASSWORD: "my-password"
+      USB_PATH: "/dev/ttyUSB0"
+      OZW_NETWORK_KEY: "0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00"
+    restart: unless-stopped 
 ```
 * replace MQTT_SERVER with the IP address of the MQTT Server
 * replace MQTT_USERNAME and MQTT_PASSWORD with authentication details from the MQTT Server (remove if not enabled)
