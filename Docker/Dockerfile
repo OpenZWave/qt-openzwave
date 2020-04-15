@@ -19,7 +19,9 @@ RUN apt-get -y -t unstable install qt5-default libqt5websockets5-dev qtbase5-pri
 #&& apt-get -y -t unstable install qtbase5-private-dev && apt-get -y -t unstable install libqt5remoteobjects5-dev libqt5remoteobjects5-bin 
 
 ENV PATH=$PATH:/opt/depot_tools/
+ENV DEPOT_TOOLS_UPDATE=0
 RUN git clone https://chromium.googlesource.com/chromium/tools/depot_tools.git \
+	&& cd depot_tools && git checkout 464e9ff && cd .. \
 	&& mkdir breakpad \
 	&& cd breakpad \
 	&& fetch breakpad \
