@@ -7,7 +7,7 @@ class MqttCommand_AddNode : public MqttCommand {
     Q_OBJECT
 public:
     static MqttCommand *Create(QObject *parent = nullptr);
-    static QString StaticGetCommand() { return "AddNode";};
+    static QString StaticGetCommand() { return "addnode";};
     QString GetCommand() override { return StaticGetCommand(); };
     bool processMessage(rapidjson::Document &) override;
 private: 

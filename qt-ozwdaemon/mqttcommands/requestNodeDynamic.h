@@ -7,7 +7,7 @@ class MqttCommand_RequestNodeDynamic : public MqttCommand {
     Q_OBJECT
 public:
     static MqttCommand *Create(QObject *parent = nullptr);
-    static QString StaticGetCommand() { return "RequestNodeDynamic";};
+    static QString StaticGetCommand() { return "requestnodedynamic";};
     QString GetCommand() override { return StaticGetCommand(); };
     bool processMessage(rapidjson::Document &) override;
 private: 

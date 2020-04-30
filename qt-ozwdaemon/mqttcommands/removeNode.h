@@ -7,7 +7,7 @@ class MqttCommand_RemoveNode : public MqttCommand {
     Q_OBJECT
 public:
     static MqttCommand *Create(QObject *parent = nullptr);
-    static QString StaticGetCommand() { return "RemoveNode";};
+    static QString StaticGetCommand() { return "removenode";};
     QString GetCommand() override { return StaticGetCommand(); };
     bool processMessage(rapidjson::Document &) override;
 private: 

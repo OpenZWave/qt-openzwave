@@ -7,7 +7,7 @@ class MqttCommand_DeleteAllReturnRoute : public MqttCommand {
     Q_OBJECT
 public:
     static MqttCommand *Create(QObject *parent = nullptr);
-    static QString StaticGetCommand() { return "DeleteAllReturnRoute";};
+    static QString StaticGetCommand() { return "deleteallreturnroute";};
     QString GetCommand() override { return StaticGetCommand(); };
     bool processMessage(rapidjson::Document &) override;
 private: 

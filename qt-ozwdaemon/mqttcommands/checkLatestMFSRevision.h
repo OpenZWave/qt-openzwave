@@ -7,7 +7,7 @@ class MqttCommand_CheckLatestMFSRevision : public MqttCommand {
     Q_OBJECT
 public:
     static MqttCommand *Create(QObject *parent = nullptr);
-    static QString StaticGetCommand() { return "CheckLatestMFSRevision";};
+    static QString StaticGetCommand() { return "checklatestmfsrevision";};
     QString GetCommand() override { return StaticGetCommand(); };
     bool processMessage(rapidjson::Document &) override;
 private: 

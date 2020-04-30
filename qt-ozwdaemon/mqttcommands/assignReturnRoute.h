@@ -7,7 +7,7 @@ class MqttCommand_AssignReturnRoute : public MqttCommand {
     Q_OBJECT
 public:
     static MqttCommand *Create(QObject *parent = nullptr);
-    static QString StaticGetCommand() { return "AssignReturnRoute";};
+    static QString StaticGetCommand() { return "assignreturnroute";};
     QString GetCommand() override { return StaticGetCommand(); };
     bool processMessage(rapidjson::Document &) override;
 private: 

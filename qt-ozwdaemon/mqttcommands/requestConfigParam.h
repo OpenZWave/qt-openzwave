@@ -7,7 +7,7 @@ class MqttCommand_RequestConfigParam : public MqttCommand {
     Q_OBJECT
 public:
     static MqttCommand *Create(QObject *parent = nullptr);
-    static QString StaticGetCommand() { return "RequestConfigParam";};
+    static QString StaticGetCommand() { return "requestconfigparam";};
     QString GetCommand() override { return StaticGetCommand(); };
     bool processMessage(rapidjson::Document &) override;
 private: 

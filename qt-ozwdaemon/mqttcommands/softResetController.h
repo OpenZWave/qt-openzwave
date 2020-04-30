@@ -7,7 +7,7 @@ class MqttCommand_SoftResetController : public MqttCommand {
     Q_OBJECT
 public:
     static MqttCommand *Create(QObject *parent = nullptr);
-    static QString StaticGetCommand() { return "SoftResetController";};
+    static QString StaticGetCommand() { return "softresetcontroller";};
     QString GetCommand() override { return StaticGetCommand(); };
     bool processMessage(rapidjson::Document &) override;
 private: 

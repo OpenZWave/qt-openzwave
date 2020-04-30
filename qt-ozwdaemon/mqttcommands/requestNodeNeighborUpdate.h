@@ -7,7 +7,7 @@ class MqttCommand_RequestNodeNeighborUpdate : public MqttCommand {
     Q_OBJECT
 public:
     static MqttCommand *Create(QObject *parent = nullptr);
-    static QString StaticGetCommand() { return "RequestNodeNeighborUpdate";};
+    static QString StaticGetCommand() { return "requestnodeneighborupdate";};
     QString GetCommand() override { return StaticGetCommand(); };
     bool processMessage(rapidjson::Document &) override;
 private: 

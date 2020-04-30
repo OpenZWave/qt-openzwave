@@ -7,7 +7,7 @@ class MqttCommand_SetValue : public MqttCommand {
     Q_OBJECT
 public:
     static MqttCommand *Create(QObject *parent = nullptr);
-    static QString StaticGetCommand() { return "SetValue";};
+    static QString StaticGetCommand() { return "setvalue";};
     QString GetCommand() override { return StaticGetCommand(); };
     bool processMessage(rapidjson::Document &) override;
 private: 

@@ -7,7 +7,7 @@ class MqttCommand_EnablePoll : public MqttCommand {
     Q_OBJECT
 public:
     static MqttCommand *Create(QObject *parent = nullptr);
-    static QString StaticGetCommand() { return "enablePoll";};
+    static QString StaticGetCommand() { return "enablepoll";};
     QString GetCommand() override { return StaticGetCommand(); };
     bool processMessage(rapidjson::Document &) override;
 private: 

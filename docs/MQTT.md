@@ -504,7 +504,7 @@ These Notifications Related to events that should be conveyed to the user someho
 # Commands Lists
 This is a list of Commands that the MQTT Client will accept and process. As mentioned above, the Commands often return a status, and then subsequent notifications to indicate the progress or success/failure of the command. 
 
-## addNode
+## addnode
 
 **Params**:
 
@@ -525,7 +525,7 @@ This is a list of Commands that the MQTT Client will accept and process. As ment
 **See Also**:
     [cancelControllerCommand](#cancelControllerCommand)
 
-## assignReturnRoute
+## assignreturnroute
 
 **Params**:
 
@@ -543,7 +543,7 @@ This is a list of Commands that the MQTT Client will accept and process. As ment
 
 ​    Asks thee Node to calculate the Route to communicate with the Controller. This is a advanced command and should not be required on ZWave Plus devices. 
 
-## cancelControllerCommand
+## cancelcontrollercommand
 
 **Params**:
 
@@ -561,7 +561,7 @@ This is a list of Commands that the MQTT Client will accept and process. As ment
 
 ​    Cancels in Controller Commands that are in progress.
 
-## checkLatestConfigFileRevision
+## checklatestconfigfilerevision
 
 **Params**:
 
@@ -584,7 +584,7 @@ This is a list of Commands that the MQTT Client will accept and process. As ment
 
 ​    [checkLatestMFSRevision](#checkLatestMFSRevision), [downloadLatestConfigFileRevision](#downloadLatestConfigFileRevision), [downloadLatestMFSRevision](#downloadLatestMFSRevision)
 
-## checkLatestMFSRevision
+## checklatestmfsrevision
 
 **Params**:
 
@@ -628,7 +628,7 @@ This is a list of Commands that the MQTT Client will accept and process. As ment
 
 ​    [open](#open)
 
-## deleteAllReturnRoute
+## deleteallreturnroute
 
 **Params**:
 
@@ -646,7 +646,7 @@ This is a list of Commands that the MQTT Client will accept and process. As ment
 
 ​    This is a advanced command and should not be required on a ZWave+ Device.
 
-## downloadLatestConfigFileRevision
+## downloadlatestconfigfilerevision
 
 **Params**:
 
@@ -669,7 +669,7 @@ This is a list of Commands that the MQTT Client will accept and process. As ment
 
 [checkLatestConfigRevision](#checkLatestConfigRevision), [checkLatestMFSRevision](#checkLatestMFSRevision), [downloadLatestMFSRevision](#downloadLatestMFSRevision)
 
-## downloadLatestMFSRevision
+## downloadlatestmfsrevision
 
 **Params**:
 
@@ -693,7 +693,7 @@ This is a list of Commands that the MQTT Client will accept and process. As ment
 
 
 
-## hardResetController
+## hardresetcontroller
 
 **Params**:
 
@@ -714,7 +714,7 @@ This is a list of Commands that the MQTT Client will accept and process. As ment
 **See Also**:
     [softResetController](#softResetController)
 
-## hasNodeFailed
+## hasnodefailed
 
 **Params**:
 
@@ -736,7 +736,7 @@ This is a list of Commands that the MQTT Client will accept and process. As ment
 
 ​    [isNodeFailed](#isNodeFailed)
 
-## healNetwork
+## healnetwork
 
 **Params**:
 
@@ -765,7 +765,7 @@ See Also:
 
 ​    [healNetworkNode](#healNetworkNode)
 
-## healNetworkNode
+## healnetworknode
 
 **Params**:
 
@@ -788,7 +788,7 @@ See Also:
 
 ​	[healNetwork](#healNetwork)
 
-## isNodeFailed
+## isnodefailed
 
 **Params**:
 
@@ -849,7 +849,7 @@ See Also:
 
 ​    Can be used to check if the OZW MQTT Client is alive
 
-## refreshNodeInfo
+## refreshnodeinfo
 
 **Params**:
 
@@ -871,7 +871,7 @@ See Also:
 
 ​    [downloadLatestConfigFileRevision](#downloadLatestConfigFileRevision)
 
-## removeFailedNode
+## removefailednode
 
 **Params**:
 
@@ -893,7 +893,7 @@ See Also:
 
 ​    [hasNodeFailed](#hasNodeFailed)
 
-## removeNode
+## removenode
 
 **Params**:
 
@@ -915,7 +915,7 @@ See Also:
 
 ​	[removeFailedNode](#removeFailedNode)
 
-## replaceFailedNode
+## replacefailednode
 
 **Params**:
 
@@ -939,7 +939,7 @@ See Also:
 ​	[removeFailedNode](#removeFailedNode)
 
 
-## requestAllConfigParam
+## requestallconfigparam
 
 **Params**:
 
@@ -961,7 +961,7 @@ See Also:
 
 ​	[requestConfigParam](#requestConfigParam)
 
-## requestConfigParam
+## requestconfigparam
 
 **Params**:
 
@@ -985,7 +985,7 @@ See Also:
 
 ​	[requestAllConfigParam](#requestAllConfigParam)
 
-## requestNetworkUpdate
+## requestnetworkupdate
 
 **Params**:
 
@@ -1003,7 +1003,7 @@ See Also:
 
 ​    Only required for Networks that have older (pre-ZWave+ roughly) controllers. Requests the SUC to update the Network Routing Tables. 
 
-## requestNodeDynamic
+## requestnodedynamic
 
 **Params**:
 
@@ -1021,7 +1021,7 @@ See Also:
 
 ​    OZW will refresh all ValueID's that are considered "Dynamic" - such as the State of a light etc
 
-## requestNodeNeighborUpdate
+## requestnodeneighborupdate
 
 **Params**:
 
@@ -1040,7 +1040,7 @@ See Also:
 ​    Synchronizes the list of Neighbors a node has.
 ​    
 
-## requestNodeState
+## requestnodestate
 
 **Params**:
 
@@ -1058,7 +1058,7 @@ See Also:
 
 ​	This command refreshes all values that are considered both Static and Dynamic
 
-## sendNodeInformation
+## sendnodeinformation
 
 **Params**:
 
@@ -1123,7 +1123,7 @@ This allows a MQTT Client to set a value on a Device. As OZW supports many diffe
 
 ​	This command will set a new Value on a particular device. 
 
-## softResetController
+## softresetcontroller
 
 **Params**:
 
@@ -1145,7 +1145,7 @@ This allows a MQTT Client to set a value on a Device. As OZW supports many diffe
 
 ​	[hardResetController](#hardResetController)
 
-## testNetwork
+## testnetwork
 
 **Params**:
 
@@ -1167,7 +1167,7 @@ This allows a MQTT Client to set a value on a Device. As OZW supports many diffe
 
 ​	[testNetworkNode](#testNetworkNode)
 
-## testNetworkNode
+## testnetworknode
 
 **Params**:
 
@@ -1193,7 +1193,7 @@ This allows a MQTT Client to set a value on a Device. As OZW supports many diffe
 
 ​	[testNetwork](#testNetwork)
 
-## addAssociation
+## addassociation
 
 **Params**:
 
@@ -1220,7 +1220,7 @@ This allows a MQTT Client to set a value on a Device. As OZW supports many diffe
 
 ​	[removeAssociation](#removeAssociation)
 
-## removeAssociation
+## removeassociation
 
 **Params**:
 
@@ -1246,7 +1246,7 @@ This allows a MQTT Client to set a value on a Device. As OZW supports many diffe
 
 ​	[addAssociation](#addAssociation)
 
-## enablePoll
+## enablepoll
 
 **Params**:
 
@@ -1266,7 +1266,7 @@ The appropriate value key in the MQTT Topic should be updated with a updated IsP
 
 ​	[disablePoll](#disablePoll)
 
-## disablePoll
+## disablepoll
 
 **Params**:
 

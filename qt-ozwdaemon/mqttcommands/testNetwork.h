@@ -7,7 +7,7 @@ class MqttCommand_TestNetwork : public MqttCommand {
     Q_OBJECT
 public:
     static MqttCommand *Create(QObject *parent = nullptr);
-    static QString StaticGetCommand() { return "TestNetwork";};
+    static QString StaticGetCommand() { return "testnetwork";};
     QString GetCommand() override { return StaticGetCommand(); };
     bool processMessage(rapidjson::Document &) override;
 private: 

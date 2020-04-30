@@ -7,7 +7,7 @@ class MqttCommand_RequestNodeState : public MqttCommand {
     Q_OBJECT
 public:
     static MqttCommand *Create(QObject *parent = nullptr);
-    static QString StaticGetCommand() { return "RequestNodeState";};
+    static QString StaticGetCommand() { return "requestnodestate";};
     QString GetCommand() override { return StaticGetCommand(); };
     bool processMessage(rapidjson::Document &) override;
 private: 

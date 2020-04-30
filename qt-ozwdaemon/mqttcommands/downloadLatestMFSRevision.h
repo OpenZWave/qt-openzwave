@@ -7,7 +7,7 @@ class MqttCommand_DownloadLatestMFSRevision : public MqttCommand {
     Q_OBJECT
 public:
     static MqttCommand *Create(QObject *parent = nullptr);
-    static QString StaticGetCommand() { return "DownloadLatestMFSRevision";};
+    static QString StaticGetCommand() { return "downloadlatestmfsrevision";};
     QString GetCommand() override { return StaticGetCommand(); };
     bool processMessage(rapidjson::Document &) override;
 private: 

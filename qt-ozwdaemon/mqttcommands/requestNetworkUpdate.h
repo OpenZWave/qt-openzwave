@@ -7,7 +7,7 @@ class MqttCommand_RequestNetworkUpdate : public MqttCommand {
     Q_OBJECT
 public:
     static MqttCommand *Create(QObject *parent = nullptr);
-    static QString StaticGetCommand() { return "RequestNetworkUpdate";};
+    static QString StaticGetCommand() { return "requestnetworkupdate";};
     QString GetCommand() override { return StaticGetCommand(); };
     bool processMessage(rapidjson::Document &) override;
 private: 

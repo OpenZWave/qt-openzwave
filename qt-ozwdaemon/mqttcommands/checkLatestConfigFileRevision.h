@@ -7,7 +7,7 @@ class MqttCommand_CheckLatestConfigFileRevision : public MqttCommand {
     Q_OBJECT
 public:
     static MqttCommand *Create(QObject *parent = nullptr);
-    static QString StaticGetCommand() { return "CheckLatestConfigFileRevision";};
+    static QString StaticGetCommand() { return "checklatestconfigfilerevision";};
     QString GetCommand() override { return StaticGetCommand(); };
     bool processMessage(rapidjson::Document &) override;
 private: 
