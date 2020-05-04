@@ -471,6 +471,7 @@ void mqttpublisher::valueAdded(quint64 vidKey) {
         QT2JS::SetInt(*jsCommandClass, "Instance", instance);
         QT2JS::SetInt(*jsCommandClass, "CommandClassId", cc);
         QT2JS::SetString(*jsCommandClass, "CommandClass", this->getQTOZWManager()->getCommandClassString(cc));
+        QT2JS::SetUint(*jsCommandClass, "CommandClassVersion", this->getQTOZWManager()->getCommandClassVersion(node, cc));
         this->m_CommandClasses[node][instance][cc] = jsCommandClass;
     }
     this->sendCommandClassUpdate(node, instance, cc);

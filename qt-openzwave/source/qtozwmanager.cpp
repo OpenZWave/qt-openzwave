@@ -576,6 +576,9 @@ bool QTOZWManager::downloadLatestMFSRevision() {
 QString QTOZWManager::getCommandClassString(quint8 const _cc) {
     CALL_DPTR_RTN(getCommandClassString(_cc), QString);
 }
+quint8 QTOZWManager::getCommandClassVersion(quint8 const _node, quint8 const _cc) {
+    CALL_DPTR_RTN(getCommandClassVersion(_node, _cc), quint8);
+}
 QString QTOZWManager::getVersionAsString() {
     CALL_DPTR_RTN(getVersionAsString(), QString);
 }

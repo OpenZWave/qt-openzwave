@@ -134,6 +134,7 @@ class QTOZWManager {
     SLOT(bool downloadLatestConfigFileRevision(quint8 const _node))
     SLOT(bool downloadLatestMFSRevision())
     SLOT(QString getCommandClassString(quint8 const _cc))
+    SLOT(quint8 getCommandClassVersion(quint8 const _node, quint8 const _cc))
 
     SLOT(QString getVersionAsString())
     SLOT(QString getVersionLongAsString())

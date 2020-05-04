@@ -663,6 +663,26 @@ QString QTOZWManager_Internal::getCommandClassString(quint8 const _cc) {
     return QString();
 }
 
+quint8 QTOZWManager_Internal::getCommandClassVersion(quint8 const _node, quint8 const _cc) {
+    if (!this->checkHomeId() || !this->checkNodeId(_node))
+        return false;
+
+    try {
+        std::string ccname;
+        uint8 ccver;
+        if (this->m_manager->GetNodeClassInformation(this->homeId(), _node, _cc, &ccname, &ccver)) {
+            return ccver;
+        }
+        return 0;
+    } catch (OpenZWave::OZWException &e) {
+        emit this->error(QTOZWManagerErrorCodes::OZWException);
+        this->setErrorString(e.GetMsg().c_str());
+    }
+    return 0;
+}
+
+
+
 QString QTOZWManager_Internal::getVersionAsString() {
     try {
         return this->m_manager->getVersionAsString().c_str();

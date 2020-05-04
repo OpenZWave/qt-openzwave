@@ -138,6 +138,7 @@ public:
     bool downloadLatestMFSRevision();
 
     QString getCommandClassString(quint8 const _cc);
+    quint8 getCommandClassVersion(quint8 const _node, quint8 const _cc);
 
     QString getVersionAsString();
     QString getVersionLongAsString();
