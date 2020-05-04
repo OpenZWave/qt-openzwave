@@ -487,11 +487,21 @@ void mqttpublisher::valueAdded(quint64 vidKey) {
 void mqttpublisher::valueRemoved(quint64 vidKey) {
     qCDebug(ozwmp) << "Publishing Event valueRemoved:" << vidKey;
     this->delValueTopic(vidKey);
+    if (this->m_values.find(vidKey) == this->m_values.end()) {
+        qCWarning(ozwmp) << "valueRemoved: vidKey does not exist in Values Map:" << vidKey;
+        return;
+    }
     quint8 vinstance = this->m_valueModel->getValueData(vidKey, QTOZW_ValueIds::ValueIdColumns::Instance).toInt();
     quint8 vcc = this->m_valueModel->getValueData(vidKey, QTOZW_ValueIds::ValueIdColumns::CommandClass).toInt();
     quint8 node = this->m_valueModel->getValueData(vidKey, QTOZW_ValueIds::ValueIdColumns::Node).toInt();
     bool removeInstance = true;
     bool removeCC = true;
+
+    if (node == 0 || vcc == 0 || vinstance == 0) {
+        qCWarning(ozwmp) << "valueRemoved: Node, Instance or CommandClass is Empty! - Node: " << node << " Instance: " << vinstance << " CC: " << vcc;
+        return;
+    }
+
     QMap<quint64, rapidjson::Document *>::iterator it;
     for (it =this->m_values.begin(); it != this->m_values.end(); it++) {
         if (this->m_valueModel->getValueData(it.key(), QTOZW_ValueIds::ValueIdColumns::ValueIDKey).value<quint64>() == vidKey) {
