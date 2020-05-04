@@ -99,10 +99,10 @@ void mqttpublisher::brokerError(QMqttClient::ClientError error) {
 
 
 void mqttpublisher::doStats() {
-    if (!this->m_qtozwdeamon) {
+    if (!this->m_qtozwdaemon) {
         return; 
     }
-    QTOZWManager *manager = this->m_qtozwdeamon->getManager();
+    QTOZWManager *manager = this->m_qtozwdaemon->getManager();
     DriverStatistics ds = manager->GetDriverStatistics();
     rapidjson::Document dsjson;
     QT2JS::SetInt64(dsjson, "SOFCnt", ds.m_SOFCnt);
@@ -245,9 +245,9 @@ QString mqttpublisher::getCommandResponseTopic(QString cmd) {
 
 
 void mqttpublisher::setOZWDaemon(qtozwdaemon *ozwdaemon) {
-    this->m_qtozwdeamon = ozwdaemon;
+    this->m_qtozwdaemon = ozwdaemon;
 
-    QTOZWManager *manager = this->m_qtozwdeamon->getManager();
+    QTOZWManager *manager = this->m_qtozwdaemon->getManager();
 
     this->m_nodeModel = static_cast<mqttNodeModel *>(manager->getNodeModel());
     this->m_valueModel = static_cast<mqttValueIDModel *>(manager->getValueModel());
@@ -284,8 +284,8 @@ void mqttpublisher::setOZWDaemon(qtozwdaemon *ozwdaemon) {
     connect(manager, &QTOZWManager::stopped, this, &mqttpublisher::stopped);
     
     QT2JS::SetString(this->m_ozwstatus, "OpenZWave_Version", this->getQTOZWManager()->getVersionAsString());
-    QT2JS::SetString(this->m_ozwstatus, "OZWDeamon_Version", QCoreApplication::applicationVersion());
-    QT2JS::SetString(this->m_ozwstatus, "QTOpenZWave_Version", this->m_qtozwdeamon->getQTOpenZWave()->getVersion());
+    QT2JS::SetString(this->m_ozwstatus, "OZWDaemon_Version", QCoreApplication::applicationVersion());
+    QT2JS::SetString(this->m_ozwstatus, "QTOpenZWave_Version", this->m_qtozwdaemon->getQTOpenZWave()->getVersion());
     QT2JS::SetString(this->m_ozwstatus, "QT_Version", qVersion());
 
     this->m_currentStartTime = QDateTime::currentDateTime();
@@ -479,7 +479,7 @@ void mqttpublisher::valueAdded(quint64 vidKey) {
     if (this->m_values.find(vidKey) == this->m_values.end()) {
         this->m_values.insert(vidKey, new rapidjson::Document());
     }
-    if (this->m_valueModel->populateJsonObject(*this->m_values[vidKey], vidKey, this->m_qtozwdeamon->getManager())) {
+    if (this->m_valueModel->populateJsonObject(*this->m_values[vidKey], vidKey, this->m_qtozwdaemon->getManager())) {
         /* something has changed */
         QT2JS::SetString(*this->m_values[vidKey], "Event", "valueAdded");
         this->sendValueUpdate(vidKey);
@@ -569,7 +569,7 @@ void mqttpublisher::nodeNew(quint8 node) {
     if (this->m_nodes.find(node) == this->m_nodes.end()) {
         this->m_nodes.insert(node, new rapidjson::Document(rapidjson::kObjectType));
     }
-    this->m_nodeModel->populateJsonObject(*this->m_nodes[node], node, this->m_qtozwdeamon->getManager());
+    this->m_nodeModel->populateJsonObject(*this->m_nodes[node], node, this->m_qtozwdaemon->getManager());
     QT2JS::SetString(*this->m_nodes[node], "Event", "nodeNew");
     this->sendNodeUpdate(node);
 }
@@ -578,7 +578,7 @@ void mqttpublisher::nodeAdded(quint8 node) {
     if (this->m_nodes.find(node) == this->m_nodes.end()) {
         this->m_nodes.insert(node, new rapidjson::Document(rapidjson::kObjectType));
     }
-    this->m_nodeModel->populateJsonObject(*this->m_nodes[node], node, this->m_qtozwdeamon->getManager());
+    this->m_nodeModel->populateJsonObject(*this->m_nodes[node], node, this->m_qtozwdaemon->getManager());
     QT2JS::SetString(*this->m_nodes[node], "Event", "nodeAdded");
     this->sendNodeUpdate(node);
 }
@@ -627,19 +627,19 @@ void mqttpublisher::nodeEvent(quint8 node, quint8 event) {
 }
 void mqttpublisher::nodeProtocolInfo(quint8 node) {
     qCDebug(ozwmp) << "Publishing Event nodeProtocolInfo:" << node;
-    this->m_nodeModel->populateJsonObject(*this->m_nodes[node], node, this->m_qtozwdeamon->getManager());
+    this->m_nodeModel->populateJsonObject(*this->m_nodes[node], node, this->m_qtozwdaemon->getManager());
     QT2JS::SetString(*this->m_nodes[node], "Event", "nodeProtocolInfo");
     this->sendNodeUpdate(node);
 }
 void mqttpublisher::nodeEssentialNodeQueriesComplete(quint8 node) {
     qCDebug(ozwmp) << "Publishing Event nodeEssentialNodeQueriesComplete:" << node;
-    this->m_nodeModel->populateJsonObject(*this->m_nodes[node], node, this->m_qtozwdeamon->getManager());
+    this->m_nodeModel->populateJsonObject(*this->m_nodes[node], node, this->m_qtozwdaemon->getManager());
     QT2JS::SetString(*this->m_nodes[node], "Event", "nodeEssentialNodeQueriesComplete");
     this->sendNodeUpdate(node);
 }
 void mqttpublisher::nodeQueriesComplete(quint8 node) {
     qCDebug(ozwmp) << "Publishing Event nodeQueriesComplete:" << node;
-    this->m_nodeModel->populateJsonObject(*this->m_nodes[node], node, this->m_qtozwdeamon->getManager());
+    this->m_nodeModel->populateJsonObject(*this->m_nodes[node], node, this->m_qtozwdaemon->getManager());
     QT2JS::SetString(*this->m_nodes[node], "Event", "nodeQueriesComplete");
     this->sendNodeUpdate(node);
 }
@@ -647,7 +647,7 @@ void mqttpublisher::nodeQueriesComplete(quint8 node) {
 void mqttpublisher::nodeGroupChanged(quint8 node, quint8 group) {
     qCDebug(ozwmp) << "Publishing Event nodeGroupChanged: " << node << " Group: " << group;
     rapidjson::Document *jsinstance = new rapidjson::Document(rapidjson::kObjectType);
-    this->m_assocModel->populateJsonObject(*jsinstance, node, group, this->m_qtozwdeamon->getManager());
+    this->m_assocModel->populateJsonObject(*jsinstance, node, group, this->m_qtozwdaemon->getManager());
     this->sendAssociationUpdate(node, group, *jsinstance);
     delete jsinstance;
     if (this->m_assoications.count(node) == 0 ) {
@@ -858,7 +858,7 @@ void mqttpublisher::stopped(quint32 homeID) {
 //void error(QTOZWErrorCodes errorcode);
 
 QTOZWManager *mqttpublisher::getQTOZWManager() {
-    return this->m_qtozwdeamon->getManager();
+    return this->m_qtozwdaemon->getManager();
 }
 
 rapidjson::Document *mqttpublisher::getInstanceJSON(quint8 node, quint8 instance) {

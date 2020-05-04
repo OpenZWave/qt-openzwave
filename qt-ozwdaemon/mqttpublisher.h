@@ -119,7 +119,7 @@ private:
     mqttAssociationModel *m_assocModel;
 
     QMqttClient *m_client;
-    qtozwdaemon *m_qtozwdeamon;
+    qtozwdaemon *m_qtozwdaemon;
     QSettings *settings;
     QTimer m_statsTimer;
     MqttCommands *m_commands;
