@@ -42,9 +42,10 @@ RUN git clone https://github.com/OpenZWave/open-zwave.git \
 COPY . /opt/qt-openzwave/
 ARG BP_CLIENTID
 ARG BP_CLIENTKEY
+ARG BUILDNUMBER=0
 RUN cd qt-openzwave \
 	&& if [ -f Makefile ]; then /usr/lib/qt5/bin/qmake -r; make distclean; fi \
-	&& /usr/lib/qt5/bin/qmake -r "BP_CLIENTID=$BP_CLIENTID" "BP_CLIENTKEY=$BP_CLIENTKEY" \
+	&& /usr/lib/qt5/bin/qmake -r "BP_CLIENTID=$BP_CLIENTID" "BP_CLIENTKEY=$BP_CLIENTKEY" "BUILDNUMBER=$BUILDNUMBER" \
 	&&  make -j4 \
 	&& make install
 
