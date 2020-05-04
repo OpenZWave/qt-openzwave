@@ -405,6 +405,7 @@ void mqttpublisher::sendAssociationUpdate(quint8 node, quint8 group, rapidjson::
 
 bool mqttpublisher::delNodeTopic(quint8 node) {
     this->m_client->publish(QMqttTopicName(getNodeTopic(MQTT_OZW_NODE_TOPIC, node)), NULL, 0, true);
+    this->m_client->publish(QMqttTopicName(getNodeTopic(MQTT_OZW_STATS_NODE_TOPIC, node)), NULL, 0, true);
     return true;
 }
 
@@ -435,6 +436,11 @@ bool mqttpublisher::delInstanceTopic(quint8 node, quint8 instance) {
 
 bool mqttpublisher::delCommandClassTopic(quint8 node, quint8 instance, quint8 cc) {
     this->m_client->publish(QMqttTopicName(getCommandClassTopic(MQTT_OZW_COMMANDCLASS_TOPIC, node, instance, cc)), NULL, 0, true);
+    return true;
+}
+
+bool mqttpublisher::delAssociationTopic(quint8 node, quint8 group) {
+    this->m_client->publish(QMqttTopicName(getAssociationTopic(node, group)), NULL, 0, true);
     return true;
 }
 
@@ -568,6 +574,15 @@ void mqttpublisher::nodeAdded(quint8 node) {
 void mqttpublisher::nodeRemoved(quint8 node) {
     qCDebug(ozwmp) << "Publishing Event nodeRemoved:" << node;
     this->delNodeTopic(node);
+
+    if (this->m_assoications.find(node) != this->m_assoications.end()) {
+        quint8 group;
+        foreach(group, this->m_assoications[node]) {
+            this->delAssociationTopic(node, group);
+        }
+        this->m_assoications.remove(node);
+    }
+
     if (this->m_nodes.find(node) == this->m_nodes.end()) { 
         this->m_nodes.remove(node);
     }
@@ -575,6 +590,14 @@ void mqttpublisher::nodeRemoved(quint8 node) {
 void mqttpublisher::nodeReset(quint8 node) {
     qCDebug(ozwmp) << "Publishing Event nodeReset:" << node;
     this->delNodeTopic(node);
+    if (this->m_assoications.find(node) != this->m_assoications.end()) {
+        quint8 group;
+        foreach(group, this->m_assoications[node]) {
+            this->delAssociationTopic(node, group);
+        }
+        this->m_assoications.remove(node);
+    }
+
     if (this->m_nodes.find(node) == this->m_nodes.end()) { 
         this->m_nodes.remove(node);
     }
@@ -616,6 +639,13 @@ void mqttpublisher::nodeGroupChanged(quint8 node, quint8 group) {
     this->m_assocModel->populateJsonObject(*jsinstance, node, group, this->m_qtozwdeamon->getManager());
     this->sendAssociationUpdate(node, group, *jsinstance);
     delete jsinstance;
+    if (this->m_assoications.count(node) == 0 ) {
+        this->m_assoications.insert(node, QVector<quint8>());
+    }
+    QVector<quint8> groups = this->m_assoications[node];
+    if (groups.count(group) == 0) {
+        (this->m_assoications[node]).append(group);
+    }
 }
 
 void mqttpublisher::driverReady(quint32 homeID) {

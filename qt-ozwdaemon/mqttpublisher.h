@@ -104,6 +104,7 @@ private:
     bool delValueTopic(quint64);
     bool delInstanceTopic(quint8, quint8);
     bool delCommandClassTopic(quint8, quint8, quint8);
+    bool delAssociationTopic(quint8, quint8);
     rapidjson::Document *getInstanceJSON(quint8, quint8);
     rapidjson::Document *getCommandClassJSON(quint8, quint8, quint8);
 
@@ -111,6 +112,7 @@ private:
     QMap<quint8, rapidjson::Document *> m_nodes;
     QMap<quint8, QMap<quint8, rapidjson::Document *> > m_instances;
     QMap<quint8, QMap<quint8, QMap <quint8, rapidjson::Document *> > > m_CommandClasses;
+    QMap<quint8, QVector<quint8> > m_assoications;
     mqttNodeModel *m_nodeModel;
     QMap<quint64, rapidjson::Document *> m_values;
     mqttValueIDModel *m_valueModel;
