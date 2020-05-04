@@ -23,6 +23,9 @@
 #include "mqttpublisher.h"
 #endif
 
+#define DEF2STR2(x) #x
+#define DEF2STR(x) DEF2STR2(x)
+
 #if defined(Q_OS_LINUX)
 #define UNW_LOCAL_ONLY
 #include <libunwind.h>
@@ -67,6 +70,7 @@ void backtrace(int sig = 0)
     if ( name != symbol )
       free(name);
   }
+
 #ifndef HAVE_BP
     qWarning("Exiting....");
     exit(-1);
@@ -86,8 +90,7 @@ void* context, bool succeeded) {
         std::string proxy_host;
         std::string proxy_userpasswd;
         std::string url("https://sentry.io/api/");
-#define DEF2STR2(x) #x
-#define DEF2STR(x) DEF2STR2(x)
+
         const std::string id = DEF2STR(BP_CLIENTID);
         const std::string key = DEF2STR(BP_CLIENTKEY);
         url = url.append(id).append("/minidump/?sentry_key=").append(key);
@@ -112,7 +115,6 @@ void* context, bool succeeded) {
         else
             qWarning() << "Failed to Upload Crash MiniDump in " << descriptor.path();
     }
-
     return succeeded;
 }
 #endif
@@ -123,7 +125,7 @@ int main(int argc, char *argv[])
 
     QCoreApplication a(argc, argv);
     QCoreApplication::setApplicationName("ozwdaemon");
-    QCoreApplication::setApplicationVersion("0.1");
+    QCoreApplication::setApplicationVersion(DEF2STR(APP_VERSION));
     QCoreApplication::setOrganizationName("OpenZWave");
     QCoreApplication::setOrganizationDomain("openzwave.com");
 
@@ -200,7 +202,7 @@ int main(int argc, char *argv[])
         fputs(qPrintable("Serial Port is Required\n"), stderr);
         fputs("\n\n", stderr);
         fputs(qPrintable(parser.helpText()), stderr);
-        exit(-1);
+        QCoreApplication::quit();
     }
 
 #if 1
@@ -301,6 +303,11 @@ int main(int argc, char *argv[])
 
 
     qtozwdaemon daemon;
+    qInfo() << "Staring " << QCoreApplication::applicationName() << " Version: " << QCoreApplication::applicationVersion();
+    qInfo() << "OpenZWave Version: " << daemon.getManager()->getVersionAsString();
+    qInfo() << "QT-OpenZWave Version: " << daemon.getQTOpenZWave()->getVersion();
+    qInfo() << "QT Version: " << qVersion();
+
 #ifdef HAVE_MQTT
     mqttpublisher mqttpublisher(&settings);
     mqttpublisher.setOZWDaemon(&daemon);
@@ -330,5 +337,10 @@ int main(int argc, char *argv[])
     daemon.startOZW();
 //    assert(0);
 //    crash();
-    return a.exec();
+    int ret = a.exec();
+    qInfo() << "Shutting Down " << QCoreApplication::applicationName() << " Version: " << QCoreApplication::applicationVersion();
+    qInfo() << "OpenZWave Version: " << daemon.getManager()->getVersionAsString();
+    qInfo() << "QT-OpenZWave Version: " << daemon.getQTOpenZWave()->getVersion();
+    qInfo() << "QT Version: " << qVersion();
+    return ret;
 }

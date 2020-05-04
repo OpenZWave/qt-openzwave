@@ -31,7 +31,7 @@ mqttpublisher::mqttpublisher(QSettings *settings, QObject *parent) : QObject(par
         }
         if (mqttpass.isEmpty()) {
             qWarning() << "Couldn't Find MQTT_PASSWORD enviroment variable or Docker Secret File";
-            exit(-1);
+            QCoreApplication::quit();
         }
         this->m_client->setUsername(settings->value("MQTTUsername", "").toString());
         this->m_client->setPassword(mqttpass);
@@ -72,7 +72,7 @@ void mqttpublisher::cleanTopics(QMqttMessage msg) {
             if (jsmsg.HasMember("Status") && (QString::fromStdString(jsmsg["Status"].GetString()) != "Offline")) {
                 qCDebug(ozwmp) << "Unsubscribing from Topic Cleanup";
                 this->m_cleanTopicSubscription->unsubscribe();
-                exit(-1);
+                QCoreApplication::quit();
             }
             return;
         }
@@ -314,7 +314,7 @@ void mqttpublisher::updateLogStateChange()
     } else if (this->m_client->state() == QMqttClient::ClientState::Disconnected) {
         if (settings->value("StopOnFailure", false).toBool()) {
             qCWarning(ozwmp) << "Exiting on Failure";
-            exit(-1);
+            QCoreApplication::quit();
         }
         return;
     }
@@ -640,7 +640,7 @@ void mqttpublisher::driverFailed(quint32 homeID) {
     this->sendStatusUpdate();
     if (settings->value("StopOnFailure", false).toBool()) {
         qCWarning(ozwmp) << "Exiting on Failure";
-        exit(-1);
+        QCoreApplication::quit();
     }
 }
 void mqttpublisher::driverReset(quint32 homeID) {
