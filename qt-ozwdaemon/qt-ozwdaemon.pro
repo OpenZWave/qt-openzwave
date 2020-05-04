@@ -130,6 +130,18 @@ include(../qt-openzwave.pri)
 INCLUDEPATH += ../qt-openzwave/include/
 
 
+!isEmpty(BP_CLIENTKEY) {
+	!isEmpty(BP_CLIENTID) { 
+		CONFIG+=BreakPad
+		DEFINES+="BP_CLIENTKEY=\"$$BP_CLIENTKEY\""
+		DEFINES+="BP_CLIENTID=\"$$BP_CLIENTID\""
+		message("Have Breakpad ClientKey: $$BP_CLIENTKEY & BreakPad Client ID: $$BP_CLIENTID")
+	} else {
+		error("Missing BreakPad Client ID")
+	}
+}
+
+
 BreakPad {
     exists( $$top_srcdir/../breakpad/src/src/client/linux/libbreakpad_client.a) {
         INCLUDEPATH += $$top_srcdir/../breakpad/src/src/
@@ -140,6 +152,8 @@ BreakPad {
     } else {
 		error("Can't find BreakPad Library");
 	}
+} else {
+	message("Not Building Breakpad Client")
 }
 
 

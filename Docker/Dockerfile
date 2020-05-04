@@ -40,9 +40,11 @@ RUN git clone https://github.com/OpenZWave/open-zwave.git \
 	&& make -j4 \
 	&& make install
 COPY . /opt/qt-openzwave/
+ARG BP_CLIENTID
+ARG BP_CLIENTKEY
 RUN cd qt-openzwave \
 	&& if [ -f Makefile ]; then /usr/lib/qt5/bin/qmake -r; make distclean; fi \
-	&& /usr/lib/qt5/bin/qmake -r "CONFIG+=BreakPad" \
+	&& /usr/lib/qt5/bin/qmake -r "BP_CLIENTID=$BP_CLIENTID" "BP_CLIENTKEY=$BP_CLIENTKEY" \
 	&&  make -j4 \
 	&& make install
 

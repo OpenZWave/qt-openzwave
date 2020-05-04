@@ -85,7 +85,14 @@ void* context, bool succeeded) {
         std::map<string, string> files;
         std::string proxy_host;
         std::string proxy_userpasswd;
-        std::string url("https://sentry.io/api/1868130/minidump/?sentry_key=e086ba93030843199aab391947d205da");
+        std::string url("https://sentry.io/api/");
+#define DEF2STR2(x) #x
+#define DEF2STR(x) DEF2STR2(x)
+        const std::string id = DEF2STR(BP_CLIENTID);
+        const std::string key = DEF2STR(BP_CLIENTKEY);
+        url = url.append(id).append("/minidump/?sentry_key=").append(key);
+        
+        qWarning() << "Uploading MiniDump to " << url.c_str();
 
         // Add any attributes to the parameters map.
         // Note that several attributes are automatically extracted.
@@ -277,7 +284,6 @@ int main(int argc, char *argv[])
         settings.setValue("Instance", parser.value(MQTTInstance).toInt());
     }
     if (parser.isSet(MQTTTLS)) {
-        qDebug() << "mqtt tls set";
         settings.setValue("MQTTTLS", true);
     } else {
         settings.setValue("MQTTTLS", false);
