@@ -82,6 +82,13 @@ void MqttCommand::messageReceived(QMqttMessage msg) {
         qCWarning(ozwmc) << "Json Parse Error for " << GetCommand() << ": " << rapidjson::GetParseError_En(jmsg.GetParseError()) << ": " << msg.payload();
         return;     
     }
+    if (!jmsg.IsObject()) {
+        rapidjson::Document js;
+        QT2JS::SetString(js, "error", "Not a Valid JSDON Object");
+        emit sendCommandUpdate(GetCommand(), js);
+        qCWarning(ozwmc) << "Json Parse Error for " << GetCommand() << ": Not a Valid JSON Object: " << msg.payload();
+        return;     
+    }
     QString field;
     foreach (field, this->m_requiredIntFields) {
         if (!jmsg.HasMember(field.toStdString().c_str())) {
