@@ -4,18 +4,20 @@
 ############################################################
 
 # Set the base image to Alpine
-FROM debian:buster-slim as builder
+FROM debian:bullseye-slim as builder
 
 # File Author / Maintainer
 LABEL maintainer="justin@dynam.ac"
 
 WORKDIR /opt
 
-RUN echo 'APT::Default-Release "stable";' > /etc/apt/apt.conf.d/99defaultrelease \
-	&& echo 'deb     http://ftp.debian.org/debian/    unstable main contrib non-free' > /etc/apt/sources.list.d/unstable.list \
-	&& apt update
-RUN apt-get -y install rapidjson-dev git g++ cmake make pkgconf bash python wget joe mc libunwind-dev libcurl4-openssl-dev 
-RUN apt-get -y -t unstable install qt5-default libqt5websockets5-dev qtbase5-private-dev libqt5remoteobjects5-dev libqt5remoteobjects5-bin
+#RUN echo 'APT::Default-Release "stable";' > /etc/apt/apt.conf.d/99defaultrelease \
+#	&& echo 'deb     http://ftp.debian.org/debian/    unstable main contrib non-free' > /etc/apt/sources.list.d/unstable.list \
+#	&& apt update
+RUN apt update
+RUN apt-get -y install rapidjson-dev git cmake make pkgconf bash python wget joe mc libunwind-dev libcurl4-openssl-dev 
+RUN apt-get -y install g++
+RUN apt-get -y install qt5-default libqt5websockets5-dev qtbase5-private-dev libqt5remoteobjects5-dev libqt5remoteobjects5-bin
 #&& apt-get -y -t unstable install qtbase5-private-dev && apt-get -y -t unstable install libqt5remoteobjects5-dev libqt5remoteobjects5-bin 
 
 ENV PATH=$PATH:/opt/depot_tools/
@@ -49,17 +51,17 @@ RUN cd qt-openzwave \
 	&&  make -j4 \
 	&& make install
 
-FROM debian:buster-slim
+FROM debian:bullseye-slim
 
 LABEL maintainer="justin@dynam.ac"
 
 WORKDIR /opt
 
-RUN echo 'APT::Default-Release "stable";' > /etc/apt/apt.conf.d/99defaultrelease \
-    && echo 'deb http://ftp.debian.org/debian/ unstable main contrib non-free' > /etc/apt/sources.list.d/unstable.list \
-    && apt update \
+#RUN echo 'APT::Default-Release "stable";' > /etc/apt/apt.conf.d/99defaultrelease \
+#    && echo 'deb http://ftp.debian.org/debian/ unstable main contrib non-free' > /etc/apt/sources.list.d/unstable.list \
+RUN apt update \
     && apt-get -y install libunwind8 libcurl4 binutils \
-    && apt-get -y -t unstable install libqt5core5a libqt5network5 libqt5websockets5 libqt5remoteobjects5 \
+    && apt-get -y install libqt5core5a libqt5network5 libqt5websockets5 libqt5remoteobjects5 \
     && strip --remove-section=.note.ABI-tag /usr/lib/*/libQt5Core.so.5 \
     && apt-get -y purge binutils \
     && apt-get -y autoremove \
