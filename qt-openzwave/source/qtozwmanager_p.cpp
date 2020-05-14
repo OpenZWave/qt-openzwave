@@ -1053,6 +1053,13 @@ bool QTOZWManager_Internal::checkValueKey(quint64 _vidKey) {
 
 bool QTOZWManager_Internal::convertValueID(quint64 vidKey) {
     OpenZWave::ValueID vid(this->homeId(), vidKey);
+
+    this->m_valueModel->setValueData(vidKey, QTOZW_ValueIds::ValueIdColumns::Units, this->m_manager->GetValueUnits(vid).c_str(), true);
+    this->m_valueModel->setValueFlags(vidKey, QTOZW_ValueIds::ValueIDFlags::ValueSet, this->m_manager->IsValueSet(vid), true);
+    this->m_valueModel->setValueFlags(vidKey, QTOZW_ValueIds::ValueIDFlags::ValuePolled, this->m_manager->IsValuePolled(vid), true);
+    this->m_valueModel->setValueFlags(vidKey, QTOZW_ValueIds::ValueIDFlags::ChangeVerified, this->m_manager->GetChangeVerified(vid), true);
+
+
     switch (vid.GetType()) {
         case OpenZWave::ValueID::ValueType_Bool:
         {
@@ -1240,16 +1247,14 @@ void QTOZWManager_Internal::pvt_valueAdded(quint64 vidKey)
         this->m_valueModel->setValueData(vidKey, QTOZW_ValueIds::ValueIdColumns::Node, vid.GetNodeId(), true);
         this->m_valueModel->setValueData(vidKey, QTOZW_ValueIds::ValueIdColumns::Genre, vid.GetGenre(), true);
         this->m_valueModel->setValueData(vidKey, QTOZW_ValueIds::ValueIdColumns::Help, this->m_manager->GetValueHelp(vid).c_str(), true);
-        this->m_valueModel->setValueData(vidKey, QTOZW_ValueIds::ValueIdColumns::Units, this->m_manager->GetValueUnits(vid).c_str(), true);
         this->m_valueModel->setValueData(vidKey, QTOZW_ValueIds::ValueIdColumns::Min, this->m_manager->GetValueMin(vid), true);
         this->m_valueModel->setValueData(vidKey, QTOZW_ValueIds::ValueIdColumns::Max, this->m_manager->GetValueMax(vid), true);
         this->m_valueModel->setValueFlags(vidKey, QTOZW_ValueIds::ValueIDFlags::ReadOnly, this->m_manager->IsValueReadOnly(vid), true);
         this->m_valueModel->setValueFlags(vidKey, QTOZW_ValueIds::ValueIDFlags::WriteOnly, this->m_manager->IsValueWriteOnly(vid), true);
-        this->m_valueModel->setValueFlags(vidKey, QTOZW_ValueIds::ValueIDFlags::ValueSet, this->m_manager->IsValueSet(vid), true);
-        this->m_valueModel->setValueFlags(vidKey, QTOZW_ValueIds::ValueIDFlags::ValuePolled, this->m_manager->IsValuePolled(vid), true);
-        this->m_valueModel->setValueFlags(vidKey, QTOZW_ValueIds::ValueIDFlags::ChangeVerified, this->m_manager->GetChangeVerified(vid), true);
-        this->m_valueModel->finishTransaction(vidKey);
-        this->convertValueID(vidKey);
+        if (!this->convertValueID(vidKey)) {
+            /* this should be called in convertValue if the ValueType is supported... if not ... */
+            this->m_valueModel->finishTransaction(vidKey);
+        }
     } catch (OpenZWave::OZWException &e) {
         qCWarning(notifications) << "OZW Exception: " << e.GetMsg().c_str() << " at " << e.GetFile().c_str() <<":" << e.GetLine();
         emit this->error(QTOZWManagerErrorCodes::OZWException);

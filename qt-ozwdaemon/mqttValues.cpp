@@ -243,6 +243,20 @@ bool mqttValueIDModel::encodeValue(rapidjson::Document &value, quint64 vidKey) {
             break;
         }
     }
+    { /* send some of our "dynamic" attributes (Units etc) */
+        QVariant data = this->getValueData(vidKey, ValueIdColumns::Units);
+        if (!data.isNull()) {
+            changed |= QT2JS::SetString(value, "Units", data.toString());
+        }
+        data = this->getValueData(vidKey, ValueIdColumns::ValueFlags);
+        if (!data.isNull()) {
+            QBitArray flag = data.toBitArray();
+            QMetaEnum metaEnum = QMetaEnum::fromType<ValueIDFlags>();
+            changed |= QT2JS::SetBool(value, metaEnum.valueToKey(ValueIDFlags::ValueSet), flag.at(ValueIDFlags::ValueSet));
+            changed |= QT2JS::SetBool(value, metaEnum.valueToKey(ValueIDFlags::ValuePolled), flag.at(ValueIDFlags::ValuePolled));
+            changed |= QT2JS::SetBool(value, metaEnum.valueToKey(ValueIDFlags::ChangeVerified), flag.at(ValueIDFlags::ChangeVerified));
+        }
+    }
     return changed;
 }
 
