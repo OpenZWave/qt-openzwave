@@ -37,7 +37,10 @@ clean.depends=extraclean
 
 
 SOURCES += source/qt-openzwavedatabase.cpp
-HEADERS += include/qt-openzwave/qt-openzwavedatabase.h
+
+PUBLIC_HEADERS.files += include/qt-openzwave/qt-openzwavedatabase.h
+
+HEADERS += $$PUBLIC_HEADERS.files
 
 INCLUDEPATH += include/
 isEmpty(PREFIX) {
@@ -49,7 +52,7 @@ isEmpty(LIBDIR) {
     target.path = $$PREFIX/$$LIBDIR
 }	
 isEmpty(INCDIR) {
-    PUBLIC_HEADERS.path = $$[QT_INSTALL_HEADERS]/$$TARGET/
+    PUBLIC_HEADERS.path = $$[QT_INSTALL_HEADERS]/qt-openzwave/
 } else {
     PUBLIC_HEADERS.path = $$PREFIX/$$INCDIR
 }
