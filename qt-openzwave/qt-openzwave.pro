@@ -79,6 +79,7 @@ PUBLIC_HEADERS.files += include/qt-openzwave/qtopenzwave.h \
 	include/qt-openzwave/rep_qtozwoptions_source.h \
 	include/qt-openzwave/websocketiodevice.h
 
+PUBLIC_HEADERS.CONFIG += no_check_exist
 
 HEADERS += $$PUBLIC_HEADERS.files
 

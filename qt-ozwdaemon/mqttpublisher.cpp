@@ -622,6 +622,7 @@ void mqttpublisher::nodeReset(quint8 node) {
 }
 void mqttpublisher::nodeNaming(quint8 node) {
     qCDebug(ozwmp) << "Publishing Event nodeNaming:" << node;
+    this->m_nodeModel->populateJsonObject(*this->m_nodes[node], node, this->m_qtozwdaemon->getManager());
     QT2JS::SetString(*this->m_nodes[node], "Event", "nodeNaming");
     this->sendNodeUpdate(node);
 }
