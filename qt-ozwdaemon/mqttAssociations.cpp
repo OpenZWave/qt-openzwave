@@ -5,7 +5,8 @@
 
 Q_LOGGING_CATEGORY(ozwmpassociation, "ozw.mqtt.publisher.association");
 
-mqttAssociationModel::mqttAssociationModel(QObject *parent)
+mqttAssociationModel::mqttAssociationModel(QObject *parent) :
+    QTOZW_Associations(parent)
 {
 
 }

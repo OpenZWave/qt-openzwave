@@ -5,7 +5,9 @@
 
 Q_LOGGING_CATEGORY(ozwmpvalue, "ozw.mqtt.publisher.value");
 
-mqttValueIDModel::mqttValueIDModel(QObject *parent) {
+mqttValueIDModel::mqttValueIDModel(QObject *parent) :
+    QTOZW_ValueIds(parent)
+{
 
 }
 QVariant mqttValueIDModel::getValueData(quint64 vidKey, ValueIdColumns col) {

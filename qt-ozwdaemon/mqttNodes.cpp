@@ -6,7 +6,8 @@
 
 Q_LOGGING_CATEGORY(ozwmpnode, "ozw.mqtt.publisher.node");
 
-mqttNodeModel::mqttNodeModel(QObject *parent)
+mqttNodeModel::mqttNodeModel(QObject *parent) :
+    QTOZW_Nodes(parent)
 {
 
 }

@@ -102,7 +102,7 @@ qtHaveModule(mqtt) {
     		mqttcommands/requestNetworkUpdate.h \
     		mqttcommands/IsNodeFailed.h \
     		mqttcommands/checkLatestConfigFileRevision.h \
-    		mqttcommands/CheckLatestMFSRevision.h \
+    		mqttcommands/checkLatestMFSRevision.h \
     		mqttcommands/downloadLatestConfigFileRevision.h \
     		mqttcommands/downloadLatestMFSRevision.h \
 			mqttcommands/setValue.h \

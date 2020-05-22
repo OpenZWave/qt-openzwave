@@ -46,7 +46,7 @@ mqttpublisher::mqttpublisher(QSettings *settings, QObject *parent) : QObject(par
     connect(this->m_client, &QMqttClient::stateChanged, this, &mqttpublisher::updateLogStateChange);
     connect(this->m_client, &QMqttClient::disconnected, this, &mqttpublisher::brokerDisconnected);
     connect(this->m_client, &QMqttClient::errorChanged, this, &mqttpublisher::brokerError);
-    connect(m_client, &QMqttClient::pingResponseReceived, this, [this]() {
+    connect(m_client, &QMqttClient::pingResponseReceived, this, []() {
         const QString content = QDateTime::currentDateTime().toString()
                     + QLatin1String(" PingResponse")
                     + QLatin1Char('\n');

@@ -439,13 +439,16 @@ inline QDataStream &operator>>(QDataStream &ds, OptionList &obj) {
 
 Q_DECLARE_METATYPE(NotificationTypes::QTOZW_Notification_Code)
 
+
 inline QDataStream &operator<<(QDataStream &ds, const NotificationTypes::QTOZW_Notification_Code &obj) {
     ds << static_cast<qint32>(obj);
     return ds;
 }
 
 inline QDataStream &operator>>(QDataStream &ds, NotificationTypes::QTOZW_Notification_Code &obj) {
-    ds >> obj;
+    qint32 val;
+    ds >> val;
+    obj = static_cast<NotificationTypes::QTOZW_Notification_Code>(val);
     return ds;
 }
 
@@ -457,7 +460,9 @@ inline QDataStream &operator<<(QDataStream &ds, const NotificationTypes::QTOZW_N
 }
 
 inline QDataStream &operator>>(QDataStream &ds, NotificationTypes::QTOZW_Notification_User &obj) {
-    ds >> obj;
+    qint32 val;
+    ds >> val;
+    obj = static_cast<NotificationTypes::QTOZW_Notification_User>(val);
     return ds;
 }
 
@@ -470,7 +475,9 @@ inline QDataStream &operator<<(QDataStream &ds, const NotificationTypes::QTOZW_N
 }
 
 inline QDataStream &operator>>(QDataStream &ds, NotificationTypes::QTOZW_Notification_Controller_Error &obj) {
-    ds >> obj;
+    qint32 val;
+    ds >> val;
+    obj = static_cast<NotificationTypes::QTOZW_Notification_Controller_Error>(val);
     return ds;
 }
 
@@ -482,7 +489,9 @@ inline QDataStream &operator<<(QDataStream &ds, const NotificationTypes::QTOZW_N
 }
 
 inline QDataStream &operator>>(QDataStream &ds, NotificationTypes::QTOZW_Notification_Controller_State &obj) {
-    ds >> obj;
+    qint32 val;
+    ds >> val;
+    obj = static_cast<NotificationTypes::QTOZW_Notification_Controller_State>(val);
     return ds;
 }
 
@@ -494,7 +503,9 @@ inline QDataStream &operator<<(QDataStream &ds, const NotificationTypes::QTOZW_N
 }
 
 inline QDataStream &operator>>(QDataStream &ds, NotificationTypes::QTOZW_Notification_Controller_Cmd &obj) {
-    ds >> obj;
+    qint32 val;
+    ds >> val;
+    obj = static_cast<NotificationTypes::QTOZW_Notification_Controller_Cmd>(val);
     return ds;
 }
 

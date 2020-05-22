@@ -10,6 +10,7 @@
 class mqttValueIDModel : public QTOZW_ValueIds {
     Q_OBJECT
 public:
+    using QTOZW_ValueIds::setData;
     explicit mqttValueIDModel(QObject *parent = nullptr);
     QVariant getValueData(quint64, ValueIdColumns);
     bool populateJsonObject(rapidjson::Document &, quint64, QTOZWManager *);
