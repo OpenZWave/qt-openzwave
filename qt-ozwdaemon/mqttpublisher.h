@@ -33,6 +33,7 @@ class mqttpublisher : public QObject
     Q_OBJECT
 public:
     explicit mqttpublisher(QSettings *setting, QObject *parent = nullptr);
+    ~mqttpublisher();
     void setOZWDaemon(qtozwdaemon *ozwdaemon);
     QTOZWManager *getQTOZWManager();
     void sendCommandUpdate(QString, rapidjson::Document &);

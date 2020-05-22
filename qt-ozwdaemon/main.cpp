@@ -23,6 +23,8 @@
 #include "mqttpublisher.h"
 #endif
 
+Q_LOGGING_CATEGORY(ozwdaemon, "ozw.daemon");
+
 #define DEF2STR2(x) #x
 #define DEF2STR(x) DEF2STR2(x)
 
@@ -37,9 +39,9 @@ void backtrace(int sig = 0)
   unw_cursor_t cursor;
   unw_context_t context;
 
-  qWarning() << "=============================";
-  qWarning() << "CRASH!!! - Dumping Backtrace:";
-  qWarning() << "=============================";
+  qCWarning(ozwdaemon) << "=============================";
+  qCWarning(ozwdaemon) << "CRASH!!! - Dumping Backtrace:";
+  qCWarning(ozwdaemon) << "=============================";
 
   unw_getcontext(&context);
   unw_init_local(&cursor, &context);
@@ -66,7 +68,7 @@ void backtrace(int sig = 0)
         static_cast<uintptr_t>(sp),
         name,
         static_cast<uintptr_t>(off));
-    qWarning() << message;
+    qCWarning(ozwdaemon) << message;
     if ( name != symbol )
       free(name);
   }
@@ -83,7 +85,7 @@ void crash() { volatile int* a = (int*)(NULL); *a = 1; }
 static bool dumpCallback(const google_breakpad::MinidumpDescriptor& descriptor,
 void* context, bool succeeded) {
     backtrace();
-    qWarning() << "dumpCallback Succeeded: " << succeeded << " at " << descriptor.path();
+    qCWarning(ozwdaemon) << "dumpCallback Succeeded: " << succeeded << " at " << descriptor.path();
     if (succeeded == true) {
         std::map<string, string> parameters;
         std::map<string, string> files;
@@ -95,7 +97,7 @@ void* context, bool succeeded) {
         const std::string key = DEF2STR(BP_CLIENTKEY);
         url = url.append(id).append("/minidump/?sentry_key=").append(key);
         
-        qWarning() << "Uploading MiniDump to " << url.c_str();
+        qCWarning(ozwdaemon) << "Uploading MiniDump to " << url.c_str();
 
         // Add any attributes to the parameters map.
         // Note that several attributes are automatically extracted.
@@ -111,9 +113,9 @@ void* context, bool succeeded) {
         std::string response, error;
         bool success = google_breakpad::HTTPUpload::SendRequest(url, parameters, files, proxy_host, proxy_userpasswd, "", &response, NULL, &error);
         if (success)
-            qWarning() << "Uploaded Crash minidump With ID: " <<  response.c_str();
+            qCWarning(ozwdaemon) << "Uploaded Crash minidump With ID: " <<  response.c_str();
         else
-            qWarning() << "Failed to Upload Crash MiniDump in " << descriptor.path();
+            qCWarning(ozwdaemon) << "Failed to Upload Crash MiniDump in " << descriptor.path();
     }
     return succeeded;
 }
@@ -209,7 +211,9 @@ int main(int argc, char *argv[])
     QLoggingCategory::setFilterRules("*.debug=true\n" 
                                      "qt.remoteobjects.debug=false\n"
                                      "qt.remoteobjects.models.debug=false\n"
-                                     "qt.remoteobjects.io.debug=false");
+                                     "qt.remoteobjects.io.debug=false\n"
+                                     "qt.mqtt.connection.debug=false\n"
+                                     "qt.mqtt.connection.verbose.debug=false");
 #else
     QLoggingCategory::setFilterRules("*.debug=true");
 #endif
@@ -224,12 +228,12 @@ int main(int argc, char *argv[])
 
     QString path, dbPath, userPath;
     foreach(path, PossibleDBPaths) {
-        qDebug() << "Checking " << QFileInfo(QDir::toNativeSeparators(path+"/config/manufacturer_specific.xml")).absoluteFilePath() << " for manufacturer_specific.xml";
+        qCDebug(ozwdaemon) << "Checking " << QFileInfo(QDir::toNativeSeparators(path+"/config/manufacturer_specific.xml")).absoluteFilePath() << " for manufacturer_specific.xml";
         if (QFileInfo(QDir::toNativeSeparators(path+"/config/manufacturer_specific.xml")).exists()) {
             dbPath = QFileInfo(QDir::toNativeSeparators(path+"/config/manufacturer_specific.xml")).absoluteFilePath();
             break;
         }
-        qDebug() << "Checking " << QFileInfo(QDir::toNativeSeparators(path+"../config/manufacturer_specific.xml")).absoluteFilePath() << " for manufacturer_specific.xml";
+        qCDebug(ozwdaemon) << "Checking " << QFileInfo(QDir::toNativeSeparators(path+"../config/manufacturer_specific.xml")).absoluteFilePath() << " for manufacturer_specific.xml";
         if (QFile(QDir::toNativeSeparators(path+"/../config/manufacturer_specific.xml")).exists()) {
             dbPath = QFileInfo(QDir::toNativeSeparators(path+"/../config/manufacturer_specific.xml")).absoluteFilePath();
             break;
@@ -244,12 +248,12 @@ int main(int argc, char *argv[])
     PossibleDBPaths << "/usr/share/qt5/";
     
     foreach(path, PossibleDBPaths) {
-        qDebug() << "Checking " << QFileInfo(QDir::toNativeSeparators(path+"/config/Options.xml")).absoluteFilePath() << " for options.xml";
+        qCDebug(ozwdaemon) << "Checking " << QFileInfo(QDir::toNativeSeparators(path+"/config/Options.xml")).absoluteFilePath() << " for options.xml";
         if (QFileInfo(QDir::toNativeSeparators(path+"/config/options.xml")).exists()) {
             userPath = QFileInfo(QDir::toNativeSeparators(path+"/config/options.xml")).absoluteFilePath();
             break;
         }
-        qDebug() << "Checking " << QFileInfo(QDir::toNativeSeparators(path+"/../config/options.xml")).absoluteFilePath() << " for options.xml";
+        qCDebug(ozwdaemon) << "Checking " << QFileInfo(QDir::toNativeSeparators(path+"/../config/options.xml")).absoluteFilePath() << " for options.xml";
         if (QFile(QDir::toNativeSeparators(path+"/../config/options.xml")).exists()) {
             userPath = QFileInfo(QDir::toNativeSeparators(path+"/../config/options.xml")).absoluteFilePath();
             break;
@@ -267,8 +271,8 @@ int main(int argc, char *argv[])
         }
     }
 #endif
-    qDebug() << "DBPath: " << dbPath;
-    qDebug() << "userPath: " << userPath;
+    qCDebug(ozwdaemon) << "DBPath: " << dbPath;
+    qCDebug(ozwdaemon) << "userPath: " << userPath;
 
     QSettings settings(userPath.append("/ozwdaemon.ini"), QSettings::IniFormat);
 
@@ -303,10 +307,11 @@ int main(int argc, char *argv[])
 
 
     qtozwdaemon daemon;
-    qInfo() << "Staring " << QCoreApplication::applicationName() << " Version: " << QCoreApplication::applicationVersion();
-    qInfo() << "OpenZWave Version: " << daemon.getManager()->getVersionAsString();
-    qInfo() << "QT-OpenZWave Version: " << daemon.getQTOpenZWave()->getVersion();
-    qInfo() << "QT Version: " << qVersion();
+    QObject::connect(&a, &QCoreApplication::aboutToQuit, &daemon, &qtozwdaemon::aboutToQuit);
+    qCInfo(ozwdaemon) << "Staring " << QCoreApplication::applicationName() << " Version: " << QCoreApplication::applicationVersion();
+    qCInfo(ozwdaemon) << "OpenZWave Version: " << daemon.getManager()->getVersionAsString();
+    qCInfo(ozwdaemon) << "QT-OpenZWave Version: " << daemon.getQTOpenZWave()->getVersion();
+    qCInfo(ozwdaemon) << "QT Version: " << qVersion();
 
 #ifdef HAVE_MQTT
     mqttpublisher mqttpublisher(&settings);
@@ -318,7 +323,7 @@ int main(int argc, char *argv[])
     QString bppath =  QString::fromLocal8Bit(qgetenv("BP_DB_PATH"));
     if (bppath.isEmpty())
         bppath = QStandardPaths::standardLocations(QStandardPaths::TempLocation).at(0);
-    qInfo() << "Using BreakPad - Crash Directory: " << bppath;
+    qCInfo(ozwdaemon) << "Using BreakPad - Crash Directory: " << bppath;
     /* ensure path exists */
     QDir dir;
     if (!dir.exists(bppath)) {
@@ -332,15 +337,22 @@ int main(int argc, char *argv[])
 #endif
 #endif
 
+    struct sigaction term;
+    term.sa_handler = qtozwdaemon::termSignalHandler;
+    sigemptyset(&term.sa_mask);
+    term.sa_flags |= SA_RESTART;
+
+    if (sigaction(SIGTERM, &term, 0))
+       return -2;
 
     daemon.setSerialPort(parser.value(serialPort));
     daemon.startOZW();
 //    assert(0);
 //    crash();
     int ret = a.exec();
-    qInfo() << "Shutting Down " << QCoreApplication::applicationName() << " Version: " << QCoreApplication::applicationVersion();
-    qInfo() << "OpenZWave Version: " << daemon.getManager()->getVersionAsString();
-    qInfo() << "QT-OpenZWave Version: " << daemon.getQTOpenZWave()->getVersion();
-    qInfo() << "QT Version: " << qVersion();
+    qCInfo(ozwdaemon) << "Shutting Down " << QCoreApplication::applicationName() << " Version: " << QCoreApplication::applicationVersion();
+    qCInfo(ozwdaemon) << "OpenZWave Version: " << daemon.getManager()->getVersionAsString();
+    qCInfo(ozwdaemon) << "QT-OpenZWave Version: " << daemon.getQTOpenZWave()->getVersion();
+    qCInfo(ozwdaemon) << "QT Version: " << qVersion();
     return ret;
 }

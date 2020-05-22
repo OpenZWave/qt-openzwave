@@ -1,9 +1,23 @@
 #include <QtDebug>
+#include <sys/socket.h>
+#include <unistd.h>
+
 #include "qtozwdaemon.h"
 
+Q_DECLARE_LOGGING_CATEGORY(ozwdaemon);
+
+int qtozwdaemon::sigtermFd[2] = {0, 0};
 
 qtozwdaemon::qtozwdaemon(QObject *parent) : QObject(parent)
 {
+    
+    if (::socketpair(AF_UNIX, SOCK_STREAM, 0, sigtermFd))
+       qCCritical(ozwdaemon) << "Couldn't create TERM socketpair";
+    snTerm = new QSocketNotifier(sigtermFd[1], QSocketNotifier::Read, this);
+    connect(snTerm, SIGNAL(activated(int)), this, SLOT(handleSigTerm()));
+    
+    
+    
     QRegularExpression re("^(0[xX][a-fA-F0-9]{2}[ ,]*){16}$");
     
     QString NetworkKeyTest = qgetenv("OZW_NETWORK_KEY");
@@ -11,9 +25,9 @@ qtozwdaemon::qtozwdaemon(QObject *parent) : QObject(parent)
     QRegularExpressionMatch match = re.match(NetworkKeyTest);
     if (match.hasMatch()) {
         NetworkKey = NetworkKeyTest;
-        qInfo() << "Network Key Specified in Enviroment is Valid";
+        qCInfo(ozwdaemon) << "Network Key Specified in Enviroment is Valid";
     } else {
-        qWarning() << "Network Key Specified in Enviroment is Invalid";
+        qCWarning(ozwdaemon) << "Network Key Specified in Enviroment is Invalid";
     }
     
     QFile nwk_file("/run/secrets/OZW_Network_Key");
@@ -23,17 +37,17 @@ qtozwdaemon::qtozwdaemon(QObject *parent) : QObject(parent)
         match = re.match(NetworkKeyTest);
         if (match.hasMatch()) {
             NetworkKey = NetworkKeyTest;
-            qInfo() << "Network Key From File is Valid - Using File";
+            qCInfo(ozwdaemon) << "Network Key From File is Valid - Using File";
         } else {
             if (NetworkKey.isEmpty()) {
-                qWarning() << "Network Key From File in Invalid - No Valid Network Key Found in Enviroment or File";
+                qCWarning(ozwdaemon) << "Network Key From File in Invalid - No Valid Network Key Found in Enviroment or File";
             }
         }
     } else {
-        qInfo() << "Didn't Find Network Key File. Skipping";
+        qCInfo(ozwdaemon) << "Didn't Find Network Key File. Skipping";
     }
     if (!NetworkKey.isEmpty()) {
-        qInfo() << "We Have what appears to be a valid Network Key - Passing to OZW";
+        qCInfo(ozwdaemon) << "We Have what appears to be a valid Network Key - Passing to OZW";
     }
 
     QString AuthKey = qgetenv("OZW_AUTH_KEY");
@@ -43,14 +57,11 @@ qtozwdaemon::qtozwdaemon(QObject *parent) : QObject(parent)
         AuthKey = ak_file.readLine().trimmed();
         ak_file.close();
     } else {
-        qInfo() << "Didn't Find Auth Key File. Skipping";
+        qCInfo(ozwdaemon) << "Didn't Find Auth Key File. Skipping";
     }
     if (!AuthKey.isEmpty()) {
-        qInfo() << "Using Remote Authentication Key";
+        qCInfo(ozwdaemon) << "Using Remote Authentication Key";
     }
-
-
-
 
     this->m_openzwave = new QTOpenZwave(this);
     this->m_qtozwmanager = this->m_openzwave->GetManager();
@@ -65,11 +76,11 @@ qtozwdaemon::qtozwdaemon(QObject *parent) : QObject(parent)
 }
 
 void qtozwdaemon::QTOZW_Ready() {
-    qDebug() << "Ready";
+    qCDebug(ozwdaemon) << "Ready";
 }
 void qtozwdaemon::startOZW() {
     if (getSerialPort().size() == 0) {
-        qWarning() << "Serial Port is not Set";
+        qCWarning(ozwdaemon) << "Serial Port is not Set";
         return;
     }
     this->m_qtozwmanager->open(this->getSerialPort());
@@ -81,4 +92,25 @@ QTOZWManager *qtozwdaemon::getManager() {
 
 QTOpenZwave *qtozwdaemon::getQTOpenZWave() {
     return this->m_openzwave;
+}
+
+void qtozwdaemon::termSignalHandler(int unused) {
+    Q_UNUSED(unused);
+        char a = 1;
+    ::write(sigtermFd[0], &a, sizeof(a));
+}
+
+void qtozwdaemon::handleSigTerm()
+{
+    snTerm->setEnabled(false);
+    char tmp;
+    ::read(sigtermFd[1], &tmp, sizeof(tmp));
+    qCInfo(ozwdaemon) << "Recieved SIGTERM: Shutting down ozwdaemon";
+    this->m_qtozwmanager->close();
+    QCoreApplication::exit(0);
+    snTerm->setEnabled(true);
+}
+
+void qtozwdaemon::aboutToQuit() {
+    this->m_qtozwmanager->close();
 }

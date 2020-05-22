@@ -60,6 +60,12 @@ mqttpublisher::mqttpublisher(QSettings *settings, QObject *parent) : QObject(par
     this->m_client->setWillRetain(true);
     connect(&this->m_statsTimer, &QTimer::timeout, this, &mqttpublisher::doStats);
 }
+mqttpublisher::~mqttpublisher() {
+    rapidjson::Document willMsg(rapidjson::kObjectType);
+    QT2JS::SetString(willMsg, "Status", "Offline");
+    this->m_client->publish(QMqttTopicName(getTopic(MQTT_OZW_STATUS_TOPIC)), QT2JS::getJSON(willMsg), 0, true);
+}
+
 
 void mqttpublisher::cleanTopics(QMqttMessage msg) {
     if (msg.retain() == true) { 
@@ -67,12 +73,13 @@ void mqttpublisher::cleanTopics(QMqttMessage msg) {
         rapidjson::Document jsmsg;
         jsmsg.Parse(msg.payload());
         if (msg.topic().name() == getTopic("status")) {
-            qCDebug(ozwmp) << msg.payload();
             /* when our status message is anything other than Offline, drop the Subscription */
             if (jsmsg.HasMember("Status") && (QString::fromStdString(jsmsg["Status"].GetString()) != "Offline")) {
-                qCDebug(ozwmp) << "Unsubscribing from Topic Cleanup";
+                qCWarning(ozwmp) << "Another ozwdaemon is running for Instance " << settings->value("Instance", 1).toInt();
+                qCWarning(ozwmp) << "If not, please clean up the MQTT Topic: " << msg.topic().name();
+                qCWarning(ozwmp) << msg.payload();
                 this->m_cleanTopicSubscription->unsubscribe();
-                QCoreApplication::quit();
+                QCoreApplication::exit(-1);
             }
             return;
         }

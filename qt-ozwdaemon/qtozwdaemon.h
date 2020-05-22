@@ -3,6 +3,7 @@
 
 #include <QObject>
 #include <QString>
+#include <QSocketNotifier>
 
 
 #include <qt-openzwave/qtopenzwave.h>
@@ -19,15 +20,20 @@ public:
     void startOZW();
     QTOZWManager *getManager();
     QTOpenZwave *getQTOpenZWave();
+    static void termSignalHandler(int unused);
 signals:
 
 public slots:
     void QTOZW_Ready();
+    void handleSigTerm();
+    void aboutToQuit();
 
 private:
     QTOpenZwave *m_openzwave;
     QTOZWManager *m_qtozwmanager;
     QString m_serialPort;
+    static int sigtermFd[2];
+    QSocketNotifier *snTerm;
 };
 
 #endif // QTOZWDAEMON_H
