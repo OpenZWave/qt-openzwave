@@ -15,5 +15,5 @@ bool MqttCommand_EnablePoll::processMessage(rapidjson::Document &msg) {
     }
 
     QTOZWManager *mgr = getOZWManager();
-    return this->sendSimpleStatus(mgr->enablePoll(msg["ValueIdKey"].GetUint64(), msg["Intensity"].GetUint()));
+    return this->sendSimpleStatus(mgr->enablePoll(msg["ValueIDKey"].GetUint64(), msg["Intensity"].GetUint()));
 }
