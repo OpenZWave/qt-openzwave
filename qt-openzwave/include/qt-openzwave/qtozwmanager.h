@@ -79,6 +79,7 @@ public:
     Q_PROPERTY(QDir OZWDatabasePath READ OZWDatabasePath WRITE setOZWDatabasePath)
     Q_PROPERTY(QDir OZWUserPath READ OZWUserPath WRITE setOZWUserPath)
     Q_PROPERTY(QString m_clientAuth READ getClientAuth WRITE setClientAuth)
+    Q_PROPERTY(connectionType m_connectionType READ getConnectionType);
 
     QTOZWManager(QObject *parent = nullptr);
     bool initilizeBase();
@@ -86,6 +87,7 @@ public:
     bool initilizeReplica(QUrl remoteaddress);
 
     bool isRunning();
+    
 
     QAbstractItemModel *getNodeModel();
     QAbstractItemModel *getValueModel();
@@ -175,7 +177,7 @@ public:
 
     void setClientAuth(QString auth) { this->m_clientAuth = auth; }
     QString getClientAuth() { return this->m_clientAuth; }
-
+    connectionType getConnectionType() { return this->m_connectionType; }
 
 Q_SIGNALS:
     void ready();
