@@ -345,7 +345,7 @@ int main(int argc, char *argv[])
 
     if (sigaction(SIGTERM, &term, 0))
        return -2;
-#ifndef _WIN32
+#endif
 
     daemon.setSerialPort(parser.value(serialPort));
     daemon.startOZW();
