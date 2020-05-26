@@ -76,6 +76,7 @@ public:
         ConnectionErrorState
     };
     Q_ENUM(connectionStatus);
+
     Q_PROPERTY(QDir OZWDatabasePath READ OZWDatabasePath WRITE setOZWDatabasePath)
     Q_PROPERTY(QDir OZWUserPath READ OZWUserPath WRITE setOZWUserPath)
     Q_PROPERTY(QString m_clientAuth READ getClientAuth WRITE setClientAuth)
@@ -168,7 +169,7 @@ public:
 
     bool enablePoll(quint64 vidKey, quint8 intensity);
     bool disablePoll(quint64 vidKey);
-
+    
     QString getInstanceLabel(quint64 vidKey);
     QString getValueLabel(quint64 vidKey);
     QString getValueUnits(quint64 vidKey);
@@ -180,6 +181,12 @@ public:
     bool isValueSet(quint64 vidKey);
     bool isValuePolled(quint64 vidKey);
     bool isValueValid(quint64 vidKey);
+    quint8 getNodeId(quint64 vidKey);
+    quint8 getInstance(quint64 vidKey);
+    ValueTypes::valueGenre getGenre(quint64 vidKey);
+    quint8 getComamndClass(quint64 vidKey);
+    quint16 getIndex(quint64 vidKey);
+    ValueTypes::valueType getType(quint64 vidKey);
 
 
 /* Property Methods */

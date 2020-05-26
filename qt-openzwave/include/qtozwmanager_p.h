@@ -153,6 +153,14 @@ public Q_SLOTS:
     bool isValueSet(quint64 vidKey);
     bool isValuePolled(quint64 vidKey);
     bool isValueValid(quint64 vidKey);
+    quint8 getNodeId(quint64 vidKey);
+    quint8 getInstance(quint64 vidKey);
+    ValueTypes::valueGenre getGenre(quint64 vidKey);
+    quint8 getComamndClass(quint64 vidKey);
+    quint16 getIndex(quint64 vidKey);
+    ValueTypes::valueType getType(quint64 vidKey);
+
+
 
     /* these slots are called from our OZWNotification Class. Applications should not call them */
     void pvt_valueAdded(quint64 vidKey);

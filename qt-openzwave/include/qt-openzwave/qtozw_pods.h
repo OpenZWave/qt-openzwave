@@ -509,5 +509,62 @@ inline QDataStream &operator>>(QDataStream &ds, NotificationTypes::QTOZW_Notific
     return ds;
 }
 
+class QTOPENZWAVESHARED_EXPORT ValueTypes : public QObject {
+    Q_OBJECT;
+    public:
+    enum valueGenre {
+        Basic = 0,
+        User,
+        Config,
+        System,
+        InvalidGenre = 255
+    };
+    Q_ENUM(valueGenre);
+    enum valueType {
+        Bool = 0,
+        Byte,
+        Decimal,
+        Int,
+        List,
+        Schedule,
+        Short,
+        String,
+        Button,
+        Raw,
+        BitSet,
+        InvalidType = 255
+    };
+    Q_ENUM(valueType);
+};
+
+Q_DECLARE_METATYPE(ValueTypes::valueGenre)
+
+inline QDataStream &operator<<(QDataStream &ds, const ValueTypes::valueGenre &obj) {
+    ds << static_cast<qint32>(obj);
+    return ds;
+}
+
+inline QDataStream &operator>>(QDataStream &ds, ValueTypes::valueGenre &obj) {
+    qint32 val;
+    ds >> val;
+    obj = static_cast<ValueTypes::valueGenre>(val);
+    return ds;
+}
+
+Q_DECLARE_METATYPE(ValueTypes::valueType)
+
+inline QDataStream &operator<<(QDataStream &ds, const ValueTypes::valueType &obj) {
+    ds << static_cast<qint32>(obj);
+    return ds;
+}
+
+inline QDataStream &operator>>(QDataStream &ds, ValueTypes::valueType &obj) {
+    qint32 val;
+    ds >> val;
+    obj = static_cast<ValueTypes::valueType>(val);
+    return ds;
+}
+
+
 
 #endif // QTOZW_PODS_H

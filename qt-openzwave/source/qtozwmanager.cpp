@@ -672,7 +672,24 @@ bool QTOZWManager::isValuePolled(quint64 vidKey) {
 bool QTOZWManager::isValueValid(quint64 vidKey) {
     CALL_DPTR_RTN(isValueValid(vidKey), bool);
 }
-
+quint8 QTOZWManager::getNodeId(quint64 vidKey) {
+    CALL_DPTR_RTN(getNodeId(vidKey), quint8);
+}
+quint8 QTOZWManager::getInstance(quint64 vidKey) {
+    CALL_DPTR_RTN(getInstance(vidKey), quint8);
+}
+ValueTypes::valueGenre QTOZWManager::getGenre(quint64 vidKey) {
+    CALL_DPTR_RTN(getGenre(vidKey), ValueTypes::valueGenre);
+}
+quint8 QTOZWManager::getComamndClass(quint64 vidKey) {
+    CALL_DPTR_RTN(getComamndClass(vidKey), quint8);
+}
+quint16 QTOZWManager::getIndex(quint64 vidKey) {
+    CALL_DPTR_RTN(getIndex(vidKey), quint16);
+}
+ValueTypes::valueType QTOZWManager::getType(quint64 vidKey) {
+    CALL_DPTR_RTN(getType(vidKey), ValueTypes::valueType);    
+}
 
 void QTOZWManager::setOZWDatabasePath(QDir path) {
     if (path.exists())

@@ -1046,6 +1046,125 @@ bool QTOZWManager_Internal::isValueValid(quint64 vidKey) {
     }
     return false;
 }
+quint8 QTOZWManager_Internal::getNodeId(quint64 vidKey) {
+    if (!this->checkHomeId())
+        return 0;
+    if (!this->checkValueKey(vidKey))
+        return 0;
+    try {
+        OpenZWave::ValueID vid(this->homeId(), vidKey);
+        return vid.GetNodeId();
+    } catch (OpenZWave::OZWException &e) {
+        emit this->error(QTOZWManagerErrorCodes::OZWException);
+        this->setErrorString(e.GetMsg().c_str());
+    }
+    return 0;
+}
+quint8 QTOZWManager_Internal::getInstance(quint64 vidKey) {
+    if (!this->checkHomeId())
+        return 0;
+    if (!this->checkValueKey(vidKey))
+        return 0;
+    try {
+        OpenZWave::ValueID vid(this->homeId(), vidKey);
+        return vid.GetInstance();
+    } catch (OpenZWave::OZWException &e) {
+        emit this->error(QTOZWManagerErrorCodes::OZWException);
+        this->setErrorString(e.GetMsg().c_str());
+    }
+    return 0;
+}
+ValueTypes::valueGenre QTOZWManager_Internal::getGenre(quint64 vidKey) {
+    if (!this->checkHomeId())
+        return ValueTypes::valueGenre::InvalidGenre;
+    if (!this->checkValueKey(vidKey))
+        return ValueTypes::valueGenre::InvalidGenre;
+    try {
+        OpenZWave::ValueID vid(this->homeId(), vidKey);
+        switch (vid.GetGenre()) {
+            case OpenZWave::ValueID::ValueGenre_Basic:
+                return ValueTypes::valueGenre::Basic;
+            case OpenZWave::ValueID::ValueGenre_User:
+                return ValueTypes::valueGenre::User;
+            case OpenZWave::ValueID::ValueGenre_Config:
+                return ValueTypes::valueGenre::Config;
+            case OpenZWave::ValueID::ValueGenre_System:
+                return ValueTypes::valueGenre::System;
+            case OpenZWave::ValueID::ValueGenre_Count:
+                return ValueTypes::valueGenre::InvalidGenre;
+        }
+    } catch (OpenZWave::OZWException &e) {
+        emit this->error(QTOZWManagerErrorCodes::OZWException);
+        this->setErrorString(e.GetMsg().c_str());
+    }
+    return ValueTypes::valueGenre::InvalidGenre;
+}
+
+quint8 QTOZWManager_Internal::getComamndClass(quint64 vidKey) {
+    if (!this->checkHomeId())
+        return 0;
+    if (!this->checkValueKey(vidKey))
+        return 0;
+    try {
+        OpenZWave::ValueID vid(this->homeId(), vidKey);
+        return vid.GetCommandClassId();
+    } catch (OpenZWave::OZWException &e) {
+        emit this->error(QTOZWManagerErrorCodes::OZWException);
+        this->setErrorString(e.GetMsg().c_str());
+    }
+    return 0;
+}
+quint16 QTOZWManager_Internal::getIndex(quint64 vidKey) {
+    if (!this->checkHomeId())
+        return 0;
+    if (!this->checkValueKey(vidKey))
+        return 0;
+    try {
+        OpenZWave::ValueID vid(this->homeId(), vidKey);
+        return vid.GetIndex();
+    } catch (OpenZWave::OZWException &e) {
+        emit this->error(QTOZWManagerErrorCodes::OZWException);
+        this->setErrorString(e.GetMsg().c_str());
+    }
+    return 0;
+}
+ValueTypes::valueType QTOZWManager_Internal::getType(quint64 vidKey) {
+    if (!this->checkHomeId())
+        return ValueTypes::valueType::InvalidType;
+    if (!this->checkValueKey(vidKey))
+        return ValueTypes::valueType::InvalidType;
+    try {
+        OpenZWave::ValueID vid(this->homeId(), vidKey);
+        switch (vid.GetType()) {
+            case OpenZWave::ValueID::ValueType_Bool:
+                return ValueTypes::valueType::Bool;
+            case OpenZWave::ValueID::ValueType_Byte:
+                return ValueTypes::valueType::Byte;
+            case OpenZWave::ValueID::ValueType_Decimal:
+                return ValueTypes::valueType::Decimal;
+            case OpenZWave::ValueID::ValueType_Int:
+                return ValueTypes::valueType::Int;
+            case OpenZWave::ValueID::ValueType_List:
+                return ValueTypes::valueType::List;
+            case OpenZWave::ValueID::ValueType_Schedule:
+                return ValueTypes::valueType::Schedule;
+            case OpenZWave::ValueID::ValueType_Short:
+                return ValueTypes::valueType::Short;
+            case OpenZWave::ValueID::ValueType_String:
+                return ValueTypes::valueType::String;
+            case OpenZWave::ValueID::ValueType_Button:
+                return ValueTypes::valueType::Button;
+            case OpenZWave::ValueID::ValueType_Raw:
+                return ValueTypes::valueType::Raw;
+            case OpenZWave::ValueID::ValueType_BitSet:
+                return ValueTypes::valueType::BitSet;
+        }
+    } catch (OpenZWave::OZWException &e) {
+        emit this->error(QTOZWManagerErrorCodes::OZWException);
+        this->setErrorString(e.GetMsg().c_str());
+    }
+    return ValueTypes::valueType::InvalidType;
+}
 
 
 

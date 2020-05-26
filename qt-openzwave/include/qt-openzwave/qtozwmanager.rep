@@ -170,4 +170,11 @@ class QTOZWManager {
     SLOT(bool isValueSet(quint64 vidKey))
     SLOT(bool isValuePolled(quint64 vidKey))
     SLOT(bool isValueValid(quint64 vidKey))
+    SLOT(quint8 getNodeId(quint64 vidKey))
+    SLOT(quint8 getInstance(quint64 vidKey))
+    SLOT(ValueTypes::valueGenre getGenre(quint64 vidKey))
+    SLOT(quint8 getComamndClass(quint64 vidKey))
+    SLOT(quint16 getIndex(quint64 vidKey))
+    SLOT(ValueTypes::valueType getType(quint64 vidKey))
+
 }
