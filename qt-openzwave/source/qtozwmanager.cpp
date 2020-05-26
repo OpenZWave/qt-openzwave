@@ -290,7 +290,10 @@ void QTOZWManager::onManagerStateChange(QRemoteObjectReplica::State state) {
     this->m_managerState = state;
     if (state == QRemoteObjectReplica::State::Valid) {
         emit remoteConnectionStatus(connectionStatus::GotManagerData, QAbstractSocket::UnknownSocketError);
+    } else if (state == QRemoteObjectReplica::State::SignatureMismatch) {
+        emit remoteConnectionStatus(connectionStatus::VersionMisMatchError, QAbstractSocket::UnknownSocketError);
     }
+
     this->checkReplicaReady();
 }
 
@@ -299,6 +302,8 @@ void QTOZWManager::onOptionsStateChange(QRemoteObjectReplica::State state) {
     this->m_optionsState = state;
     if (state == QRemoteObjectReplica::State::Valid) {
         emit remoteConnectionStatus(connectionStatus::GotOptionData, QAbstractSocket::UnknownSocketError);
+    } else if (state == QRemoteObjectReplica::State::SignatureMismatch) {
+        emit remoteConnectionStatus(connectionStatus::VersionMisMatchError, QAbstractSocket::UnknownSocketError);
     }
     this->checkReplicaReady();
 }

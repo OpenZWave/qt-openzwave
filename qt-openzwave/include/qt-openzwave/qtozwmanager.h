@@ -73,7 +73,8 @@ public:
         GotValueData,
         GotAssociationData,
         GotLogData,
-        ConnectionErrorState
+        ConnectionErrorState,
+        VersionMisMatchError
     };
     Q_ENUM(connectionStatus);
 
