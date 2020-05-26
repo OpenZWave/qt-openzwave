@@ -892,6 +892,163 @@ bool QTOZWManager_Internal::refreshValue(quint64 vidKey) {
     return false;
 }
 
+QString QTOZWManager_Internal::getInstanceLabel(quint64 vidKey) {
+    if (!this->checkHomeId())
+        return QString();
+    if (!this->checkValueKey(vidKey))
+        return QString();
+    try {
+        OpenZWave::ValueID vid(this->homeId(), vidKey);
+        return this->m_manager->GetInstanceLabel(vid).c_str();
+    } catch (OpenZWave::OZWException &e) {
+        emit this->error(QTOZWManagerErrorCodes::OZWException);
+        this->setErrorString(e.GetMsg().c_str());
+    }
+    return QString();
+}
+QString QTOZWManager_Internal::getValueLabel(quint64 vidKey) {
+    if (!this->checkHomeId())
+        return QString();
+    if (!this->checkValueKey(vidKey))
+        return QString();
+    try {
+        OpenZWave::ValueID vid(this->homeId(), vidKey);
+        return this->m_manager->GetValueLabel(vid).c_str();
+    } catch (OpenZWave::OZWException &e) {
+        emit this->error(QTOZWManagerErrorCodes::OZWException);
+        this->setErrorString(e.GetMsg().c_str());
+    }
+    return QString();
+}
+QString QTOZWManager_Internal::getValueUnits(quint64 vidKey) {
+    if (!this->checkHomeId())
+        return QString();
+    if (!this->checkValueKey(vidKey))
+        return QString();
+    try {
+        OpenZWave::ValueID vid(this->homeId(), vidKey);
+        return this->m_manager->GetValueUnits(vid).c_str();
+    } catch (OpenZWave::OZWException &e) {
+        emit this->error(QTOZWManagerErrorCodes::OZWException);
+        this->setErrorString(e.GetMsg().c_str());
+    }
+    return QString();
+}
+QString QTOZWManager_Internal::getValueHelp(quint64 vidKey) {
+    if (!this->checkHomeId())
+        return QString();
+    if (!this->checkValueKey(vidKey))
+        return QString();
+    try {
+        OpenZWave::ValueID vid(this->homeId(), vidKey);
+        return this->m_manager->GetValueHelp(vid).c_str();
+    } catch (OpenZWave::OZWException &e) {
+        emit this->error(QTOZWManagerErrorCodes::OZWException);
+        this->setErrorString(e.GetMsg().c_str());
+    }
+    return QString();
+}
+qint32 QTOZWManager_Internal::getValueMin(quint64 vidKey) {
+    if (!this->checkHomeId())
+        return 0;
+    if (!this->checkValueKey(vidKey))
+        return 0;
+    try {
+        OpenZWave::ValueID vid(this->homeId(), vidKey);
+        return this->m_manager->GetValueMin(vid);
+    } catch (OpenZWave::OZWException &e) {
+        emit this->error(QTOZWManagerErrorCodes::OZWException);
+        this->setErrorString(e.GetMsg().c_str());
+    }
+    return 0;
+}
+qint32 QTOZWManager_Internal::getValueMax(quint64 vidKey) {
+    if (!this->checkHomeId())
+        return 0;
+    if (!this->checkValueKey(vidKey))
+        return 0;
+    try {
+        OpenZWave::ValueID vid(this->homeId(), vidKey);
+        return this->m_manager->GetValueMax(vid);
+    } catch (OpenZWave::OZWException &e) {
+        emit this->error(QTOZWManagerErrorCodes::OZWException);
+        this->setErrorString(e.GetMsg().c_str());
+    }
+    return 0;
+}
+bool QTOZWManager_Internal::isValueReadOnly(quint64 vidKey) {
+    if (!this->checkHomeId())
+        return false;
+    if (!this->checkValueKey(vidKey))
+        return false;
+    try {
+        OpenZWave::ValueID vid(this->homeId(), vidKey);
+        return this->m_manager->IsValueReadOnly(vid);
+    } catch (OpenZWave::OZWException &e) {
+        emit this->error(QTOZWManagerErrorCodes::OZWException);
+        this->setErrorString(e.GetMsg().c_str());
+    }
+    return false;
+}
+bool QTOZWManager_Internal::isValueWriteOnly(quint64 vidKey) {
+    if (!this->checkHomeId())
+        return false;
+    if (!this->checkValueKey(vidKey))
+        return false;
+    try {
+        OpenZWave::ValueID vid(this->homeId(), vidKey);
+        return this->m_manager->IsValueWriteOnly(vid);
+    } catch (OpenZWave::OZWException &e) {
+        emit this->error(QTOZWManagerErrorCodes::OZWException);
+        this->setErrorString(e.GetMsg().c_str());
+    }
+    return false;
+}
+bool QTOZWManager_Internal::isValueSet(quint64 vidKey) {
+    if (!this->checkHomeId())
+        return false;
+    if (!this->checkValueKey(vidKey))
+        return false;
+    try {
+        OpenZWave::ValueID vid(this->homeId(), vidKey);
+        return this->m_manager->IsValueSet(vid);
+    } catch (OpenZWave::OZWException &e) {
+        emit this->error(QTOZWManagerErrorCodes::OZWException);
+        this->setErrorString(e.GetMsg().c_str());
+    }
+    return false;
+}
+bool QTOZWManager_Internal::isValuePolled(quint64 vidKey) {
+    if (!this->checkHomeId())
+        return false;
+    if (!this->checkValueKey(vidKey))
+        return false;
+    try {
+        OpenZWave::ValueID vid(this->homeId(), vidKey);
+        return this->m_manager->IsValuePolled(vid);
+    } catch (OpenZWave::OZWException &e) {
+        emit this->error(QTOZWManagerErrorCodes::OZWException);
+        this->setErrorString(e.GetMsg().c_str());
+    }
+    return false;
+}
+bool QTOZWManager_Internal::isValueValid(quint64 vidKey) {
+    if (!this->checkHomeId())
+        return false;
+    if (!this->checkValueKey(vidKey))
+        return false;
+    try {
+        OpenZWave::ValueID vid(this->homeId(), vidKey);
+        return this->m_manager->IsValueValid(vid);
+    } catch (OpenZWave::OZWException &e) {
+        emit this->error(QTOZWManagerErrorCodes::OZWException);
+        this->setErrorString(e.GetMsg().c_str());
+    }
+    return false;
+}
+
+
+
 bool QTOZWManager_Internal::AddAssociation (quint8 const _nodeId, quint8 const _groupIdx, QString const target) {
     if (!this->checkHomeId())
         return false;

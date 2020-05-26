@@ -153,12 +153,21 @@ class QTOZWManager {
     SLOT(bool AddAssociation (quint8 const _nodeId, quint8 const _groupIdx, QString const target))
     SLOT(bool RemoveAssociation (quint8 const _nodeId, quint8 const _groupIdx, QString const target))
 
-
-
     SLOT(qint32 getPollInterval())
     SLOT(void setPollInterval(qint32 interval, bool intervalBetweenPolls))
     SLOT(bool enablePoll(quint64 vidKey, quint8 intensity))
     SLOT(bool disablePoll(quint64 vidKey))
     SLOT(void syncroniseNodeNeighbors(quint8 node))
 
+    SLOT(QString getInstanceLabel(quint64 vidKey))
+    SLOT(QString getValueLabel(quint64 vidKey))
+    SLOT(QString getValueUnits(quint64 vidKey))
+    SLOT(QString getValueHelp(quint64 vidKey))
+    SLOT(qint32 getValueMin(quint64 vidKey))
+    SLOT(qint32 getValueMax(quint64 vidKey))
+    SLOT(bool isValueReadOnly(quint64 vidKey))
+    SLOT(bool isValueWriteOnly(quint64 vidKey))
+    SLOT(bool isValueSet(quint64 vidKey))
+    SLOT(bool isValuePolled(quint64 vidKey))
+    SLOT(bool isValueValid(quint64 vidKey))
 }

@@ -639,6 +639,40 @@ bool QTOZWManager::enablePoll(quint64 vidKey, quint8 intensity) {
 bool QTOZWManager::disablePoll(quint64 vidKey) {
     CALL_DPTR_RTN(disablePoll(vidKey), bool);
 }
+QString QTOZWManager::getInstanceLabel(quint64 vidKey) {
+    CALL_DPTR_RTN(getInstanceLabel(vidKey), QString);
+}
+QString QTOZWManager::getValueLabel(quint64 vidKey) {
+    CALL_DPTR_RTN(getValueLabel(vidKey), QString);
+}
+QString QTOZWManager::getValueUnits(quint64 vidKey) {
+    CALL_DPTR_RTN(getValueUnits(vidKey), QString);
+}
+QString QTOZWManager::getValueHelp(quint64 vidKey) {
+    CALL_DPTR_RTN(getValueHelp(vidKey), QString);
+}
+qint32 QTOZWManager::getValueMin(quint64 vidKey) {
+    CALL_DPTR_RTN(getValueMin(vidKey), qint32);
+}
+qint32 QTOZWManager::getValueMax(quint64 vidKey) {
+    CALL_DPTR_RTN(getValueMax(vidKey), qint32);
+}
+bool QTOZWManager::isValueReadOnly(quint64 vidKey) {
+    CALL_DPTR_RTN(isValueReadOnly(vidKey), bool);
+}
+bool QTOZWManager::isValueWriteOnly(quint64 vidKey) {
+    CALL_DPTR_RTN(isValueWriteOnly(vidKey), bool);
+}
+bool QTOZWManager::isValueSet(quint64 vidKey) {
+    CALL_DPTR_RTN(isValueSet(vidKey), bool);
+}
+bool QTOZWManager::isValuePolled(quint64 vidKey) {
+    CALL_DPTR_RTN(isValuePolled(vidKey), bool);
+}
+bool QTOZWManager::isValueValid(quint64 vidKey) {
+    CALL_DPTR_RTN(isValueValid(vidKey), bool);
+}
+
 
 void QTOZWManager::setOZWDatabasePath(QDir path) {
     if (path.exists())

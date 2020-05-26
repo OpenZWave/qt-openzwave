@@ -11,7 +11,7 @@ QT       += websockets
 
 TEMPLATE = lib
 
-VERSION = 1.0.0
+VERSION = 1.1.0
 
 CONFIG += silent file_copies force_debug_info
 !versionAtLeast(QT_VERSION, 5.12.0):error("Use at least Qt version 5.12.0")

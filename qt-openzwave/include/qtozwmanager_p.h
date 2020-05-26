@@ -142,6 +142,18 @@ public Q_SLOTS:
     bool enablePoll(quint64 vidKey, quint8 intensity);
     bool disablePoll(quint64 vidKey);
 
+    QString getInstanceLabel(quint64 vidKey);
+    QString getValueLabel(quint64 vidKey);
+    QString getValueUnits(quint64 vidKey);
+    QString getValueHelp(quint64 vidKey);
+    qint32 getValueMin(quint64 vidKey);
+    qint32 getValueMax(quint64 vidKey);
+    bool isValueReadOnly(quint64 vidKey);
+    bool isValueWriteOnly(quint64 vidKey);
+    bool isValueSet(quint64 vidKey);
+    bool isValuePolled(quint64 vidKey);
+    bool isValueValid(quint64 vidKey);
+
     /* these slots are called from our OZWNotification Class. Applications should not call them */
     void pvt_valueAdded(quint64 vidKey);
     void pvt_valueRemoved(quint64 vidKey);

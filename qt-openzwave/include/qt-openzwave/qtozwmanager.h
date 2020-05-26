@@ -169,6 +169,19 @@ public:
     bool enablePoll(quint64 vidKey, quint8 intensity);
     bool disablePoll(quint64 vidKey);
 
+    QString getInstanceLabel(quint64 vidKey);
+    QString getValueLabel(quint64 vidKey);
+    QString getValueUnits(quint64 vidKey);
+    QString getValueHelp(quint64 vidKey);
+    qint32 getValueMin(quint64 vidKey);
+    qint32 getValueMax(quint64 vidKey);
+    bool isValueReadOnly(quint64 vidKey);
+    bool isValueWriteOnly(quint64 vidKey);
+    bool isValueSet(quint64 vidKey);
+    bool isValuePolled(quint64 vidKey);
+    bool isValueValid(quint64 vidKey);
+
+
 /* Property Methods */
     QDir OZWDatabasePath() { return this->m_ozwdatabasepath; }
     QDir OZWUserPath() { return this->m_ozwuserpath; }
