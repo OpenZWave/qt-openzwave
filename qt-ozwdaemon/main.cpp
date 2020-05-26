@@ -337,6 +337,7 @@ int main(int argc, char *argv[])
 #endif
 #endif
 
+#ifndef _WIN32
     struct sigaction term;
     term.sa_handler = qtozwdaemon::termSignalHandler;
     sigemptyset(&term.sa_mask);
@@ -344,6 +345,7 @@ int main(int argc, char *argv[])
 
     if (sigaction(SIGTERM, &term, 0))
        return -2;
+#ifndef _WIN32
 
     daemon.setSerialPort(parser.value(serialPort));
     daemon.startOZW();

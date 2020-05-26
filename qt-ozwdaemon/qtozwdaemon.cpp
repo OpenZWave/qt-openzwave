@@ -1,21 +1,26 @@
 #include <QtDebug>
+#ifndef _WIN32
 #include <sys/socket.h>
+#endif
 #include <unistd.h>
 
 #include "qtozwdaemon.h"
 
 Q_DECLARE_LOGGING_CATEGORY(ozwdaemon);
 
+#ifndef _WIN32
 int qtozwdaemon::sigtermFd[2] = {0, 0};
+#endif
 
 qtozwdaemon::qtozwdaemon(QObject *parent) : QObject(parent)
 {
-    
+
+#ifndef _WIN32    
     if (::socketpair(AF_UNIX, SOCK_STREAM, 0, sigtermFd))
        qCCritical(ozwdaemon) << "Couldn't create TERM socketpair";
     snTerm = new QSocketNotifier(sigtermFd[1], QSocketNotifier::Read, this);
     connect(snTerm, SIGNAL(activated(int)), this, SLOT(handleSigTerm()));
-    
+#endif    
     
     
     QRegularExpression re("^(0[xX][a-fA-F0-9]{2}[ ,]*){16}$");
@@ -95,13 +100,16 @@ QTOpenZwave *qtozwdaemon::getQTOpenZWave() {
 }
 
 void qtozwdaemon::termSignalHandler(int unused) {
+#ifndef _WIN32
     Q_UNUSED(unused);
         char a = 1;
     ::write(sigtermFd[0], &a, sizeof(a));
+#endif
 }
 
 void qtozwdaemon::handleSigTerm()
 {
+#ifndef _WIN32
     snTerm->setEnabled(false);
     char tmp;
     ::read(sigtermFd[1], &tmp, sizeof(tmp));
@@ -109,6 +117,7 @@ void qtozwdaemon::handleSigTerm()
     this->m_qtozwmanager->close();
     QCoreApplication::exit(0);
     snTerm->setEnabled(true);
+#endif
 }
 
 void qtozwdaemon::aboutToQuit() {
