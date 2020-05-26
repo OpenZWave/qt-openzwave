@@ -1,8 +1,8 @@
 #include <QtDebug>
 #ifndef _WIN32
 #include <sys/socket.h>
-#endif
 #include <unistd.h>
+#endif
 
 #include "qtozwdaemon.h"
 
