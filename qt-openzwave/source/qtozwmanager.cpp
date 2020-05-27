@@ -40,6 +40,7 @@
 QTOZWManager::QTOZWManager(QObject *parent)
     : QObject(parent),
     m_running(false),
+    m_ready(false),
     m_ozwdatabasepath(""),
     m_ozwuserpath(""),
     m_clientAuth("")
@@ -111,9 +112,9 @@ bool QTOZWManager::initilizeSource(bool enableServer) {
             this->m_sourceNode->enableRemoting(this->d_ptr_internal->getAssociationModel(), "QTOZW_associationModel", roles);
             this->m_sourceNode->enableRemoting(this->d_ptr_internal->getLogModel(), "QTOZW_Log");
         }
-    }
+    } 
     connectSignals();
-    emit this->ready();
+    setReady();
     return true;
 }
 
@@ -345,13 +346,23 @@ void QTOZWManager::checkReplicaReady() {
         /* have to connect all the d_ptr SIGNALS to our SIGNALS now */
         qCInfo(manager) << "checkReplicaReady is Ready!";
         connectSignals();
-        emit this->ready();
+        setReady();
     }
 }
 
 bool QTOZWManager::isRunning() {
     return this->m_running;
 }
+
+bool QTOZWManager::isReady() {
+    return this->m_ready;
+}
+
+void QTOZWManager::setReady() {
+    this->m_ready = true;
+    emit this->ready();
+}
+
 
 void QTOZWManager::setStarted() {
     qCDebug(manager) << "setStarted";

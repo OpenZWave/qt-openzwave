@@ -82,6 +82,7 @@ public:
     Q_PROPERTY(QDir OZWUserPath READ OZWUserPath WRITE setOZWUserPath)
     Q_PROPERTY(QString m_clientAuth READ getClientAuth WRITE setClientAuth)
     Q_PROPERTY(connectionType m_connectionType READ getConnectionType);
+    Q_PROPERTY(bool m_ready READ isReady NOTIFY ready);
 
     QTOZWManager(QObject *parent = nullptr);
     bool initilizeBase();
@@ -89,6 +90,7 @@ public:
     bool initilizeReplica(QUrl remoteaddress);
 
     bool isRunning();
+    bool isReady();
     
 
     QAbstractItemModel *getNodeModel();
@@ -274,6 +276,7 @@ private Q_SLOTS:
 private:
     void checkReplicaReady();
     void connectSignals();
+    void setReady();
     connectionType m_connectionType;
     QRemoteObjectNode *m_replicaNode;
     QRemoteObjectHost *m_sourceNode;
@@ -296,6 +299,7 @@ private:
     QAbstractItemModel *m_logModel;
 
     bool m_running;
+    bool m_ready;
     QDir m_ozwdatabasepath;
     QDir m_ozwuserpath;
     QString m_clientAuth;
