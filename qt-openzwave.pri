@@ -4,6 +4,7 @@ unix {
     macx {
         ICON = res/ozw_logo.icns
         QMAKE_POST_LINK=$$top_srcdir/tools/updaterpath.sh $(TARGET)
+        QMAKE_MACOSX_DEPLOYMENT_TARGET = 10.11
     }
     !macx: QMAKE_CXXFLAGS += -Wno-deprecated-copy
 }
