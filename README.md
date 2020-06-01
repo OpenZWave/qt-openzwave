@@ -16,7 +16,6 @@ There are two types of Docker Containers published:
 * A dedicated container that just contians ozwdaemon to bridge between the Z-Wave Network and a MQTT Broker
 * A "All In One" container that also contains [ozw-admin](https://github.com/OpenZWave/ozw-admin) that exposes a VNC Port or a Web Based VNC Interface to manage your Z-Wave Network. 
 
-
 Running the dedicated container (ozwdaemon):
 -------------
 Start a container with one of the following examples:
@@ -92,6 +91,16 @@ For the All In One Image:
 * WEB_PORT - The Port to run the Integrated Webserver for a web based VNC Client (NoVNC). Defaults to 7800
 
 the `--security-opt seccomp=unconfined` is needed to generate meaningfull backtraces, otherwise it will be difficult for us to debug.
+
+** Interacting with the Docker Containers **
+
+For the Dedicated Container, Logs are captured by Docker and can be viewed with docker logs <-f> <container id>
+
+For the All In One Container - Logs are saved in your Volume Mapped to the container under the logs directory.
+
+You can connect to ozw-admin via a dedicated VNC Client on the VNC_PORT (defaults to 5901) or open your browser to the IP address of your host on port 7800 (eg: http://192.168.1.2:7800/) to open a Web Based VNC Session
+
+(once you connect to the ozw-admin via the VNC Client, Select Remote Connnection and put in the IP address of your host on port 1983)
 
 ** MQTT API Documentation: ** 
 
