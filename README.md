@@ -92,7 +92,7 @@ For the All In One Image:
 
 the `--security-opt seccomp=unconfined` is needed to generate meaningfull backtraces, otherwise it will be difficult for us to debug.
 
-** Interacting with the Docker Containers **
+**Interacting with the Docker Containers**
 
 For the Dedicated Container, Logs are captured by Docker and can be viewed with docker logs <-f> <container id>
 
@@ -102,7 +102,7 @@ You can connect to ozw-admin via a dedicated VNC Client on the VNC_PORT (default
 
 (once you connect to the ozw-admin via the VNC Client, Select Remote Connnection and put in the IP address of your host on port 1983)
 
-** MQTT API Documentation: ** 
+**MQTT API Documentation:** 
 
 Please see [docs/MQTT.md](docs/MQTT.md) for complete instructions, including settting up Network Keys etc
 
