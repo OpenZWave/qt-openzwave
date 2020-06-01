@@ -10,7 +10,7 @@ This is a [QT](https://www.qt.io) Wrapper for OpenZWave and contains ozwdaemon -
 </p>
   
 
-A [Docker Container](https://hub.docker.com/r/openzwave/ozwdaemon) to connect to the [new Z-Wave Integration for Home Assistant - python-openzwave-mqtt](https://www.home-assistant.io/integrations/ozw/)
+A [Docker Container](https://hub.docker.com/r/openzwave/ozwdaemon) to connect to the [new Z-Wave Integration for Home Assistant - OpenZWave (Beta)](https://www.home-assistant.io/integrations/ozw/)
 
 There are two types of Docker Containers published:
 * A dedicated container that just contians ozwdaemon to bridge between the Z-Wave Network and a MQTT Broker
