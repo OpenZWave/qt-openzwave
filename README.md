@@ -120,7 +120,7 @@ Other Dependancies:
 * [QtMQTT Module](https://github.com/qt/qtmqtt) - You should clone and checkout the branch that matches your QT version
 * [open-zwave](https://github.com/OpenZWave/open-zwave) - You should clone open-zwave in the same top level as qt-openzwave
 
-For Actual Build Instructions - Please consult the [docker/Dockerfile](docker/Dockerfile) - You can ignore the depot_tools (Google Breakpad) as this is used for Crash Reporting that should not be used for non-official builds
+For Actual Build Instructions - Please consult the [docker/Dockerfile](Docker/Dockerfile) - You can ignore the depot_tools (Google Breakpad) as this is used for Crash Reporting that should not be used for non-official builds
 
 For All-In-One Container - Please also consult the ozw-admin repository for the requirements to build ozw-admin. 
 
