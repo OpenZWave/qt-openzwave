@@ -82,7 +82,7 @@ public:
     Q_PROPERTY(QDir OZWUserPath READ OZWUserPath WRITE setOZWUserPath)
     Q_PROPERTY(QString m_clientAuth READ getClientAuth WRITE setClientAuth)
     Q_PROPERTY(connectionType m_connectionType READ getConnectionType);
-    Q_PROPERTY(bool m_ready READ isReady NOTIFY ready);
+    Q_PROPERTY(bool m_ready READ isReady NOTIFY readyChanged);
 
     QTOZWManager(QObject *parent = nullptr);
     bool initilizeBase();
@@ -205,7 +205,7 @@ public:
     connectionType getConnectionType() { return this->m_connectionType; }
 
 Q_SIGNALS:
-    void ready();
+    void readyChanged(bool ready);
     void valueAdded(quint64 vidKey);
     void valueRemoved(quint64 vidKey);
     void valueChanged(quint64 vidKey);
@@ -282,7 +282,7 @@ private Q_SLOTS:
 private:
     void checkReplicaReady();
     void connectSignals();
-    void setReady();
+    void setReady(bool);
     connectionType m_connectionType;
     QRemoteObjectNode *m_replicaNode;
     QRemoteObjectHost *m_sourceNode;

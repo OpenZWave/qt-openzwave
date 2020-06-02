@@ -24,7 +24,7 @@ public:
 signals:
 
 public slots:
-    void QTOZW_Ready();
+    void QTOZW_Ready(bool ready);
     void handleSigTerm();
     void aboutToQuit();
 

@@ -45,7 +45,7 @@
 
 /** \brief Statistics Relating to Communications with Nodes on your Network
  */
-struct NodeStatistics {
+typedef struct NodeStatistics {
         quint32 sentCount; /**< Number of Packets Sent to the Node */
         quint32 sentFailed; /**< Number of Packets that Failed to be acknowledged by the Node or Controller */
         quint32 retries; /**< Number of times we have had to Retry sending packets to the Node */
@@ -79,7 +79,7 @@ struct NodeStatistics {
         quint8 routeTries; /**< The Number of attempts the Controller made to route the packet to the Node */
         quint8 lastFailedLinkFrom; /**< The Last Failed Link From */
         quint8 lastFailedLinkTo; /**< The Last Failed Link To */
-};
+} NodeStatistics;
 
 /** \cond DO_NOT_DOCUMENT
  */
@@ -183,7 +183,7 @@ inline QDataStream &operator>>(QDataStream &ds, NodeStatistics &obj) {
 
 /** \brief Statistics Relating to Communications with the Network
  */
-struct DriverStatistics {
+typedef struct DriverStatistics {
     quint32 	m_SOFCnt;
     quint32 	m_ACKWaiting;
     quint32 	m_readAborts;
@@ -206,7 +206,7 @@ struct DriverStatistics {
     quint32 	m_routedbusy;
     quint32 	m_broadcastReadCnt;
     quint32 	m_broadcastWriteCnt;
-};
+} DriverStatistics;
 
 Q_DECLARE_METATYPE(DriverStatistics)
 

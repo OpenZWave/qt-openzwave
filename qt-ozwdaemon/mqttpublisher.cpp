@@ -260,7 +260,7 @@ void mqttpublisher::setOZWDaemon(qtozwdaemon *ozwdaemon) {
     this->m_valueModel = static_cast<mqttValueIDModel *>(manager->getValueModel());
     this->m_assocModel = static_cast<mqttAssociationModel *>(manager->getAssociationModel());
 
-    connect(manager, &QTOZWManager::ready, this, &mqttpublisher::ready);
+    connect(manager, &QTOZWManager::readyChanged, this, &mqttpublisher::ready);
     connect(manager, &QTOZWManager::valueAdded, this, &mqttpublisher::valueAdded);
     connect(manager, &QTOZWManager::valueChanged, this, &mqttpublisher::valueChanged);
     connect(manager, &QTOZWManager::valueRemoved, this, &mqttpublisher::valueRemoved);
@@ -451,11 +451,13 @@ bool mqttpublisher::delAssociationTopic(quint8 node, quint8 group) {
     return true;
 }
 
-void mqttpublisher::ready() {
-    qCDebug(ozwmp) << "Publishing Event ready:";
-    this->clearStatusUpdate();
-    QT2JS::SetString(this->m_ozwstatus, "Status", "Ready");
-    this->sendStatusUpdate();
+void mqttpublisher::ready(bool ready) {
+    if (ready) {
+        qCDebug(ozwmp) << "Publishing Event ready:";
+        this->clearStatusUpdate();
+        QT2JS::SetString(this->m_ozwstatus, "Status", "Ready");
+        this->sendStatusUpdate();
+    }
 }
 void mqttpublisher::valueAdded(quint64 vidKey) {
     qCDebug(ozwmp) << "Publishing Event valueAdded:" << vidKey;

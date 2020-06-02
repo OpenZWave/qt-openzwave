@@ -63,6 +63,7 @@ WebSocketIoDevice::WebSocketIoDevice(QWebSocket *webSocket, bool client, QString
     m_authattempts(0)
 {
     open(QIODevice::ReadWrite);
+    connect(webSocket, &QWebSocket::aboutToClose, this, &WebSocketIoDevice::aboutToClose);
     connect(webSocket, &QWebSocket::disconnected, this, &WebSocketIoDevice::disconnected);
     connect(webSocket, &QWebSocket::textMessageReceived, this, &WebSocketIoDevice::processTextMessage);
     if (!m_client) {

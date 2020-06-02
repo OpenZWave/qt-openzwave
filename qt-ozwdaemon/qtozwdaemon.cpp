@@ -70,7 +70,7 @@ qtozwdaemon::qtozwdaemon(QObject *parent) : QObject(parent)
 
     this->m_openzwave = new QTOpenZwave(this);
     this->m_qtozwmanager = this->m_openzwave->GetManager();
-    QObject::connect(this->m_qtozwmanager, &QTOZWManager::ready, this, &qtozwdaemon::QTOZW_Ready);
+    QObject::connect(this->m_qtozwmanager, &QTOZWManager::readyChanged, this, &qtozwdaemon::QTOZW_Ready);
     this->m_qtozwmanager->initilizeSource(true);
     if (!NetworkKey.isEmpty()) {
         this->m_qtozwmanager->getOptions()->setNetworkKey(NetworkKey);
@@ -80,8 +80,8 @@ qtozwdaemon::qtozwdaemon(QObject *parent) : QObject(parent)
     }
 }
 
-void qtozwdaemon::QTOZW_Ready() {
-    qCDebug(ozwdaemon) << "Ready";
+void qtozwdaemon::QTOZW_Ready(bool ready) {
+    if (ready) qCDebug(ozwdaemon) << "Ready";
 }
 void qtozwdaemon::startOZW() {
     if (getSerialPort().size() == 0) {

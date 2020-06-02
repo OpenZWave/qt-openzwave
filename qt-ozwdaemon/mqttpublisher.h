@@ -45,7 +45,7 @@ public:
 signals:
 
 public slots:
-    void ready();
+    void ready(bool);
     void valueAdded(quint64 vidKey);
     void valueRemoved(quint64 vidKey);
     void valueChanged(quint64 vidKey);

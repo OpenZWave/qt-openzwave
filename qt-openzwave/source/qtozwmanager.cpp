@@ -116,7 +116,7 @@ bool QTOZWManager::initilizeSource(bool enableServer) {
         }
     } 
     connectSignals();
-    setReady();
+    setReady(true);
     return true;
 }
 
@@ -247,6 +247,7 @@ void QTOZWManager::clientAuthenticated() {
 
 void QTOZWManager::clientAuthError(QString error) {
     qCWarning(manager) << "WebSocket Client Authentication Error: " << error;
+    this->setReady(false);
 }
 
 void QTOZWManager::clientConnected() {
@@ -268,14 +269,18 @@ void QTOZWManager::clientConnected() {
 }
 void QTOZWManager::clientDisconnected() {
     qCInfo(manager) << "WebSocket Client Disconnected from " << this->m_webSockClient->peerName() << this->m_webSockClient->peerAddress() << this->m_webSockClient->peerPort();
+    this->m_webSockClient->deleteLater();
+    this->setReady(false);
 }
 void QTOZWManager::clientError(QAbstractSocket::SocketError error) {
     qCWarning(manager) << "WebSocket Client Error " << error;
+    this->setReady(false);
     emit remoteConnectionStatus(connectionStatus::ConnectionErrorState, error);
 }
 #ifndef Q_OS_WASM
 void QTOZWManager::clientSSlErrors(const QList<QSslError> &errors) {
     qCWarning(manager) << "WebSocket Client SSL Error " << errors;
+    this->setReady(false);
 }
 #endif
 void QTOZWManager::clientStateChanged(QAbstractSocket::SocketState state) {
@@ -350,7 +355,7 @@ void QTOZWManager::checkReplicaReady() {
         /* have to connect all the d_ptr SIGNALS to our SIGNALS now */
         qCInfo(manager) << "checkReplicaReady is Ready!";
         connectSignals();
-        setReady();
+        setReady(true);
     }
 }
 
@@ -362,9 +367,12 @@ bool QTOZWManager::isReady() {
     return this->m_ready;
 }
 
-void QTOZWManager::setReady() {
-    this->m_ready = true;
-    emit this->ready();
+void QTOZWManager::setReady(bool val) {
+    if (this->m_ready != val) { 
+        qCInfo(manager) << "Ready Signal is now " << val;
+        this->m_ready = val;
+        emit this->readyChanged(this->m_ready);
+    }
 }
 
 
@@ -438,14 +446,20 @@ QAbstractItemModel *QTOZWManager::getLogModel() {
         QObject::connect(this->d_ptr_replica, &QTOZWManagerReplica::x, this, &QTOZWManager::y); \
     };
 
-#define CALL_DPTR(x) if (this->m_connectionType == QTOZWManager::connectionType::Local) this->d_ptr_internal->x; else this->d_ptr_replica->x;
+#define CALL_DPTR(x) if (!this->isReady()) return; \
+    if (this->m_connectionType == QTOZWManager::connectionType::Local) { \
+        this->d_ptr_internal->x; \
+    } else { \
+        this->d_ptr_replica->x; \
+    }
 
-#define CALL_DPTR_RTN(x, y) if (this->m_connectionType == QTOZWManager::connectionType::Local) \
-    return this->d_ptr_internal->x; \
+#define CALL_DPTR_RTN(x, y, ret) if (!this->isReady()) return ret; \
+    if (this->m_connectionType == QTOZWManager::connectionType::Local) \
+        return this->d_ptr_internal->x; \
     else { \
-    QRemoteObjectPendingReply<y> res = this->d_ptr_replica->x; \
-    res.waitForFinished(); \
-    return res.returnValue(); \
+        QRemoteObjectPendingReply<y> res = this->d_ptr_replica->x; \
+        res.waitForFinished(3000); \
+         return res.returnValue(); \
     }
 
 #else 
@@ -502,22 +516,22 @@ void QTOZWManager::connectSignals() {
 }
 
 bool QTOZWManager::open(QString serialPort) {
-    CALL_DPTR_RTN(open(serialPort), bool);
+    CALL_DPTR_RTN(open(serialPort), bool, false);
 }
 bool QTOZWManager::close() {
-    CALL_DPTR_RTN(close(), bool);
+    CALL_DPTR_RTN(close(), bool, false);
 }
 bool QTOZWManager::refreshNodeInfo(quint8 _node) {
-    CALL_DPTR_RTN(refreshNodeInfo(_node), bool);
+    CALL_DPTR_RTN(refreshNodeInfo(_node), bool, false);
 }
 bool QTOZWManager::requestNodeState(quint8 _node) {
-    CALL_DPTR_RTN(requestNodeState(_node), bool);
+    CALL_DPTR_RTN(requestNodeState(_node), bool, false);
 }
 bool QTOZWManager::requestNodeDynamic(quint8 _node) {
-    CALL_DPTR_RTN(requestNodeDynamic(_node), bool);
+    CALL_DPTR_RTN(requestNodeDynamic(_node), bool, false);
 }
 bool QTOZWManager::setConfigParam(quint8 _node, quint8 _param, qint32 _value, quint8 const _size) {
-    CALL_DPTR_RTN(setConfigParam(_node, _param, _value, _size), bool);
+    CALL_DPTR_RTN(setConfigParam(_node, _param, _value, _size), bool, false);
 }
 void QTOZWManager::requestConfigParam(quint8 _node, quint8 _param) {
     CALL_DPTR(requestConfigParam(_node, _param));
@@ -532,7 +546,7 @@ void QTOZWManager::hardResetController() {
     CALL_DPTR(hardResetController());
 }
 bool QTOZWManager::cancelControllerCommand() {
-    CALL_DPTR_RTN(cancelControllerCommand(), bool);
+    CALL_DPTR_RTN(cancelControllerCommand(), bool, false);
 }
 void QTOZWManager::testNetworkNode(quint8 _node, quint32 const _count) {
     CALL_DPTR(testNetworkNode(_node, _count));
@@ -547,36 +561,37 @@ void QTOZWManager::healNetwork(bool _doRR) {
     CALL_DPTR(healNetwork(_doRR));
 }
 bool QTOZWManager::addNode(bool _doSecure) {
-    CALL_DPTR_RTN(addNode(_doSecure), bool);
+    CALL_DPTR_RTN(addNode(_doSecure), bool, false);
 }
 bool QTOZWManager::removeNode() {
-    CALL_DPTR_RTN(removeNode(), bool);
+    CALL_DPTR_RTN(removeNode(), bool, false);
 }
 bool QTOZWManager::removeFailedNode(quint8 _node) {
-    CALL_DPTR_RTN(removeFailedNode(_node), bool);
+    CALL_DPTR_RTN(removeFailedNode(_node), bool, false);
 }
 bool QTOZWManager::hasNodeFailed(quint8 _node) {
-    CALL_DPTR_RTN(hasNodeFailed(_node), bool);
+    CALL_DPTR_RTN(hasNodeFailed(_node), bool, false);
 }
 bool QTOZWManager::requestNodeNeighborUpdate(quint8 _node) {
-    CALL_DPTR_RTN(requestNodeNeighborUpdate(_node), bool);
+    CALL_DPTR_RTN(requestNodeNeighborUpdate(_node), bool, false);
 }
 bool QTOZWManager::assignReturnRoute(quint8 _node) {
-    CALL_DPTR_RTN(assignReturnRoute(_node), bool);
+    CALL_DPTR_RTN(assignReturnRoute(_node), bool, false);
 }
 bool QTOZWManager::deleteAllReturnRoute(quint8 _node) {
-    CALL_DPTR_RTN(deleteAllReturnRoute(_node), bool);
+    CALL_DPTR_RTN(deleteAllReturnRoute(_node), bool, false);
 }
 bool QTOZWManager::sendNodeInformation(quint8 _node) {
-    CALL_DPTR_RTN(sendNodeInformation(_node), bool);
+    CALL_DPTR_RTN(sendNodeInformation(_node), bool, false);
 }
 bool QTOZWManager::replaceFailedNode(quint8 _node) {
-    CALL_DPTR_RTN(replaceFailedNode(_node), bool)
+    CALL_DPTR_RTN(replaceFailedNode(_node), bool, false)
 }
 bool QTOZWManager::requestNetworkUpdate(quint8 _node) {
-    CALL_DPTR_RTN(requestNetworkUpdate(_node), bool);
+    CALL_DPTR_RTN(requestNetworkUpdate(_node), bool, false);
 }
 QString QTOZWManager::GetMetaData(quint8 _node, QTOZWManagerSource::QTOZWMetaDataField _field) {
+    if (!this->isReady()) return QString();
 #ifndef Q_OS_WASM
     if (this->m_connectionType == QTOZWManager::connectionType::Local) {
         return this->d_ptr_internal->GetMetaData(_node, _field); \
@@ -590,84 +605,110 @@ QString QTOZWManager::GetMetaData(quint8 _node, QTOZWManagerSource::QTOZWMetaDat
 }
 
 QByteArray QTOZWManager::GetMetaDataProductPic(quint8 _node) {
-    CALL_DPTR_RTN(GetMetaDataProductPic(_node), QByteArray);
+    CALL_DPTR_RTN(GetMetaDataProductPic(_node), QByteArray, QByteArray());
 }
 
 QString QTOZWManager::GetNodeQueryStage(const quint8 _node) {
-    CALL_DPTR_RTN(GetNodeQueryStage(_node), QString);
+    CALL_DPTR_RTN(GetNodeQueryStage(_node), QString, QString());
 }
 NodeStatistics QTOZWManager::GetNodeStatistics(const quint8 _node) {
-    CALL_DPTR_RTN(GetNodeStatistics(_node), NodeStatistics);
+    if (!this->isReady()) {
+        NodeStatistics empty;
+        return empty;
+    }
+#ifndef Q_OS_WASM
+    if (this->m_connectionType == QTOZWManager::connectionType::Local) {
+        return this->d_ptr_internal->GetNodeStatistics(_node); 
+    } else 
+#endif
+    {
+        QRemoteObjectPendingReply<NodeStatistics> res = this->d_ptr_replica->GetNodeStatistics(_node);
+        res.waitForFinished();
+        return res.returnValue();
+    }
 }
 
 DriverStatistics QTOZWManager::GetDriverStatistics() {
-    CALL_DPTR_RTN(GetDriverStatistics(), DriverStatistics);
+    if (!this->isReady()) {
+        DriverStatistics empty;
+        return empty;
+    }
+#ifndef Q_OS_WASM
+    if (this->m_connectionType == QTOZWManager::connectionType::Local) {
+        return this->d_ptr_internal->GetDriverStatistics(); 
+    } else 
+#endif
+    {
+        QRemoteObjectPendingReply<DriverStatistics> res = this->d_ptr_replica->GetDriverStatistics();
+        res.waitForFinished();
+        return res.returnValue();
+    }
 }
 
 QVector<quint8> QTOZWManager::GetNodeNeighbors(quint8 const _node) {
-    CALL_DPTR_RTN(GetNodeNeighbors(_node), QVector<quint8>);
+    CALL_DPTR_RTN(GetNodeNeighbors(_node), QVector<quint8>, QVector<quint8>());
 }
 
 bool QTOZWManager::IsNodeFailed(const quint8 _node) {
-    CALL_DPTR_RTN(IsNodeFailed(_node), bool);
+    CALL_DPTR_RTN(IsNodeFailed(_node), bool, false);
 }
 bool QTOZWManager::checkLatestConfigFileRevision(quint8 const _node) {
-    CALL_DPTR_RTN(checkLatestConfigFileRevision(_node), bool);
+    CALL_DPTR_RTN(checkLatestConfigFileRevision(_node), bool, false);
 }
 bool QTOZWManager::checkLatestMFSRevision() {
-    CALL_DPTR_RTN(checkLatestMFSRevision(), bool);
+    CALL_DPTR_RTN(checkLatestMFSRevision(), bool, false);
 }
 bool QTOZWManager::downloadLatestConfigFileRevision(quint8 const _node) {
-    CALL_DPTR_RTN(downloadLatestConfigFileRevision(_node), bool);
+    CALL_DPTR_RTN(downloadLatestConfigFileRevision(_node), bool, false);
 }
 bool QTOZWManager::downloadLatestMFSRevision() {
-    CALL_DPTR_RTN(downloadLatestMFSRevision(), bool);
+    CALL_DPTR_RTN(downloadLatestMFSRevision(), bool, false);
 }
 
 QString QTOZWManager::getCommandClassString(quint8 const _cc) {
-    CALL_DPTR_RTN(getCommandClassString(_cc), QString);
+    CALL_DPTR_RTN(getCommandClassString(_cc), QString, QString());
 }
 quint8 QTOZWManager::getCommandClassVersion(quint8 const _node, quint8 const _cc) {
-    CALL_DPTR_RTN(getCommandClassVersion(_node, _cc), quint8);
+    CALL_DPTR_RTN(getCommandClassVersion(_node, _cc), quint8, 0);
 }
 QString QTOZWManager::getVersionAsString() {
-    CALL_DPTR_RTN(getVersionAsString(), QString);
+    CALL_DPTR_RTN(getVersionAsString(), QString, QString());
 }
 QString QTOZWManager::getVersionLongAsString() {
-    CALL_DPTR_RTN(getVersionLongAsString(), QString);
+    CALL_DPTR_RTN(getVersionLongAsString(), QString, QString());
 }
 quint8 QTOZWManager::getControllerNodeId() {
-    CALL_DPTR_RTN(getControllerNodeId(), quint8);
+    CALL_DPTR_RTN(getControllerNodeId(), quint8, 0);
 }
 quint8 QTOZWManager::getSucNodeId() {
-    CALL_DPTR_RTN(getSucNodeId(), quint8);
+    CALL_DPTR_RTN(getSucNodeId(), quint8, 0);
 }
 bool QTOZWManager::isPrimaryController() {
-    CALL_DPTR_RTN(isPrimaryController(), bool);
+    CALL_DPTR_RTN(isPrimaryController(), bool, false);
 }
 bool QTOZWManager::isStaticUpdateController() {
-    CALL_DPTR_RTN(isStaticUpdateController(), bool);
+    CALL_DPTR_RTN(isStaticUpdateController(), bool, false);
 }
 bool QTOZWManager::isBridgeController() {
-    CALL_DPTR_RTN(isBridgeController(), bool);
+    CALL_DPTR_RTN(isBridgeController(), bool, false);
 }
 bool QTOZWManager::hasExtendedTXStatus() {
-    CALL_DPTR_RTN(hasExtendedTXStatus(), bool);
+    CALL_DPTR_RTN(hasExtendedTXStatus(), bool, false);
 }
 QString QTOZWManager::getLibraryVersion() {
-    CALL_DPTR_RTN(getLibraryVersion(), QString);
+    CALL_DPTR_RTN(getLibraryVersion(), QString, QString());
 }
 QString QTOZWManager::getLibraryTypeName() {
-    CALL_DPTR_RTN(getLibraryTypeName(), QString);
+    CALL_DPTR_RTN(getLibraryTypeName(), QString, QString());
 }
 quint32 QTOZWManager::getSendQueueCount() {
-    CALL_DPTR_RTN(getSendQueueCount(), quint32);
+    CALL_DPTR_RTN(getSendQueueCount(), quint32, 0);
 }
 QString QTOZWManager::getControllerPath() {
-    CALL_DPTR_RTN(getControllerPath(), QString);
+    CALL_DPTR_RTN(getControllerPath(), QString, QString());
 }
 qint32 QTOZWManager::getPollInterval() {
-    CALL_DPTR_RTN(getPollInterval(), qint32);
+    CALL_DPTR_RTN(getPollInterval(), qint32, 0);
 }
 void QTOZWManager::setPollInterval(qint32 interval, bool intervalBetweenPolls) {
     CALL_DPTR(setPollInterval(interval, intervalBetweenPolls));
@@ -676,70 +717,70 @@ void QTOZWManager::syncroniseNodeNeighbors(quint8 node) {
     CALL_DPTR(syncroniseNodeNeighbors(node));
 }
 bool QTOZWManager::refreshValue(quint64 vidKey) {
-    CALL_DPTR_RTN(refreshValue(vidKey), bool);
+    CALL_DPTR_RTN(refreshValue(vidKey), bool, false);
 }
 bool QTOZWManager::AddAssociation (quint8 const _nodeId, quint8 const _groupIdx, QString const target) {
-    CALL_DPTR_RTN(AddAssociation(_nodeId, _groupIdx, target), bool);
+    CALL_DPTR_RTN(AddAssociation(_nodeId, _groupIdx, target), bool, false);
 }
 bool QTOZWManager::RemoveAssociation (quint8 const _nodeId, quint8 const _groupIdx, QString const target) {
-    CALL_DPTR_RTN(RemoveAssociation(_nodeId, _groupIdx, target), bool);
+    CALL_DPTR_RTN(RemoveAssociation(_nodeId, _groupIdx, target), bool, false);
 }
 bool QTOZWManager::enablePoll(quint64 vidKey, quint8 intensity) {
-    CALL_DPTR_RTN(enablePoll(vidKey, intensity), bool);
+    CALL_DPTR_RTN(enablePoll(vidKey, intensity), bool, false);
 }
 bool QTOZWManager::disablePoll(quint64 vidKey) {
-    CALL_DPTR_RTN(disablePoll(vidKey), bool);
+    CALL_DPTR_RTN(disablePoll(vidKey), bool, false);
 }
 QString QTOZWManager::getInstanceLabel(quint64 vidKey) {
-    CALL_DPTR_RTN(getInstanceLabel(vidKey), QString);
+    CALL_DPTR_RTN(getInstanceLabel(vidKey), QString, QString());
 }
 QString QTOZWManager::getValueLabel(quint64 vidKey) {
-    CALL_DPTR_RTN(getValueLabel(vidKey), QString);
+    CALL_DPTR_RTN(getValueLabel(vidKey), QString, QString());
 }
 QString QTOZWManager::getValueUnits(quint64 vidKey) {
-    CALL_DPTR_RTN(getValueUnits(vidKey), QString);
+    CALL_DPTR_RTN(getValueUnits(vidKey), QString, QString());
 }
 QString QTOZWManager::getValueHelp(quint64 vidKey) {
-    CALL_DPTR_RTN(getValueHelp(vidKey), QString);
+    CALL_DPTR_RTN(getValueHelp(vidKey), QString, QString());
 }
 qint32 QTOZWManager::getValueMin(quint64 vidKey) {
-    CALL_DPTR_RTN(getValueMin(vidKey), qint32);
+    CALL_DPTR_RTN(getValueMin(vidKey), qint32, 0);
 }
 qint32 QTOZWManager::getValueMax(quint64 vidKey) {
-    CALL_DPTR_RTN(getValueMax(vidKey), qint32);
+    CALL_DPTR_RTN(getValueMax(vidKey), qint32, 0);
 }
 bool QTOZWManager::isValueReadOnly(quint64 vidKey) {
-    CALL_DPTR_RTN(isValueReadOnly(vidKey), bool);
+    CALL_DPTR_RTN(isValueReadOnly(vidKey), bool, false);
 }
 bool QTOZWManager::isValueWriteOnly(quint64 vidKey) {
-    CALL_DPTR_RTN(isValueWriteOnly(vidKey), bool);
+    CALL_DPTR_RTN(isValueWriteOnly(vidKey), bool, false);
 }
 bool QTOZWManager::isValueSet(quint64 vidKey) {
-    CALL_DPTR_RTN(isValueSet(vidKey), bool);
+    CALL_DPTR_RTN(isValueSet(vidKey), bool, false);
 }
 bool QTOZWManager::isValuePolled(quint64 vidKey) {
-    CALL_DPTR_RTN(isValuePolled(vidKey), bool);
+    CALL_DPTR_RTN(isValuePolled(vidKey), bool, false);
 }
 bool QTOZWManager::isValueValid(quint64 vidKey) {
-    CALL_DPTR_RTN(isValueValid(vidKey), bool);
+    CALL_DPTR_RTN(isValueValid(vidKey), bool, false);
 }
 quint8 QTOZWManager::getNodeId(quint64 vidKey) {
-    CALL_DPTR_RTN(getNodeId(vidKey), quint8);
+    CALL_DPTR_RTN(getNodeId(vidKey), quint8, 0);
 }
 quint8 QTOZWManager::getInstance(quint64 vidKey) {
-    CALL_DPTR_RTN(getInstance(vidKey), quint8);
+    CALL_DPTR_RTN(getInstance(vidKey), quint8, 0);
 }
 ValueTypes::valueGenre QTOZWManager::getGenre(quint64 vidKey) {
-    CALL_DPTR_RTN(getGenre(vidKey), ValueTypes::valueGenre);
+    CALL_DPTR_RTN(getGenre(vidKey), ValueTypes::valueGenre, ValueTypes::valueGenre::InvalidGenre) ;
 }
 quint8 QTOZWManager::getComamndClass(quint64 vidKey) {
-    CALL_DPTR_RTN(getComamndClass(vidKey), quint8);
+    CALL_DPTR_RTN(getComamndClass(vidKey), quint8, 0);
 }
 quint16 QTOZWManager::getIndex(quint64 vidKey) {
-    CALL_DPTR_RTN(getIndex(vidKey), quint16);
+    CALL_DPTR_RTN(getIndex(vidKey), quint16, 0);
 }
 ValueTypes::valueType QTOZWManager::getType(quint64 vidKey) {
-    CALL_DPTR_RTN(getType(vidKey), ValueTypes::valueType);    
+    CALL_DPTR_RTN(getType(vidKey), ValueTypes::valueType, ValueTypes::valueType::InvalidType);    
 }
 
 void QTOZWManager::setOZWDatabasePath(QDir path) {
