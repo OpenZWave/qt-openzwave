@@ -22,7 +22,7 @@ Start a container with one of the following examples:
 
 **Dedicated Docker example:**
 
-```docker run -it --security-opt seccomp=unconfined --device=/dev/ttyUSB0 -v /tmp/ozw/config:/opt/ozw/config -e MQTT_SERVER="10.100.200.102" -e USB_PATH=/dev/ttyUSB0 openzwave/ozwdaemon:latest```
+```docker run -it --security-opt seccomp=unconfined --device=/dev/ttyUSB0 -v /tmp/ozw/config:/opt/ozw/config -e MQTT_SERVER="10.100.200.102" -e USB_PATH=/dev/ttyUSB0 -p1983:1983 openzwave/ozwdaemon:latest```
 
 **Dedicated Docker-compose example:** 
 ``` yaml
@@ -37,6 +37,8 @@ services:
       - "/dev/ttyUSB0:/dev/ttyUSB0"
     volumes:
       - /tmp/ozw:/opt/ozw/config
+    ports:
+      - "1983"
     environment:
       MQTT_SERVER: "192.168.0.1"
       MQTT_USERNAME: "my-username"
@@ -48,7 +50,7 @@ services:
 
 **All-In-One Docker example:**
 
-```docker run -it --security-opt seccomp=unconfined --device=/dev/ttyUSB0 -v /tmp/ozw/config:/opt/ozw -e MQTT_SERVER="10.100.200.102" -e USB_PATH=/dev/ttyUSB0 openzwave/ozwdaemon:allinone-latest```
+```docker run -it --security-opt seccomp=unconfined --device=/dev/ttyUSB0 -v /tmp/ozw/config:/opt/ozw -e MQTT_SERVER="10.100.200.102" -e USB_PATH=/dev/ttyUSB0 -p1983:1983 -p 5901:5901 -p7800:7800 openzwave/ozwdaemon:allinone-latest```
 
 **All-In-One Docker-compose example:** 
 ``` yaml
@@ -63,6 +65,10 @@ services:
       - "/dev/ttyUSB0:/dev/ttyUSB0"
     volumes:
       - /tmp/ozw:/opt/ozw/config
+    ports:
+      - "1983"
+      - "5901"
+      - "7800"
     environment:
       MQTT_SERVER: "192.168.0.1"
       MQTT_USERNAME: "my-username"

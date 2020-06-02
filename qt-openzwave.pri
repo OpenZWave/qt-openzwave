@@ -40,7 +40,11 @@ unix {
     	message("    OpenZWave Database Path: $$OZW_DATABASE_PATH")
     	message(" ")
     	INCLUDEPATH+=$$OZW_INCLUDE_PATH
-    	LIBS+=$$OZW_LIBS
+	!emscripten { 
+	    	LIBS+=$$OZW_LIBS
+	} else {
+		message("    Not Adding OpenZWave to Libs")
+	}
     } else { 
 	exists( $$top_srcdir/../open-zwave/cpp/src/) {
 		message("Found OZW in $$absolute_path($$top_srcdir/../open-zwave/)")
@@ -57,7 +61,11 @@ unix {
     		message("    OpenZWave Database Path: $$OZW_DATABASE_PATH")
     		message(" ")
     		INCLUDEPATH+=$$OZW_INCLUDE_PATH
-    		LIBS+=$$OZW_LIBS
+		!emscripten { 
+	    		LIBS+=$$OZW_LIBS
+		} else { 
+			message("    Not Adding OpenZWave to Libs")
+		}
 	} else {
 		packagesExist("libopenzwave") {
 			PKGCONFIG += libopenzwave
