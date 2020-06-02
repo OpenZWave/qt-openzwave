@@ -110,7 +110,9 @@ bool QTOZWManager::initilizeSource(bool enableServer) {
             this->m_sourceNode->enableRemoting(this->d_ptr_internal->getNodeModel(), "QTOZW_nodeModel", roles);
             this->m_sourceNode->enableRemoting(this->d_ptr_internal->getValueModel(), "QTOZW_valueModel", roles);
             this->m_sourceNode->enableRemoting(this->d_ptr_internal->getAssociationModel(), "QTOZW_associationModel", roles);
-            this->m_sourceNode->enableRemoting(this->d_ptr_internal->getLogModel(), "QTOZW_Log");
+            roles.clear();
+            roles << Qt::DisplayRole; 
+            this->m_sourceNode->enableRemoting(this->d_ptr_internal->getLogModel(), "QTOZW_logModel", roles);
         }
     } 
     connectSignals();
@@ -259,7 +261,9 @@ void QTOZWManager::clientConnected() {
     QObject::connect(qobject_cast<QAbstractItemModelReplica*>(this->m_valueModel), &QAbstractItemModelReplica::initialized, this, &QTOZWManager::onValueInitialized);
     this->m_associationModel= this->m_replicaNode->acquireModel("QTOZW_associationModel", QtRemoteObjects::InitialAction::PrefetchData);
     QObject::connect(qobject_cast<QAbstractItemModelReplica*>(this->m_associationModel), &QAbstractItemModelReplica::initialized, this, &QTOZWManager::onAssociationInitialized);
-    this->m_logModel = this->m_replicaNode->acquireModel("QTOZW_logModel", QtRemoteObjects::InitialAction::PrefetchData);
+    QVector<int> roles;
+    roles << Qt::DisplayRole;
+    this->m_logModel = this->m_replicaNode->acquireModel("QTOZW_logModel", QtRemoteObjects::InitialAction::FetchRootSize, roles);
     QObject::connect(qobject_cast<QAbstractItemModelReplica*>(this->m_logModel), &QAbstractItemModelReplica::initialized, this, &QTOZWManager::onLogInitialized);
 }
 void QTOZWManager::clientDisconnected() {
@@ -342,11 +346,7 @@ void QTOZWManager::checkReplicaReady() {
                 (this->m_nodeState == true) &&
                     (this->m_valuesState == true) &&
                         (this->m_associationsState == true) &&
-#if 0
                             (this->m_logState == true)) {
-#else 
-                            (true)) { 
-#endif
         /* have to connect all the d_ptr SIGNALS to our SIGNALS now */
         qCInfo(manager) << "checkReplicaReady is Ready!";
         connectSignals();
