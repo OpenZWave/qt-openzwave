@@ -130,6 +130,11 @@ unix {
     QMAKE_PKGCONFIG_REQUIRES+=libopenzwave
     for(i, QT):QMAKE_PKGCONFIG_REQUIRES += $$replace(QT.$${i}.name, ^Qt, Qt$$section(QT.$${i}.VERSION, ., 0, 0))
 }
+emscripten {
+    SOURCES -= source/qtozwmanager_p.cpp source/qtozwoptions_p.cpp
+    HEADERS -= include/qtozwmanager_p.h include/qtozwoptions_p.h
+}
+
 
 QMAKE_CFLAGS_RELEASE -= -O
 QMAKE_CFLAGS_RELEASE -= -O1

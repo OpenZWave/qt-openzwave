@@ -157,7 +157,9 @@ public:
     void setIncludeInstanceLabels(bool IncludeInstanceLabels);
 
     bool initilizeBase();
+#ifndef Q_OS_WASM
     bool initilizeSource(QRemoteObjectHost *m_sourceNode);
+#endif
     bool initilizeReplica(QRemoteObjectNode *m_replicaNode);
 
     bool AddOptionBool(QString option, bool value);

@@ -86,7 +86,9 @@ public:
 
     QTOZWManager(QObject *parent = nullptr);
     bool initilizeBase();
+#ifndef Q_OS_WASM
     bool initilizeSource(bool enableServer);
+#endif
     bool initilizeReplica(QUrl remoteaddress);
 
     bool isRunning();
@@ -250,23 +252,27 @@ private Q_SLOTS:
     void setStarted();
     void setStopped();
 
+#ifndef Q_OS_WASM
     /* websocketserver Slots */
     void newConnection();
-    void acceptError(QAbstractSocket::SocketError socketError);
     void serverError(QWebSocketProtocol::CloseCode closeCode);
     void peerVerifyError(const QSslError &error);
     void sslErrors(const QList<QSslError> &errors);
-    void peerError(QAbstractSocket::SocketError error);
+    void serverDisconnected();
+    void serverAuthError(QString error);
     void peerDisconnected();
     void serverAuthenticated();
-    void serverAuthError(QString error);
-    void serverDisconnected();
+    void peerError(QAbstractSocket::SocketError error);
+    void acceptError(QAbstractSocket::SocketError socketError);
+#endif
 
     /* websocket Client Slots */
     void clientConnected();
     void clientDisconnected();
     void clientError(QAbstractSocket::SocketError error);
+#ifndef Q_OS_WASM
     void clientSSlErrors(const QList<QSslError> &errors);
+#endif
     void clientStateChanged(QAbstractSocket::SocketState state);
     void clientAuthenticated();
     void clientAuthError(QString error);

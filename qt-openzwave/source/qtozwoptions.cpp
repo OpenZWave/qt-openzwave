@@ -31,6 +31,7 @@
 #include "qtozwoptions_p.h"
 #include "qtozw_logging.h"
 
+#ifndef Q_OS_WASM
 #define CONNECT_DPTR(x)     if (this->m_connectionType == connectionType::Local) { \
         QObject::connect(this->d_ptr_internal, &QTOZWOptions_Internal::x, this, &QTOZWOptions::x);\
     } else { \
@@ -44,17 +45,21 @@
     };
 
 #define CALL_DPTR(x) if (this->m_connectionType == QTOZWOptions::connectionType::Local) this->d_ptr_internal->x; else this->d_ptr_replica->x;
+
 #define CALL_DPTR_PROP(x) if (this->m_connectionType == QTOZWOptions::connectionType::Local) return this->d_ptr_internal->x; else return this->d_ptr_replica->x;
+
 #define CALL_DPTR_PROP_SET(x) if (this->m_connectionType == QTOZWOptions::connectionType::Local) { \
         this->d_ptr_internal->setProperty(#x, x); \
     } else { \
         this->d_ptr_replica->setProperty(#x, x); \
     }
+
 #define CALL_DPTR_PROP_SET_TYPE(x, y) if (this->m_connectionType == QTOZWOptions::connectionType::Local) { \
         this->d_ptr_internal->setProperty(#x, QVariant::fromValue<y>(x)); \
     } else { \
         this->d_ptr_replica->setProperty(#x, QVariant::fromValue<y>(x)); \
     }
+
 #define CALL_DPTR_METHOD_RTN(x, y) if (this->m_connectionType == QTOZWOptions::connectionType::Local) \
     return this->d_ptr_internal->x; \
     else { \
@@ -63,6 +68,25 @@
     return res.returnValue(); \
     }
 
+#else
+
+#define CONNECT_DPTR(x) QObject::connect(this->d_ptr_replica, &QTOZWOptionsReplica::x, this, &QTOZWOptions::x)
+
+#define CONNECT_DPTR1(x, y) QObject::connect(this->d_ptr_replica, &QTOZWOptionsReplica::x, this, &QTOZWOptions::y)
+
+#define CALL_DPTR(x) this->d_ptr_replica->x
+
+#define CALL_DPTR_PROP(x) return this->d_ptr_replica->x
+
+#define CALL_DPTR_PROP_SET(x) this->d_ptr_replica->setProperty(#x, x)
+
+#define CALL_DPTR_PROP_SET_TYPE(x, y) this->d_ptr_replica->setProperty(#x, QVariant::fromValue<y>(x))
+
+#define CALL_DPTR_METHOD_RTN(x, y) QRemoteObjectPendingReply<y> res = this->d_ptr_replica->x; \
+    res.waitForFinished(); \
+    return res.returnValue(); 
+
+#endif
 
 
 
@@ -70,6 +94,7 @@ QTOZWOptions::QTOZWOptions(connectionType type, QObject *parent)
     : QObject(parent),
       m_connectionType(type)
 {
+#ifndef Q_OS_WASM    
     if (type == QTOZWOptions::connectionType::Local) {
         this->m_connectionType = connectionType::Local;
         this->d_ptr_internal = new QTOZWOptions_Internal(this);
@@ -77,12 +102,13 @@ QTOZWOptions::QTOZWOptions(connectionType type, QObject *parent)
     } else if (type == connectionType::Remote) {
         qDebug() << "Nothing to do till we connect";
     }
+#endif
 }
 
 bool QTOZWOptions::initilizeBase() {
     return true;
 }
-
+#ifndef Q_OS_WASM
 bool QTOZWOptions::initilizeSource(QRemoteObjectHost *m_sourceNode) {
     initilizeBase();
     if (m_sourceNode) {
@@ -90,6 +116,7 @@ bool QTOZWOptions::initilizeSource(QRemoteObjectHost *m_sourceNode) {
     }
     return true;
 }
+#endif
 
 bool QTOZWOptions::initilizeReplica(QRemoteObjectNode *m_replicaNode) {
     initilizeBase();
