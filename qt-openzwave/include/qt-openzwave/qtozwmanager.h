@@ -36,11 +36,14 @@
 #include <QWebSocketServer>
 
 #include "qt-openzwave/rep_qtozwmanager_source.h"
+#include "qt-openzwave/rep_qtozwlog_source.h"
 #include "qt-openzwave/qtozwoptions.h"
+#include "qt-openzwave/qtozwlog.h"
 #include "qt-openzwave/qtozwnodemodel.h"
 #include "qt-openzwave/qtozwvalueidmodel.h"
 #include "qt-openzwave/qtozwassociationmodel.h"
 #include "qt-openzwave/websocketiodevice.h"
+#include "qt-openzwave/qtozwreplica.h"
 
 enum QTOZW_UserRoles {
     ModelDataChanged = Qt::UserRole
@@ -50,15 +53,9 @@ class QTOZWManager_Internal;
 class QTOZWManagerReplica;
 class QTOZWOptionsReplica;
 
-class QTOPENZWAVESHARED_EXPORT QTOZWManager : public QObject {
+class QTOPENZWAVESHARED_EXPORT QTOZWManager : public QTOZWReplicaBase {
     Q_OBJECT
 public:
-    enum connectionType {
-        Local,
-        Remote,
-        Invalid
-    };
-    Q_ENUM(connectionType)
     enum connectionStatus {
         UnconnectedState,
         HostLookupState,
@@ -81,24 +78,23 @@ public:
     Q_PROPERTY(QDir OZWDatabasePath READ OZWDatabasePath WRITE setOZWDatabasePath)
     Q_PROPERTY(QDir OZWUserPath READ OZWUserPath WRITE setOZWUserPath)
     Q_PROPERTY(QString m_clientAuth READ getClientAuth WRITE setClientAuth)
-    Q_PROPERTY(connectionType m_connectionType READ getConnectionType);
-    Q_PROPERTY(bool m_ready READ isReady NOTIFY readyChanged);
 
     QTOZWManager(QObject *parent = nullptr);
-    bool initilizeBase();
+    bool initilizeBase() override;
 #ifndef Q_OS_WASM
     bool initilizeSource(bool enableServer);
+    bool initilizeSource(QRemoteObjectHost *) override { return false; }
 #endif
     bool initilizeReplica(QUrl remoteaddress);
+    bool initilizeReplica(QRemoteObjectNode *) override { return false; }
 
     bool isRunning();
-    bool isReady();
     
 
     QAbstractItemModel *getNodeModel();
     QAbstractItemModel *getValueModel();
     QAbstractItemModel *getAssociationModel();
-    QAbstractItemModel *getLogModel();
+    QTOZWLog *getLog();
     QTOZWOptions *getOptions();
 
     /* OpenZWave::Manager methods */
@@ -202,10 +198,8 @@ public:
 
     void setClientAuth(QString auth) { this->m_clientAuth = auth; }
     QString getClientAuth() { return this->m_clientAuth; }
-    connectionType getConnectionType() { return this->m_connectionType; }
-
+ 
 Q_SIGNALS:
-    void readyChanged(bool ready);
     void valueAdded(quint64 vidKey);
     void valueRemoved(quint64 vidKey);
     void valueChanged(quint64 vidKey);
@@ -245,10 +239,10 @@ private Q_SLOTS:
     void onSourceError(QRemoteObjectHost::ErrorCode);
     void onManagerStateChange(QRemoteObjectReplica::State);
     void onOptionsStateChange(QRemoteObjectReplica::State);
+    void onLogStateChange(QRemoteObjectReplica::State);
     void onNodeInitialized();
     void onValueInitialized();
     void onAssociationInitialized();
-    void onLogInitialized();
     void setStarted();
     void setStopped();
 
@@ -281,31 +275,33 @@ private Q_SLOTS:
 
 private:
     void checkReplicaReady();
-    void connectSignals();
-    void setReady(bool);
-    connectionType m_connectionType;
+    void connectSignals() override;
     QRemoteObjectNode *m_replicaNode;
     QRemoteObjectHost *m_sourceNode;
     QWebSocketServer *m_webSockServer;
     QWebSocket *m_webSockClient;
     WebSocketIoDevice *m_webSockIoClient;
+
     QTOZWManager_Internal *d_ptr_internal;
     QTOZWManagerReplica *d_ptr_replica;
-    QTOZWOptions *m_ozwoptions;
     QRemoteObjectReplica::State m_managerState;
+
+    QTOZWOptions *m_ozwoptions;
     QRemoteObjectReplica::State m_optionsState;
-    bool m_nodeState;
-    bool m_valuesState;
-    bool m_associationsState;
-    bool m_logState;
+
+    QTOZWLog *m_log;
+    QRemoteObjectReplica::State m_logState;
 
     QAbstractItemModel *m_nodeModel;
+    bool m_nodeState;
+
     QAbstractItemModel *m_valueModel;
+    bool m_valuesState;
+
     QAbstractItemModel *m_associationModel;
-    QAbstractItemModel *m_logModel;
+    bool m_associationsState;
 
     bool m_running;
-    bool m_ready;
     QDir m_ozwdatabasepath;
     QDir m_ozwuserpath;
     QString m_clientAuth;

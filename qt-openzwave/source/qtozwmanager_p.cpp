@@ -34,6 +34,7 @@ QTOZWManager_Internal::QTOZWManager_Internal(QObject *parent)
     : QTOZWManagerSimpleSource (parent)
 {
     this->setObjectName("QTOZW_Manager");
+
     try {
         qCDebug(manager) << "OpenZWave Options Class Creating";
         this->m_options = new QTOZWOptions_Internal(this);
@@ -1285,16 +1286,14 @@ QTOZWOptions_Internal *QTOZWManager_Internal::getOptions() {
     return this->m_options;
 }
 
-QTOZW_Log_Internal *QTOZWManager_Internal::getLogModel() {
-    return this->m_logModel;
+QTOZWLog_Internal *QTOZWManager_Internal::getLog() {
+    return this->m_log;
 }
-bool QTOZWManager_Internal::setLogModel(QTOZW_Log_Internal *t_logModel) {
-    this->m_logModel= t_logModel;
+
+bool QTOZWManager_Internal::setLog(QTOZWLog_Internal *t_log) {
+    this->m_log= t_log;
     return true;
 }
-
-
-
 
 bool QTOZWManager_Internal::checkHomeId() {
     if (this->m_manager == nullptr) {

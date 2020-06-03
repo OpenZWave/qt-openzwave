@@ -25,8 +25,74 @@
 //
 //-----------------------------------------------------------------------------
 
-#include "include/qt-openzwave/qtozwlog.h"
-#include "include/qtozw_logging.h"
+#include "qt-openzwave/qtozwlog.h"
+#include "qtozwlog_p.h"
+#include "qt-openzwave/rep_qtozwlog_replica.h"
+#include "qt-openzwave/rep_qtozwlog_source.h"
+#include "qtozw_logging.h"
+
+#define REP_INTERNAL_CLASS QTOZWLog_Internal
+#define REP_REPLICA_CLASS QTOZWLogReplica
+#define REP_PUBLIC_CLASS QTOZWLog
+
+QTOZWLog::QTOZWLog(ConnectionType::Type connectionType, QObject *parent) :
+    QTOZWReplicaBase(connectionType, parent),
+    m_maxLogLength(100000)
+{
+
+
+}
+
+QTOZWLog::~QTOZWLog() 
+{
+
+}
+
+bool QTOZWLog::initilizeBase() {
+    return true;
+}
+
+bool QTOZWLog::initilizeSource(QRemoteObjectHost *m_sourceNode) {
+    this->setConnectionType(ConnectionType::Type::Local);
+    initilizeBase();
+    this->d_ptr_internal = new QTOZWLog_Internal(this);
+    if (m_sourceNode) {
+        m_sourceNode->enableRemoting<QTOZWLogSourceAPI>(this->d_ptr_internal);
+    }
+    connectSignals();
+    return true;
+}
+
+
+bool QTOZWLog::initilizeReplica(QRemoteObjectNode *m_replicaNode) {
+    this->setConnectionType(ConnectionType::Type::Remote);
+    initilizeBase();
+    this->d_ptr_replica = m_replicaNode->acquire<QTOZWLogReplica>("QTOZWLog");
+    QObject::connect(this->d_ptr_replica, &QTOZWLogReplica::stateChanged, this, &QTOZWLog::onStateChange);
+    connectSignals();
+    return true;
+}
+
+void QTOZWLog::connectSignals() {
+    CONNECT_DPTR(newLogLine);
+    CONNECT_DPTR(syncronizedLogLine);
+}
+
+
+quint32 QTOZWLog::getLogCount() 
+{
+    CALL_DPTR_RTN(getLogCount(), quint32, 0);
+}
+
+bool QTOZWLog::syncroniseLogs(quint32 records) 
+{
+    CALL_DPTR_RTN(syncroniseLogs(records), bool, false)
+}
+
+#if 0
+
+
+
 
 QTOZW_Log::QTOZW_Log(QObject *parent)
     : QAbstractTableModel(parent),
@@ -114,3 +180,5 @@ QTOZW_Log::QTOZW_LogEntry QTOZW_Log::getLogData(int pos) const {
     qCWarning(logModel) << "Can't find LogEntry at " << pos << " size:" << this->m_logData.size();
     return QTOZW_LogEntry();
 }
+
+#endif

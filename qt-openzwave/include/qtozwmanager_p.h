@@ -64,8 +64,8 @@ public:
     QTOZW_ValueIds *getValueModel();
     QTOZW_Associations *getAssociationModel();
     QTOZWOptions_Internal *getOptions();
-    QTOZW_Log_Internal *getLogModel();
-    bool setLogModel(QTOZW_Log_Internal *);
+    QTOZWLog_Internal *getLog();
+    bool setLog(QTOZWLog_Internal *);
 
 public Q_SLOTS:
     bool open(QString serialPort);
@@ -207,7 +207,7 @@ private:
     QTOZW_Nodes_internal *m_nodeModel;
     QTOZW_ValueIds_internal *m_valueModel;
     QTOZW_Associations_internal *m_associationsModel;
-    QTOZW_Log_Internal *m_logModel;
+    QTOZWLog_Internal *m_log;
     QVector<quint8> m_validNodes;
     QVector<quint64> m_validValues;
     QMap<quint8, QMap<quint8, bool > > m_associationDefaultsSet;

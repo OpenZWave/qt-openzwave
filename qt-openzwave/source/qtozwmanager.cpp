@@ -33,14 +33,18 @@
 #include <QWebSocket>
 #include "qt-openzwave/qtozwmanager.h"
 #include "qt-openzwave/websocketiodevice.h"
+#include "qt-openzwave/qtozwreplica.h"
 #include "qtozwmanager_p.h"
 #include "qtozw_logging.h"
 
+#define REP_INTERNAL_CLASS QTOZWManager_Internal
+#define REP_REPLICA_CLASS QTOZWManagerReplica
+#define REP_PUBLIC_CLASS QTOZWManager
+
 
 QTOZWManager::QTOZWManager(QObject *parent)
-    : QObject(parent),
+    : QTOZWReplicaBase(ConnectionType::Type::Invalid, parent),
     m_running(false),
-    m_ready(false),
     m_ozwdatabasepath(""),
     m_ozwuserpath(""),
     m_clientAuth("")
@@ -54,12 +58,7 @@ bool QTOZWManager::initilizeBase() {
 #ifndef Q_OS_WASM
 bool QTOZWManager::initilizeSource(bool enableServer) {
     initilizeBase();
-    this->m_connectionType = connectionType::Local;
-
-    /* initilize the OZW Logging Class - To Pass Log Messages to us */
-
-    QTOZW_Log_Internal *t_logModel = new QTOZW_Log_Internal(this);
-    OpenZWave::Log::SetLoggingClass(static_cast<OpenZWave::i_LogImpl*>(t_logModel));
+    this->setConnectionType(ConnectionType::Type::Local);
 
     /* Initilize the OZW Options Static Class */
     if (!this->m_ozwdatabasepath.exists()) {
@@ -83,9 +82,10 @@ bool QTOZWManager::initilizeSource(bool enableServer) {
 
     /* Initilize our QTOZWManager Class */
 
-    this->d_ptr_internal = new QTOZWManager_Internal(this);
-    this->d_ptr_internal->setLogModel(t_logModel);
+    this->m_log = new QTOZWLog(ConnectionType::Type::Local, this);
     this->m_ozwoptions = new QTOZWOptions(QTOZWOptions::connectionType::Local, this);
+    this->d_ptr_internal = new QTOZWManager_Internal(this);
+
     if (enableServer) {
         this->m_webSockServer = new QWebSocketServer(QStringLiteral("WS QtRO"), QWebSocketServer::NonSecureMode, this);
         QObject::connect(this->m_webSockServer, &QWebSocketServer::newConnection, this, &QTOZWManager::newConnection);
@@ -104,15 +104,18 @@ bool QTOZWManager::initilizeSource(bool enableServer) {
             QObject::connect(this->m_sourceNode, &QRemoteObjectHost::error, this, &QTOZWManager::onSourceError);
             //this->m_sourceNode->setHeartbeatInterval(1000);
             this->m_sourceNode->enableRemoting<QTOZWManagerSourceAPI>(this->d_ptr_internal);
+
+            this->m_log->initilizeSource(this->m_sourceNode);
+
             this->m_ozwoptions->initilizeSource(this->m_sourceNode);
+            
             QVector<int> roles;
             roles << Qt::DisplayRole << Qt::EditRole << Qt::ToolTipRole;
             this->m_sourceNode->enableRemoting(this->d_ptr_internal->getNodeModel(), "QTOZW_nodeModel", roles);
             this->m_sourceNode->enableRemoting(this->d_ptr_internal->getValueModel(), "QTOZW_valueModel", roles);
             this->m_sourceNode->enableRemoting(this->d_ptr_internal->getAssociationModel(), "QTOZW_associationModel", roles);
-            roles.clear();
-            roles << Qt::DisplayRole; 
-            this->m_sourceNode->enableRemoting(this->d_ptr_internal->getLogModel(), "QTOZW_logModel", roles);
+
+            this->m_sourceNode->enableRemoting<QTOZWLogSourceAPI>(this->d_ptr_internal->getLog());
         }
     } 
     connectSignals();
@@ -201,10 +204,14 @@ void QTOZWManager::peerDisconnected() {
 
 bool QTOZWManager::initilizeReplica(QUrl remote) {
     initilizeBase();
-    this->m_connectionType = connectionType::Remote;
+    this->setConnectionType(ConnectionType::Type::Remote);
+
     this->m_replicaNode = new QRemoteObjectNode(this);
-    this->m_ozwoptions = new QTOZWOptions(QTOZWOptions::connectionType::Remote, this);
     QObject::connect(this->m_replicaNode, &QRemoteObjectNode::error, this, &QTOZWManager::onReplicaError);
+
+    this->m_log = new QTOZWLog(ConnectionType::Type::Remote, this);
+
+    this->m_ozwoptions = new QTOZWOptions(QTOZWOptions::connectionType::Remote, this);
 
     this->m_webSockClient = new QWebSocket();
     QObject::connect(this->m_webSockClient, &QWebSocket::connected, this, &QTOZWManager::clientConnected);
@@ -221,7 +228,7 @@ bool QTOZWManager::initilizeReplica(QUrl remote) {
 #ifdef WS_USE_SSL
     // Always use secure connections when available
     QSslConfiguration sslConf;
-    QFile certFile(QStringLiteral(":/sslcert/client.crt"));
+        QFile certFile(QStringLiteral(":/sslcert/client.crt"));
     if (!certFile.open(QIODevice::ReadOnly))
         qFatal("Can't open client.crt file");
     sslConf.setLocalCertificate(QSslCertificate{certFile.readAll()});
@@ -252,20 +259,24 @@ void QTOZWManager::clientAuthError(QString error) {
 
 void QTOZWManager::clientConnected() {
     qCInfo(manager) << "WebSocket Client Connected to " << this->m_webSockClient->peerName() << this->m_webSockClient->peerAddress() << this->m_webSockClient->peerPort();
+
     this->d_ptr_replica = this->m_replicaNode->acquire<QTOZWManagerReplica>("QTOZWManager");
     QObject::connect(this->d_ptr_replica, &QTOZWManagerReplica::stateChanged, this, &QTOZWManager::onManagerStateChange);
+
     this->m_ozwoptions->initilizeReplica(this->m_replicaNode);
     QObject::connect(this->m_ozwoptions, &QTOZWOptions::onOptionStateChange, this, &QTOZWManager::onOptionsStateChange);
+
+    this->m_log->initilizeReplica(this->m_replicaNode);
+    QObject::connect(this->m_log, &QTOZWLog::onStateChange, this, &QTOZWManager::onLogStateChange);
+
     this->m_nodeModel = this->m_replicaNode->acquireModel("QTOZW_nodeModel", QtRemoteObjects::InitialAction::PrefetchData);
     QObject::connect(qobject_cast<QAbstractItemModelReplica*>(this->m_nodeModel), &QAbstractItemModelReplica::initialized, this, &QTOZWManager::onNodeInitialized);
+
     this->m_valueModel= this->m_replicaNode->acquireModel("QTOZW_valueModel", QtRemoteObjects::InitialAction::PrefetchData);
     QObject::connect(qobject_cast<QAbstractItemModelReplica*>(this->m_valueModel), &QAbstractItemModelReplica::initialized, this, &QTOZWManager::onValueInitialized);
+
     this->m_associationModel= this->m_replicaNode->acquireModel("QTOZW_associationModel", QtRemoteObjects::InitialAction::PrefetchData);
     QObject::connect(qobject_cast<QAbstractItemModelReplica*>(this->m_associationModel), &QAbstractItemModelReplica::initialized, this, &QTOZWManager::onAssociationInitialized);
-    QVector<int> roles;
-    roles << Qt::DisplayRole;
-    this->m_logModel = this->m_replicaNode->acquireModel("QTOZW_logModel", QtRemoteObjects::InitialAction::FetchRootSize, roles);
-    QObject::connect(qobject_cast<QAbstractItemModelReplica*>(this->m_logModel), &QAbstractItemModelReplica::initialized, this, &QTOZWManager::onLogInitialized);
 }
 void QTOZWManager::clientDisconnected() {
     qCInfo(manager) << "WebSocket Client Disconnected from " << this->m_webSockClient->peerName() << this->m_webSockClient->peerAddress() << this->m_webSockClient->peerPort();
@@ -322,6 +333,17 @@ void QTOZWManager::onOptionsStateChange(QRemoteObjectReplica::State state) {
     this->checkReplicaReady();
 }
 
+void QTOZWManager::onLogStateChange(QRemoteObjectReplica::State state) {
+    qCDebug(manager) << "Log State Change: " << state;
+    this->m_logState = state;
+    if (state == QRemoteObjectReplica::State::Valid) {
+        emit remoteConnectionStatus(connectionStatus::GotLogData, QAbstractSocket::UnknownSocketError);
+    } else if (state == QRemoteObjectReplica::State::SignatureMismatch) {
+        emit remoteConnectionStatus(connectionStatus::VersionMisMatchError, QAbstractSocket::UnknownSocketError);
+    }
+    this->checkReplicaReady();
+}
+
 void QTOZWManager::onNodeInitialized() {
     this->m_nodeState = true;
     emit remoteConnectionStatus(connectionStatus::GotNodeData, QAbstractSocket::UnknownSocketError);
@@ -338,12 +360,6 @@ void QTOZWManager::onAssociationInitialized() {
     this->checkReplicaReady();
 }
 
-void QTOZWManager::onLogInitialized() {
-    this->m_logState = true;
-    emit remoteConnectionStatus(connectionStatus::GotLogData, QAbstractSocket::UnknownSocketError);
-    this->checkReplicaReady();
-}
-
 void QTOZWManager::checkReplicaReady() {
     qCDebug(manager) << "checkReplicaReady: Manager:" << this->m_managerState << "Options:" << this->m_optionsState << "Nodes:" << this->m_nodeState << "Values" << this->m_valuesState << "Associations:" << this->m_associationsState << "Logs:" << this->m_logState;
     if ((this->m_managerState == QRemoteObjectReplica::State::Valid) &&
@@ -351,7 +367,7 @@ void QTOZWManager::checkReplicaReady() {
                 (this->m_nodeState == true) &&
                     (this->m_valuesState == true) &&
                         (this->m_associationsState == true) &&
-                            (this->m_logState == true)) {
+                            (this->m_logState == QRemoteObjectReplica::State::Valid)) {
         /* have to connect all the d_ptr SIGNALS to our SIGNALS now */
         qCInfo(manager) << "checkReplicaReady is Ready!";
         connectSignals();
@@ -361,18 +377,6 @@ void QTOZWManager::checkReplicaReady() {
 
 bool QTOZWManager::isRunning() {
     return this->m_running;
-}
-
-bool QTOZWManager::isReady() {
-    return this->m_ready;
-}
-
-void QTOZWManager::setReady(bool val) {
-    if (this->m_ready != val) { 
-        qCInfo(manager) << "Ready Signal is now " << val;
-        this->m_ready = val;
-        emit this->readyChanged(this->m_ready);
-    }
 }
 
 
@@ -387,7 +391,7 @@ void QTOZWManager::setStopped() {
 
 QAbstractItemModel *QTOZWManager::getNodeModel() {
 #ifndef Q_OS_WASM
-    if (this->m_connectionType == connectionType::Local) {
+    if (this->getConnectionType() == ConnectionType::Type::Local) {
         return this->d_ptr_internal->getNodeModel();
     } else
 #endif
@@ -397,7 +401,7 @@ QAbstractItemModel *QTOZWManager::getNodeModel() {
 }
 QAbstractItemModel *QTOZWManager::getValueModel() {
 #ifndef Q_OS_WASM
-    if (this->m_connectionType == connectionType::Local) {
+    if (this->getConnectionType() == ConnectionType::Type::Local) {
         return this->d_ptr_internal->getValueModel();
     } else 
 #endif
@@ -408,7 +412,7 @@ QAbstractItemModel *QTOZWManager::getValueModel() {
 }
 QAbstractItemModel *QTOZWManager::getAssociationModel() {
 #ifndef Q_OS_WASM
-    if (this->m_connectionType == connectionType::Local) {
+    if (this->getConnectionType() == ConnectionType::Type::Local) {
         return this->d_ptr_internal->getAssociationModel();
     } else 
 #endif
@@ -421,62 +425,9 @@ QTOZWOptions *QTOZWManager::getOptions() {
     return this->m_ozwoptions;
 }
 
-QAbstractItemModel *QTOZWManager::getLogModel() {
-#ifndef Q_OS_WASM
-    if (this->m_connectionType == connectionType::Local) {
-        return this->d_ptr_internal->getLogModel();
-    } else 
-#endif
-    {
-        return this->m_logModel;
-    }
+QTOZWLog *QTOZWManager::getLog() {
+        return this->m_log;
 }
-
-#ifndef Q_OS_WASM
-
-#define CONNECT_DPTR(x)     if (this->m_connectionType == connectionType::Local) { \
-        QObject::connect(this->d_ptr_internal, &QTOZWManager_Internal::x, this, &QTOZWManager::x);\
-    } else { \
-        QObject::connect(this->d_ptr_replica, &QTOZWManagerReplica::x, this, &QTOZWManager::x); \
-    };
-
-#define CONNECT_DPTR1(x, y)     if (this->m_connectionType == connectionType::Local) { \
-        QObject::connect(this->d_ptr_internal, &QTOZWManager_Internal::x, this, &QTOZWManager::y);\
-    } else { \
-        QObject::connect(this->d_ptr_replica, &QTOZWManagerReplica::x, this, &QTOZWManager::y); \
-    };
-
-#define CALL_DPTR(x) if (!this->isReady()) return; \
-    if (this->m_connectionType == QTOZWManager::connectionType::Local) { \
-        this->d_ptr_internal->x; \
-    } else { \
-        this->d_ptr_replica->x; \
-    }
-
-#define CALL_DPTR_RTN(x, y, ret) if (!this->isReady()) return ret; \
-    if (this->m_connectionType == QTOZWManager::connectionType::Local) \
-        return this->d_ptr_internal->x; \
-    else { \
-        QRemoteObjectPendingReply<y> res = this->d_ptr_replica->x; \
-        res.waitForFinished(3000); \
-         return res.returnValue(); \
-    }
-
-#else 
-
-#define CONNECT_DPTR(x) QObject::connect(this->d_ptr_replica, &QTOZWManagerReplica::x, this, &QTOZWManager::x); 
-
-#define CONNECT_DPTR1(x, y) QObject::connect(this->d_ptr_replica, &QTOZWManagerReplica::x, this, &QTOZWManager::y); 
-
-#define CALL_DPTR(x) this->d_ptr_replica->x
-
-#define CALL_DPTR_RTN(x, y) QRemoteObjectPendingReply<y> res = this->d_ptr_replica->x; \
-    res.waitForFinished(); \
-    return res.returnValue(); \
-
-#endif
-
-
 
 void QTOZWManager::connectSignals() {
     CONNECT_DPTR(valueAdded);
@@ -593,7 +544,7 @@ bool QTOZWManager::requestNetworkUpdate(quint8 _node) {
 QString QTOZWManager::GetMetaData(quint8 _node, QTOZWManagerSource::QTOZWMetaDataField _field) {
     if (!this->isReady()) return QString();
 #ifndef Q_OS_WASM
-    if (this->m_connectionType == QTOZWManager::connectionType::Local) {
+    if (this->getConnectionType() == ConnectionType::Type::Local) {
         return this->d_ptr_internal->GetMetaData(_node, _field); \
     } else 
 #endif
@@ -617,7 +568,7 @@ NodeStatistics QTOZWManager::GetNodeStatistics(const quint8 _node) {
         return empty;
     }
 #ifndef Q_OS_WASM
-    if (this->m_connectionType == QTOZWManager::connectionType::Local) {
+    if (this->getConnectionType() == ConnectionType::Type::Local) {
         return this->d_ptr_internal->GetNodeStatistics(_node); 
     } else 
 #endif
@@ -634,7 +585,7 @@ DriverStatistics QTOZWManager::GetDriverStatistics() {
         return empty;
     }
 #ifndef Q_OS_WASM
-    if (this->m_connectionType == QTOZWManager::connectionType::Local) {
+    if (this->getConnectionType() == ConnectionType::Type::Local) {
         return this->d_ptr_internal->GetDriverStatistics(); 
     } else 
 #endif

@@ -565,6 +565,48 @@ inline QDataStream &operator>>(QDataStream &ds, ValueTypes::valueType &obj) {
     return ds;
 }
 
+class QTOPENZWAVESHARED_EXPORT LogLevels : public QObject {
+    Q_OBJECT;
+    public:
+        enum Level {
+            Always,
+            Fatal,
+            Error,
+            Warning,
+            Alert,
+            Info,
+            Detail,
+            Debug,
+            StreamDetail,
+            Internal,
+            LogLevelCount
+        };
+        Q_ENUM(Level)
+};
+
+Q_DECLARE_METATYPE(LogLevels::Level)
+
+inline QDataStream &operator<<(QDataStream &ds, const LogLevels::Level &obj) {
+    ds << static_cast<qint32>(obj);
+    return ds;
+}
+
+inline QDataStream &operator>>(QDataStream &ds, LogLevels::Level &obj) {
+    qint32 val;
+    ds >> val;
+    obj = static_cast<LogLevels::Level>(val);
+    return ds;
+}
+class QTOPENZWAVESHARED_EXPORT ConnectionType : public QObject {
+    Q_OBJECT
+    public:
+        enum Type {
+            Local,
+            Remote,
+            Invalid
+        };
+        Q_ENUM(Type)
+};
 
 
 #endif // QTOZW_PODS_H

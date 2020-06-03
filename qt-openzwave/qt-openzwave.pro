@@ -53,7 +53,8 @@ SOURCES += source/qtopenzwave.cpp \
     source/qtozwnodemodel.cpp \
     source/qtozwvalueidmodel.cpp \
     source/qtozwvalueidmodel_p.cpp \
-    source/websocketiodevice.cpp
+    source/websocketiodevice.cpp \
+    source/qtozwreplica.cpp 
 
 HEADERS += include/qtozwassociationmodel_p.h \
         include/qtozw_logging.h \
@@ -73,11 +74,14 @@ PUBLIC_HEADERS.files += include/qt-openzwave/qtopenzwave.h \
         include/qt-openzwave/qtozw_pods.h \
         include/qt-openzwave/qtozwproxymodels.h \
         include/qt-openzwave/qtozwvalueidmodel.h \
-	include/qt-openzwave/rep_qtozwmanager_replica.h \
-	include/qt-openzwave/rep_qtozwoptions_replica.h \
-	include/qt-openzwave/rep_qtozwmanager_source.h \
-	include/qt-openzwave/rep_qtozwoptions_source.h \
-	include/qt-openzwave/websocketiodevice.h
+        include/qt-openzwave/rep_qtozwmanager_replica.h \
+        include/qt-openzwave/rep_qtozwoptions_replica.h \
+        include/qt-openzwave/rep_qtozwmanager_source.h \
+        include/qt-openzwave/rep_qtozwoptions_source.h \
+        include/qt-openzwave/rep_qtozwlog_replica.h \
+        include/qt-openzwave/rep_qtozwlog_source.h \
+        include/qt-openzwave/websocketiodevice.h \
+        include/qt-openzwave/qtozwreplica.h
 
 PUBLIC_HEADERS.CONFIG += no_check_exist
 
@@ -85,13 +89,13 @@ HEADERS += $$PUBLIC_HEADERS.files
 
 INCLUDEPATH += include/
 
-REPC_SOURCE =  include/qt-openzwave/qtozwmanager.rep include/qt-openzwave/qtozwoptions.rep
+REPC_SOURCE =  include/qt-openzwave/qtozwmanager.rep include/qt-openzwave/qtozwoptions.rep include/qt-openzwave/qtozwlog.rep
 
-REPC_REPLICA = include/qt-openzwave/qtozwmanager.rep include/qt-openzwave/qtozwoptions.rep
+REPC_REPLICA = include/qt-openzwave/qtozwmanager.rep include/qt-openzwave/qtozwoptions.rep include/qt-openzwave/qtozwlog.rep
 
 copyrepheaders.path = include/qt-openzwave/
-copyrepheaders.files = rep_qtozwmanager_replica.h rep_qtozwmanager_source.h rep_qtozwoptions_replica.h rep_qtozwoptions_source.h
-copyrepheaders.depends = rep_qtozwmanager_replica.h rep_qtozwmanager_source.h rep_qtozwoptions_replica.h rep_qtozwoptions_source.h
+copyrepheaders.files = rep_qtozwmanager_replica.h rep_qtozwmanager_source.h rep_qtozwoptions_replica.h rep_qtozwoptions_source.h rep_qtozwlog_source.h rep_qtozwlog_replica.h
+copyrepheaders.depends = rep_qtozwmanager_replica.h rep_qtozwmanager_source.h rep_qtozwoptions_replica.h rep_qtozwoptions_source.h rep_qtozwlog_source.h rep_qtozwlog_replica.h
 
 COPIES += copyrepheaders
 unix {

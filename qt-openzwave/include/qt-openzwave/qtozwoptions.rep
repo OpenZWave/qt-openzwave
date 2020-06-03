@@ -80,5 +80,4 @@ class QTOZWOptions {
     SLOT(qint32 GetOptionAsInt(QString option))
     SLOT(QString GetOptionAsString(QString option))
     SLOT(bool isLocked());
-
 }
