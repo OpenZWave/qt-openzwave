@@ -347,7 +347,9 @@ int main(int argc, char *argv[])
 #endif
         }
     }
+#ifndef Q_OS_WIN
     finiConfigDatabase();
+#endif
     qCInfo(ozwdaemon) << "DBPath: " << dbPath;
     qCInfo(ozwdaemon) << "userPath: " << userPath;
 
