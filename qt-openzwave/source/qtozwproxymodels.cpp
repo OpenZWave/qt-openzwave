@@ -30,6 +30,7 @@
 #include "qt-openzwave/qtozwvalueidmodel.h"
 #include "qt-openzwave/qtozwnodemodel.h"
 #include "qt-openzwave/qtozwassociationmodel.h"
+#include "qtozw_logging.h"
 
 
 QTOZW_proxyNodeModel::QTOZW_proxyNodeModel(QObject *parent) : QSortFilterProxyModel(parent)
@@ -52,6 +53,7 @@ void QTOZW_proxyValueModel::setSelectionModel(QItemSelectionModel *model) {
 void QTOZW_proxyValueModel::currentSelectedRowChanged(const QModelIndex &current, const QModelIndex &previous) {
     Q_UNUSED(previous);
     this->m_nodeFilter = current.siblingAtColumn(QTOZW_Nodes::NodeColumns::NodeID).data().value<quint8>();
+    qCDebug(valueModel) << "Selection Model Changed to Node " << this->m_nodeFilter;
     invalidateFilter();
 }
 void QTOZW_proxyValueModel::setFilterGenre(QTOZW_ValueIds::ValueIdGenres genre)
