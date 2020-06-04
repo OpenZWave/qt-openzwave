@@ -83,7 +83,10 @@ bool QTOZWManager::initilizeSource(bool enableServer) {
     /* Initilize our QTOZWManager Class */
 
     this->m_log = new QTOZWLog(ConnectionType::Type::Local, this);
+    connect(this, &QTOZWManager::readyChanged, this->m_log, &QTOZWLog::setReady);
+
     this->m_ozwoptions = new QTOZWOptions(QTOZWOptions::connectionType::Local, this);
+    
     this->d_ptr_internal = new QTOZWManager_Internal(this);
 
     if (enableServer) {
@@ -210,6 +213,7 @@ bool QTOZWManager::initilizeReplica(QUrl remote) {
     QObject::connect(this->m_replicaNode, &QRemoteObjectNode::error, this, &QTOZWManager::onReplicaError);
 
     this->m_log = new QTOZWLog(ConnectionType::Type::Remote, this);
+    connect(this, &QTOZWManager::readyChanged, this->m_log, &QTOZWLog::setReady);
 
     this->m_ozwoptions = new QTOZWOptions(QTOZWOptions::connectionType::Remote, this);
 

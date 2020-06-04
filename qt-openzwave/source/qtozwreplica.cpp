@@ -1,9 +1,11 @@
 #include "qt-openzwave/qtozwreplica.h"
+#include "qtozw_logging.h"
 
 
 QTOZWReplicaBase::QTOZWReplicaBase(ConnectionType::Type connectionType, QObject *parent) :
     QObject(parent),
-    m_connectionType(connectionType)
+    m_connectionType(connectionType),
+    m_ready(false)
 {
 
 }
@@ -33,6 +35,7 @@ bool QTOZWReplicaBase::isReady()
 void QTOZWReplicaBase::setReady(bool ready) 
 { 
     if (this->m_ready != ready) { 
+        qCDebug(manager) << this->metaObject()->className() << "Ready!";
         this->m_ready = ready; 
         emit readyChanged(this->m_ready);
     }

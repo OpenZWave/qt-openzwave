@@ -32,8 +32,8 @@
 
 class QTOZWLog {
     SIGNAL(newLogLine(QDateTime time, LogLevels::Level level, quint8 s_node, QString s_msg))
-    SIGNAL(syncronizedLogLine(quint32 index, QDateTime time, LogLevels::Level level, quint8 s_node, QString s_msg))
+    SIGNAL(syncronizedLogLine(QDateTime time, LogLevels::Level level, quint8 s_node, QString s_msg))
 
     SLOT(quint32 getLogCount())
-    SLOT(bool syncroniseLogs(quint32 records))
+    SLOT(bool syncroniseLogs())
 }

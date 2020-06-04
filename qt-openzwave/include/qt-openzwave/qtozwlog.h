@@ -36,35 +36,43 @@
 #include "qt-openzwave/rep_qtozwlog_replica.h"
 
 class QTOZWLog_Internal;
-
+class QTOZWLogModel;
 class QTOPENZWAVESHARED_EXPORT QTOZWLog : public QTOZWReplicaBase {
+    friend class QTOZWLogModel;
     Q_OBJECT
     public:
-        QTOZWLog(ConnectionType::Type connectionType, QObject *parent = nullptr);
-        ~QTOZWLog();
-
-        bool initilizeBase() override;
-        bool initilizeSource(QRemoteObjectHost *m_sourceNode) override;
-        bool initilizeReplica(QRemoteObjectNode *m_replicaNode) override;
-
-
-    Q_SIGNALS:
-        void newLogLine(QDateTime time, LogLevels::Level level, quint8 s_node, QString s_msg);
-        void syncronizedLogLine(quint32 index, QDateTime time, LogLevels::Level level, quint8 s_node, QString s_msg);
-
-    public Q_SLOTS:
-        quint32 getLogCount();
-        bool syncroniseLogs(quint32 records);
-
-    protected:
         struct QTOZW_LogEntry {
             QString s_msg;
             QDateTime s_time;
             quint8 s_node;
             LogLevels::Level s_level;
         };
+
+
+        QTOZWLog(ConnectionType::Type connectionType, QObject *parent = nullptr);
+        ~QTOZWLog();
+
+        bool initilizeBase() override;
+        bool initilizeSource(QRemoteObjectHost *m_sourceNode) override;
+        bool initilizeReplica(QRemoteObjectNode *m_replicaNode) override;
+        QVector<QTOZWLog::QTOZW_LogEntry> getLogEntries();
+
+    Q_SIGNALS:
+        void newLogLine(QDateTime time, LogLevels::Level level, quint8 s_node, QString s_msg);
+        void syncronizedLogLine(QDateTime time, LogLevels::Level level, quint8 s_node, QString s_msg);
+        void logCleared();
+
+    public Q_SLOTS:
+        quint32 getLogCount();
+        bool syncroniseLogs();
+
+    protected:
         QVector<QTOZW_LogEntry> m_logData;
         quint32 m_maxLogLength;
+
+    private Q_SLOTS:
+        void insertLogLine(QDateTime time, LogLevels::Level level, quint8 s_node, QString s_msg);
+        void syncLogMessages(QDateTime time, LogLevels::Level level, quint8 s_node, QString s_msg);
     private:
         void connectSignals() override;
 
@@ -72,7 +80,6 @@ class QTOPENZWAVESHARED_EXPORT QTOZWLog : public QTOZWReplicaBase {
         QTOZWLogReplica *d_ptr_replica;
 };
 
-#if 0
 class QTOPENZWAVESHARED_EXPORT QTOZWLogModel : public QAbstractTableModel {
     Q_OBJECT
     public:
@@ -85,23 +92,20 @@ class QTOPENZWAVESHARED_EXPORT QTOZWLogModel : public QAbstractTableModel {
         };
         Q_ENUM(LogColumns)
 
-
-
-        QTOZWLogModel (QObject *parent = nullptr);
+        QTOZWLogModel (QTOZWLog *qtozwlog, QObject *parent = nullptr);
         int rowCount(const QModelIndex &parent) const override;
         int columnCount(const QModelIndex &parent) const override;
         QVariant data(const QModelIndex &index, int role) const override;
         QVariant headerData(int section, Qt::Orientation orientation, int role) const override;
         Qt::ItemFlags flags(const QModelIndex &index) const override;
-    Q_SLOTS
+    public Q_SLOTS:
         bool insertLogMessage(QDateTime time, LogLevels::Level level, quint8 s_node, QString s_msg);
-        void insertSyncronizedLogMessage(quint32 index, QDateTime time, LogLevels::Level level, quint8 s_node, QString s_msg);
-    protected:
-        QTOZWLog::QTOZW_LogEntry getLogData(int) const;
+        bool syncLogMessage(QDateTime time, LogLevels::Level level, quint8 s_node, QString s_msg);
 
-        QVector<QTOZWLog::QTOZW_LogEntry> m_logData;
-        quint32 m_maxLogLength;
+        void resetModel();
+        QTOZWLog::QTOZW_LogEntry getLogData(int) const;
+    private:
+        QTOZWLog *m_qtozwlog;
 };
-#endif
 
 #endif // QTOZWLOGGING_H

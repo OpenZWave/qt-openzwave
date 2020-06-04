@@ -49,27 +49,37 @@ QTOZWLog::~QTOZWLog()
 }
 
 bool QTOZWLog::initilizeBase() {
+    this->setReady(true);
     return true;
 }
 
 bool QTOZWLog::initilizeSource(QRemoteObjectHost *m_sourceNode) {
     this->setConnectionType(ConnectionType::Type::Local);
+
     initilizeBase();
+
     this->d_ptr_internal = new QTOZWLog_Internal(this);
     if (m_sourceNode) {
         m_sourceNode->enableRemoting<QTOZWLogSourceAPI>(this->d_ptr_internal);
     }
+
     connectSignals();
+
     return true;
 }
 
 
 bool QTOZWLog::initilizeReplica(QRemoteObjectNode *m_replicaNode) {
     this->setConnectionType(ConnectionType::Type::Remote);
+
     initilizeBase();
+
     this->d_ptr_replica = m_replicaNode->acquire<QTOZWLogReplica>("QTOZWLog");
-    QObject::connect(this->d_ptr_replica, &QTOZWLogReplica::stateChanged, this, &QTOZWLog::onStateChange);
+
     connectSignals();
+    QObject::connect(this->d_ptr_replica, &QTOZWLogReplica::stateChanged, this, &QTOZWLog::onStateChange);
+    QObject::connect(this->d_ptr_replica, &QTOZWLogReplica::newLogLine, this, &QTOZWLog::insertLogLine);
+    QObject::connect(this->d_ptr_replica, &QTOZWLogReplica::syncronizedLogLine, this, &QTOZWLog::syncLogMessages);
     return true;
 }
 
@@ -78,39 +88,114 @@ void QTOZWLog::connectSignals() {
     CONNECT_DPTR(syncronizedLogLine);
 }
 
+/* This only runs for Remote Connections. For Local Connections, 
+ * the Log Messages are stored in the QTOZWLog_Internal 
+ * Instance
+ */
+void QTOZWLog::insertLogLine(QDateTime time, LogLevels::Level level, quint8 node, QString msg) 
+{
+    QTOZWLog::QTOZW_LogEntry le;
+    le.s_msg = msg;
+    le.s_node = node;
+    le.s_time = time;
+    le.s_level = level;
+    if (static_cast<quint32>(this->m_logData.size()) >= this->m_maxLogLength) {
+        this->m_logData.pop_front();
+    }
+    this->m_logData.push_back(le);
+    if (this->m_logData.size() == this->m_logData.capacity()-1) {
+        qCDebug(logModel) << "Increasing Logging Capacity to " << this->m_logData.capacity()+1000;
+        this->m_logData.reserve(this->m_logData.capacity()+1000);
+    }
+}
+void QTOZWLog::syncLogMessages(QDateTime time, LogLevels::Level level, quint8 node, QString msg)
+{
+    QTOZWLog::QTOZW_LogEntry le;
+    le.s_msg = msg;
+    le.s_node = node;
+    le.s_time = time;
+    le.s_level = level;
+    if (static_cast<quint32>(this->m_logData.size()) >= this->m_maxLogLength) {
+        /* if we hit our Limit, these are older messages comming in, so just drop them */
+        return;
+    }
+    this->m_logData.push_front(le);
+    if (this->m_logData.size() == this->m_logData.capacity()-1) {
+        qCDebug(logModel) << "Increasing Logging Capacity to " << this->m_logData.capacity()+1000;
+        this->m_logData.reserve(this->m_logData.capacity()+1000);
+    }
+}
+
+
 
 quint32 QTOZWLog::getLogCount() 
 {
     CALL_DPTR_RTN(getLogCount(), quint32, 0);
 }
 
-bool QTOZWLog::syncroniseLogs(quint32 records) 
+bool QTOZWLog::syncroniseLogs() 
 {
-    CALL_DPTR_RTN(syncroniseLogs(records), bool, false)
+    qCDebug(logModel) << "SyncronizeLogs Called for " << this->getLogCount() << " Messages";
+    if (!this->isReady()) 
+        return false; 
+    if (this->getConnectionType() == ConnectionType::Type::Local) 
+    {
+        /* if our connection is Local, Nothing to do */
+        return true;
+    } 
+    else 
+    { 
+        /* if its a Remote Connection, we have to reset our Local Copy and ask the Source to send us
+         * the Log Entries 
+         */
+        this->m_logData.clear();
+        emit this->logCleared();
+        QRemoteObjectPendingReply<bool> res = this->d_ptr_replica->syncroniseLogs(); 
+        res.waitForFinished(3000); 
+        return res.returnValue(); 
+    }
 }
 
-#if 0
-
-
-
-
-QTOZW_Log::QTOZW_Log(QObject *parent)
-    : QAbstractTableModel(parent),
-      m_maxLogLength(100000)
-{
+QVector<QTOZWLog::QTOZW_LogEntry> QTOZWLog::getLogEntries() {
+    if (!this->isReady())
+        return QVector<QTOZW_LogEntry>();
+    if (this->getConnectionType() == ConnectionType::Type::Local)
+    {
+        return this->d_ptr_internal->m_logData;
+    }
+    else
+    {
+        return this->m_logData;
+    }
 }
 
-int QTOZW_Log::rowCount(const QModelIndex &parent) const {
+
+
+
+QTOZWLogModel::QTOZWLogModel(QTOZWLog *qtozwlog, QObject *parent) :
+    QAbstractTableModel(parent),
+    m_qtozwlog(qtozwlog)
+{
+    if (this->m_qtozwlog->getLogEntries().count() > 0) {
+        this->beginInsertRows(QModelIndex(), 0, this->m_qtozwlog->getLogEntries().count());
+        this->endInsertRows();
+    }
+    connect(this->m_qtozwlog, &QTOZWLog::newLogLine, this, &QTOZWLogModel::insertLogMessage);
+    connect(this->m_qtozwlog, &QTOZWLog::syncronizedLogLine, this, &QTOZWLogModel::syncLogMessage);
+    connect(this->m_qtozwlog, &QTOZWLog::logCleared, this, &QTOZWLogModel::resetModel);
+}
+
+int QTOZWLogModel::rowCount(const QModelIndex &parent) const {
     if (parent.isValid())
         return 0;
-    return this->m_logData.count();
+    return this->m_qtozwlog->getLogEntries().count();
 }
-int QTOZW_Log::columnCount(const QModelIndex &parent) const {
+int QTOZWLogModel::columnCount(const QModelIndex &parent) const {
     if (parent.isValid())
         return 0;
     return LogColumns::Count;
 }
-QVariant QTOZW_Log::data(const QModelIndex &index, int role) const {
+QVariant QTOZWLogModel::data(const QModelIndex &index, int role) const {
     if (!index.isValid())
         return QVariant();
 
@@ -118,9 +203,9 @@ QVariant QTOZW_Log::data(const QModelIndex &index, int role) const {
         return QVariant();
 
     if (role == Qt::DisplayRole) {
-        QTOZW_LogEntry le = this->getLogData(index.row()-1);
+        QTOZWLog::QTOZW_LogEntry le = this->getLogData(index.row()-1);
         if (!le.s_time.isValid()) {
-            qCWarning(logModel) << "QTOZW_Log::data asked for a invalid row " << index.row() << " size: " << rowCount(QModelIndex());
+            qCWarning(logModel) << "QTOZWLog::data asked for a invalid row " << index.row() << " size: " << rowCount(QModelIndex());
             return QVariant();
         }
         switch(static_cast<LogColumns>(index.column())) {
@@ -144,7 +229,7 @@ QVariant QTOZW_Log::data(const QModelIndex &index, int role) const {
     return QVariant();
 
 }
-QVariant QTOZW_Log::headerData(int section, Qt::Orientation orientation, int role) const {
+QVariant QTOZWLogModel::headerData(int section, Qt::Orientation orientation, int role) const {
     if (role != Qt::DisplayRole)
         return QVariant();
 
@@ -168,17 +253,46 @@ QVariant QTOZW_Log::headerData(int section, Qt::Orientation orientation, int rol
     }
     return QVariant();
 }
-Qt::ItemFlags QTOZW_Log::flags(const QModelIndex &index) const {
+Qt::ItemFlags QTOZWLogModel::flags(const QModelIndex &index) const {
     if (!index.isValid())
         return Qt::NoItemFlags;
     return QAbstractTableModel::flags(index);
 }
 
-QTOZW_Log::QTOZW_LogEntry QTOZW_Log::getLogData(int pos) const {
-    if (this->m_logData.size() >= pos)
-        return this->m_logData.at(pos+1);
-    qCWarning(logModel) << "Can't find LogEntry at " << pos << " size:" << this->m_logData.size();
-    return QTOZW_LogEntry();
+QTOZWLog::QTOZW_LogEntry QTOZWLogModel::getLogData(int pos) const {
+    if (this->m_qtozwlog->getLogEntries().count() >= pos)
+        return this->m_qtozwlog->getLogEntries().at(pos+1);
+    qCWarning(logModel) << "Can't find LogEntry at " << pos << " size:" << this->m_qtozwlog->getLogEntries().count();
+    return QTOZWLog::QTOZW_LogEntry();
 }
 
-#endif
+bool QTOZWLogModel::insertLogMessage(QDateTime time, LogLevels::Level level, quint8 s_node, QString s_msg) 
+{
+    Q_UNUSED(time);
+    Q_UNUSED(level);
+    Q_UNUSED(s_node);
+    Q_UNUSED(s_msg);
+    qCDebug(logModel) << "Insert Log Message at " << this->m_qtozwlog->getLogEntries().count();
+    this->beginInsertRows(QModelIndex(), this->m_qtozwlog->getLogEntries().count(), this->m_qtozwlog->getLogEntries().count());
+    this->endInsertRows();
+    return true;
+}
+
+bool QTOZWLogModel::syncLogMessage(QDateTime time, LogLevels::Level level, quint8 s_node, QString s_msg) 
+{
+    Q_UNUSED(time);
+    Q_UNUSED(level);
+    Q_UNUSED(s_node);
+    Q_UNUSED(s_msg);
+    qCDebug(logModel) << "Sync Log Message (total:" << this->m_qtozwlog->getLogEntries().count() << ")";
+    this->beginInsertRows(QModelIndex(), 0, 0);
+    this->endInsertRows();
+    return true;
+}
+
+
+void QTOZWLogModel::resetModel() {
+    this->beginResetModel();
+    this->endResetModel();
+    
+}

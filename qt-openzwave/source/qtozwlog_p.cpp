@@ -113,7 +113,7 @@ void QTOZWLog_Internal::Write(OpenZWave::LogLevel _level, uint8 const _nodeId, c
         }
     }
 
-    QTOZWLog_Internal::QTOZW_LogEntry le;
+    QTOZWLog::QTOZW_LogEntry le;
     le.s_msg = lineBuf;
     le.s_node = _nodeId;
     le.s_time = QDateTime::currentDateTime();
@@ -149,8 +149,19 @@ quint32 QTOZWLog_Internal::getLogCount()
 {
     return this->m_logData.count();
 };
-bool QTOZWLog_Internal::syncroniseLogs(quint32 records)
+bool QTOZWLog_Internal::syncroniseLogs()
 {
-    Q_UNUSED(records);
+    qCDebug(logModel) << "QTOZWLog_Internal::syncroniseLogs() called";
+    QTOZWLog::QTOZW_LogEntry le;
+    QVectorIterator<QTOZWLog::QTOZW_LogEntry> i(this->m_logData);
+    int j = 0;
+    i.toBack();
+    while (i.hasPrevious()) {
+        le = i.previous();
+        emit this->syncronizedLogLine(le.s_time, le.s_level, le.s_node, le.s_msg);
+        j++;
+        if (j % 100 == 0) QCoreApplication::processEvents();
+    }
+    qCDebug(logModel) << "QTOZWLog_Internal::syncroniseLogs() Finished";
     return false;
 };
