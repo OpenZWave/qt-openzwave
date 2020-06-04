@@ -12,7 +12,10 @@ Q_DECLARE_LOGGING_CATEGORY(ozwdaemon);
 int qtozwdaemon::sigtermFd[2] = {0, 0};
 #endif
 
-qtozwdaemon::qtozwdaemon(QObject *parent) : QObject(parent)
+qtozwdaemon::qtozwdaemon(QString configPath, QString userPath, QObject *parent) : 
+    QObject(parent),
+    m_configPath(configPath),
+    m_userPath(userPath)
 {
 
 #ifndef _WIN32    
@@ -67,8 +70,10 @@ qtozwdaemon::qtozwdaemon(QObject *parent) : QObject(parent)
     if (!AuthKey.isEmpty()) {
         qCInfo(ozwdaemon) << "Using Remote Authentication Key";
     }
+    QFileInfo cfgDir(this->getConfigPath());
+    QFileInfo userDir(this->getUserPath());
 
-    this->m_openzwave = new QTOpenZwave(this);
+    this->m_openzwave = new QTOpenZwave(this, cfgDir.absoluteFilePath(), userDir.absoluteFilePath());
     this->m_qtozwmanager = this->m_openzwave->GetManager();
     QObject::connect(this->m_qtozwmanager, &QTOZWManager::readyChanged, this, &qtozwdaemon::QTOZW_Ready);
     this->m_qtozwmanager->initilizeSource(true);

@@ -14,7 +14,7 @@ QTOZWReplicaBase::~QTOZWReplicaBase()
 
 }
 
-ConnectionType::Type QTOZWReplicaBase::getConnectionType()
+ConnectionType::Type QTOZWReplicaBase::getConnectionType() const
 { 
     return this->m_connectionType; 
 }
@@ -27,7 +27,7 @@ void QTOZWReplicaBase::setConnectionType(ConnectionType::Type connectionType)
     }
 }
 
-bool QTOZWReplicaBase::isReady() 
+bool QTOZWReplicaBase::isReady() const
 { 
     return this->m_ready; 
 }

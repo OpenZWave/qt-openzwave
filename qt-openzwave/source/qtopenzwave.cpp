@@ -18,12 +18,12 @@ Q_LOGGING_CATEGORY(qtrowebsocket, "ozw.remote");
 QTOpenZwave::QTOpenZwave
 (
     QObject *parent,
-    QDir DBPath,
-    QDir UserPath
+    QString ConfigPath,
+    QString UserPath
 ) :
     QObject (parent),
     m_manager(nullptr),
-    m_ozwdbpath(DBPath),
+    m_ozwconfigpath(ConfigPath),
     m_ozwuserpath(UserPath)
 {
     //qRegisterMetaType<uint32_t>("uint32_t");
@@ -64,7 +64,7 @@ QTOZWManager *QTOpenZwave::GetManager
 {
     if (m_manager == nullptr) {
         this->m_manager = new QTOZWManager(this);
-        this->m_manager->setOZWDatabasePath(m_ozwdbpath);
+        this->m_manager->setOZWConfigPath(m_ozwconfigpath);
         this->m_manager->setOZWUserPath(m_ozwuserpath);
     }
     return this->m_manager;

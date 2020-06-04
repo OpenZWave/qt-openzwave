@@ -45,7 +45,7 @@
 QTOZWManager::QTOZWManager(QObject *parent)
     : QTOZWReplicaBase(ConnectionType::Type::Invalid, parent),
     m_running(false),
-    m_ozwdatabasepath(""),
+    m_ozwconfigpath(""),
     m_ozwuserpath(""),
     m_clientAuth("")
 {
@@ -61,31 +61,26 @@ bool QTOZWManager::initilizeSource(bool enableServer) {
     this->setConnectionType(ConnectionType::Type::Local);
 
     /* Initilize the OZW Options Static Class */
-    if (!this->m_ozwdatabasepath.exists()) {
-        qCWarning(manager) << "Database Path Does Not Exist: " << this->m_ozwdatabasepath;
+    if (!QFileInfo::exists(this->m_ozwconfigpath)) {
+        qCWarning(manager) << "Config Path Does Not Exist: " << this->m_ozwconfigpath;
         return false;
     }
-    if (!this->m_ozwuserpath.exists()) {
+    if (!QFileInfo::exists(this->m_ozwuserpath)) {
         qCWarning(manager) << "User Path Does Not Exist: " << this->m_ozwuserpath;
         return false;
     }
-    qCDebug(manager) << "Database Path: " << this->m_ozwdatabasepath.path().append("/") << " User Path" << this->m_ozwuserpath.path().append("/");
-    QString dbPath = this->m_ozwdatabasepath.path();
-    QString userPath = this->m_ozwuserpath.path();
-    /* OZW expects the paths to end with a / otherwise it treats it as a file */
-    if (dbPath.at(dbPath.size()-1) != "/")
-        dbPath.append("/");
-    if (userPath.at(userPath.size()-1) != "/")
-        userPath.append("/");
-    OpenZWave::Options::Create(dbPath.toStdString(), userPath.toStdString(), "");
 
+    qCDebug(manager) << "Database Path: " << QFileInfo(this->m_ozwconfigpath.append("/")).absoluteFilePath() << " User Path" << QFileInfo(this->m_ozwuserpath.append("/")).absoluteFilePath();
+
+    OpenZWave::Options::Create(QFileInfo(this->m_ozwconfigpath.append("/")).absoluteFilePath().toStdString(), QFileInfo(this->m_ozwuserpath.append("/")).absoluteFilePath().toStdString(), "");
 
     /* Initilize our QTOZWManager Class */
 
     this->m_log = new QTOZWLog(ConnectionType::Type::Local, this);
     connect(this, &QTOZWManager::readyChanged, this->m_log, &QTOZWLog::setReady);
 
-    this->m_ozwoptions = new QTOZWOptions(QTOZWOptions::connectionType::Local, this);
+    this->m_ozwoptions = new QTOZWOptions(ConnectionType::Type::Local, this);
+    connect(this, &QTOZWManager::readyChanged, this->m_ozwoptions, &QTOZWOptions::setReady);
     
     this->d_ptr_internal = new QTOZWManager_Internal(this);
 
@@ -215,7 +210,8 @@ bool QTOZWManager::initilizeReplica(QUrl remote) {
     this->m_log = new QTOZWLog(ConnectionType::Type::Remote, this);
     connect(this, &QTOZWManager::readyChanged, this->m_log, &QTOZWLog::setReady);
 
-    this->m_ozwoptions = new QTOZWOptions(QTOZWOptions::connectionType::Remote, this);
+    this->m_ozwoptions = new QTOZWOptions(ConnectionType::Type::Remote, this);
+    connect(this, &QTOZWManager::readyChanged, this->m_ozwoptions, &QTOZWOptions::setReady);
 
     this->m_webSockClient = new QWebSocket();
     QObject::connect(this->m_webSockClient, &QWebSocket::connected, this, &QTOZWManager::clientConnected);
@@ -738,17 +734,10 @@ ValueTypes::valueType QTOZWManager::getType(quint64 vidKey) {
     CALL_DPTR_RTN(getType(vidKey), ValueTypes::valueType, ValueTypes::valueType::InvalidType);    
 }
 
-void QTOZWManager::setOZWDatabasePath(QDir path) {
-    if (path.exists())
-        this->m_ozwdatabasepath = path;
-    else
-        qCWarning(manager) << "Database Path " << path << " doesn't exist";
-
+void QTOZWManager::setOZWConfigPath(QString path) {
+        this->m_ozwconfigpath = path;
 }
-void QTOZWManager::setOZWUserPath(QDir path) {
-    if (path.exists())
+void QTOZWManager::setOZWUserPath(QString path) {
         this->m_ozwuserpath = path;
-    else
-        qCWarning(manager) << "User Path " << path << " doesn't exist";
 }
 

@@ -33,26 +33,18 @@
 #include <QObject>
 #include <QtRemoteObjects>
 #include "qt-openzwave/qtozw_pods.h"
+#include "qt-openzwave/qtozwreplica.h"
 
 
 class QTOZWOptions_Internal;
 class QTOZWOptionsReplica;
 class QTOZWManager;
 
-class QTOPENZWAVESHARED_EXPORT QTOZWOptions : public QObject {
+class QTOPENZWAVESHARED_EXPORT QTOZWOptions : public QTOZWReplicaBase {
     friend class QTOZWManager;
-
-
     Q_OBJECT
 public:
-    enum connectionType {
-        Local,
-        Remote,
-        Invalid
-    };
-    Q_ENUM(connectionType)
-
-    QTOZWOptions(connectionType type, QObject *parent = nullptr);
+    QTOZWOptions(ConnectionType::Type type, QObject *parent = nullptr);
 
     Q_PROPERTY(QString ConfigPath READ ConfigPath WRITE setConfigPath NOTIFY ConfigPathChanged)
     Q_PROPERTY(QString UserPath READ UserPath WRITE setUserPath NOTIFY UserPathChanged)
@@ -213,7 +205,6 @@ private:
 
     QTOZWOptions_Internal *d_ptr_internal;
     QTOZWOptionsReplica *d_ptr_replica;
-    connectionType m_connectionType;
     QRemoteObjectReplica::State m_optionState;
 };
 

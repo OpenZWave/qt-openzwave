@@ -103,7 +103,7 @@ public:
      * \param UserPath Path where OpenZWave will store/retrive user Specific configuration, such as Options.xml
      * or store the network related files
      */
-    QTOpenZwave(QObject *parent = nullptr, QDir DBPath = QDir("./config/"), QDir UserPath = QDir("./config/"));
+    QTOpenZwave(QObject *parent = nullptr, QString ConfigPath = "./config/", QString UserPath = "./config/");
 
     /** \brief Obtain a copy of the QTOZW_Manager Instance
      *
@@ -117,8 +117,8 @@ public:
     QString getVersion();
 private:
     QTOZWManager *m_manager;
-    QDir m_ozwdbpath;
-    QDir m_ozwuserpath;
+    QString m_ozwconfigpath;
+    QString m_ozwuserpath;
 };
 
 #endif // QTOPENZWAVE_H

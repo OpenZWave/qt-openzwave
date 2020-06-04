@@ -218,63 +218,120 @@ int main(int argc, char *argv[])
     QLoggingCategory::setFilterRules("*.debug=true");
 #endif
 
-    QStringList PossibleDBPaths;
-    if (parser.isSet(configDir))
+    QString dbPath, userPath;
+
+    if (parser.isSet(configDir)) {
+        QStringList PossibleDBPaths;
         PossibleDBPaths << parser.value(configDir);
-    PossibleDBPaths << "./config/";
-    PossibleDBPaths << QDir::toNativeSeparators("../../../config/");
-    //PossibleDBPaths << settings.value("openzwave/ConfigPath", QDir::toNativeSeparators("../../../config/")).toString().append("/");
-    PossibleDBPaths << QStandardPaths::standardLocations(QStandardPaths::AppDataLocation);
-
-    QString path, dbPath, userPath;
-    foreach(path, PossibleDBPaths) {
-        qCDebug(ozwdaemon) << "Checking " << QFileInfo(QDir::toNativeSeparators(path+"/config/manufacturer_specific.xml")).absoluteFilePath() << " for manufacturer_specific.xml";
-        if (QFileInfo(QDir::toNativeSeparators(path+"/config/manufacturer_specific.xml")).exists()) {
-            dbPath = QFileInfo(QDir::toNativeSeparators(path+"/config/manufacturer_specific.xml")).absoluteFilePath();
-            break;
+        QString path;
+        foreach(path, PossibleDBPaths) {
+            qCDebug(ozwdaemon) << "Checking " << QFileInfo(QDir::toNativeSeparators(path)).absoluteFilePath() << " for manufacturer_specific.xml";
+            if (QFileInfo(QDir::toNativeSeparators(path+"/manufacturer_specific.xml")).exists()) {
+                dbPath = QFileInfo(QDir::toNativeSeparators(path).append("/")).absoluteFilePath();
+                break;
+            }
         }
-        qCDebug(ozwdaemon) << "Checking " << QFileInfo(QDir::toNativeSeparators(path+"../config/manufacturer_specific.xml")).absoluteFilePath() << " for manufacturer_specific.xml";
-        if (QFile(QDir::toNativeSeparators(path+"/../config/manufacturer_specific.xml")).exists()) {
-            dbPath = QFileInfo(QDir::toNativeSeparators(path+"/../config/manufacturer_specific.xml")).absoluteFilePath();
-            break;
+        /* if we dont have a dbPath, Deploy our config files there */
+        if (dbPath.isEmpty()) {
+            qWarning() << "Configuration Database Does Not Exist - Copying Database to Location " << QFileInfo(parser.value(configDir).append("/")).absoluteFilePath();
+            QStringList Locations;
+            Locations << ".";
+            if (initConfigDatabase(Locations)) {
+                copyConfigDatabase(QFileInfo(parser.value(configDir).append("/")).absoluteFilePath());
+            } else {
+                qWarning() << "Cant find qt-openzwavedatabase.rcc";
+                QCoreApplication::exit(-1);
+            }
+            dbPath = QFileInfo(parser.value(configDir).append("/")).absoluteFilePath();
+        }
+    } else {
+        /* search Default Locations for Config Files */
+        QStringList PossibleDBPaths;
+        PossibleDBPaths << "./config/";
+        PossibleDBPaths << QDir::toNativeSeparators("../../../config/");
+        //PossibleDBPaths << settings.value("openzwave/ConfigPath", QDir::toNativeSeparators("../../../config/")).toString().append("/");
+        PossibleDBPaths << QStandardPaths::standardLocations(QStandardPaths::AppDataLocation);
+        QString path;
+        foreach(path, PossibleDBPaths) {
+            qCDebug(ozwdaemon) << "Checking " << QFileInfo(QDir::toNativeSeparators(path)).absoluteFilePath() << " for manufacturer_specific.xml";
+            if (QFileInfo(QDir::toNativeSeparators(path+"/manufacturer_specific.xml")).exists()) {
+                dbPath = QFileInfo(QDir::toNativeSeparators(path).append("/")).absoluteFilePath();
+                break;
+            }
+        }
+        /* if we dont have a dbPath, Deploy our config files there */
+        if (dbPath.isEmpty()) {
+            dbPath = QFileInfo("./").absoluteFilePath();
+            qWarning() << "Configuration Database Does Not Exist - Copying Database to Default Location " << dbPath;
+            QStringList Locations;
+            Locations << ".";
+            if (initConfigDatabase(Locations)) {
+                copyConfigDatabase(dbPath);
+            } else {
+                qWarning() << "Cant find qt-openzwavedatabase.rcc";
+                QCoreApplication::exit(-1);
+            }
         }
     }
-    PossibleDBPaths.clear();
-    if (parser.isSet(userDir))
-        PossibleDBPaths << parser.value(userDir);
-    PossibleDBPaths << "./config/";
-    PossibleDBPaths <<  QDir::toNativeSeparators("../../../config/");
-    PossibleDBPaths << QStandardPaths::standardLocations(QStandardPaths::AppDataLocation);
-    PossibleDBPaths << "/usr/share/qt5/";
-    
-    foreach(path, PossibleDBPaths) {
-        qCDebug(ozwdaemon) << "Checking " << QFileInfo(QDir::toNativeSeparators(path+"/config/Options.xml")).absoluteFilePath() << " for options.xml";
-        if (QFileInfo(QDir::toNativeSeparators(path+"/config/options.xml")).exists()) {
-            userPath = QFileInfo(QDir::toNativeSeparators(path+"/config/options.xml")).absoluteFilePath();
-            break;
+
+    if (parser.isSet(userDir)) {
+        QStringList PossibleCfgPaths;
+        PossibleCfgPaths << parser.value(userDir);
+        QString path;
+        foreach(path, PossibleCfgPaths) {
+            qCDebug(ozwdaemon) << "Checking " << QFileInfo(QDir::toNativeSeparators(path)).absoluteFilePath() << " for options.xml";
+            if (QFileInfo(QDir::toNativeSeparators(path+"/options.xml")).exists()) {
+                userPath = QFileInfo(QDir::toNativeSeparators(path).append("/")).absoluteFilePath();
+                break;
+            }
         }
-        qCDebug(ozwdaemon) << "Checking " << QFileInfo(QDir::toNativeSeparators(path+"/../config/options.xml")).absoluteFilePath() << " for options.xml";
-        if (QFile(QDir::toNativeSeparators(path+"/../config/options.xml")).exists()) {
-            userPath = QFileInfo(QDir::toNativeSeparators(path+"/../config/options.xml")).absoluteFilePath();
-            break;
+        /* if we dont have a userPath, Deploy our config files there */
+        if (userPath.isEmpty()) {
+            qWarning() << "User Configuration Path Does Not Exist - Copying Config Files to Location " << QFileInfo(parser.value(userDir).append("/")).absoluteFilePath();
+            QStringList Locations;
+            Locations << ".";
+            if (initConfigDatabase(Locations)) {
+                copyUserDatabase(QFileInfo(parser.value(userDir).append("/")).absoluteFilePath());
+            } else {
+                qWarning() << "Cant find qt-openzwavedatabase.rcc";
+                QCoreApplication::exit(-1);
+            }
+            userPath = QFileInfo(parser.value(userDir).append("/")).absoluteFilePath();
+        }
+    } else {
+        /* search Default Locations for Config Files */
+        QStringList PossibleCfgPaths;
+        PossibleCfgPaths << "./config/";
+        PossibleCfgPaths << QDir::toNativeSeparators("../../../config/");
+        //PossibleCfgPaths << settings.value("openzwave/ConfigPath", QDir::toNativeSeparators("../../../config/")).toString().append("/");
+        PossibleCfgPaths << QStandardPaths::standardLocations(QStandardPaths::AppDataLocation);
+        QString path;
+        foreach(path, PossibleCfgPaths) {
+            qCDebug(ozwdaemon) << "Checking " << QFileInfo(QDir::toNativeSeparators(path)).absoluteFilePath() << " for options.xml";
+            if (QFileInfo(QDir::toNativeSeparators(path+"/options.xml")).exists()) {
+                userPath = QFileInfo(QDir::toNativeSeparators(path).append("/")).absoluteFilePath();
+                break;
+            }
+        }
+        /* if we dont have a dbPath, Deploy our config files there */
+        if (userPath.isEmpty()) {
+            userPath = QFileInfo("./").absoluteFilePath();
+            qWarning() << "Configuration Database Does Not Exist - Copying Database to Default Location " << dbPath;
+            QStringList Locations;
+            Locations << ".";
+            if (initConfigDatabase(Locations)) {
+                copyUserDatabase(userPath);
+            } else {
+                qWarning() << "Cant find qt-openzwavedatabase.rcc";
+                QCoreApplication::exit(-1);
+            }
         }
     }
+    finiConfigDatabase();
+    qCInfo(ozwdaemon) << "DBPath: " << dbPath;
+    qCInfo(ozwdaemon) << "userPath: " << userPath;
 
-#if defined(Q_OS_LINUX) 
-    if (dbPath.isEmpty()) {
-        if (initConfigDatabase(PossibleDBPaths)) {
-            copyConfigDatabase(QFileInfo("./").absoluteFilePath().append("/"));
-            dbPath = "./config/";
-            userPath = "./config/";
-        } else {
-            qWarning() << "Cant find qt-openzwavedatabase.rcc";
-        }
-    }
-#endif
-    qCDebug(ozwdaemon) << "DBPath: " << dbPath;
-    qCDebug(ozwdaemon) << "userPath: " << userPath;
-
-    QSettings settings(userPath.append("/ozwdaemon.ini"), QSettings::IniFormat);
+    QSettings settings(QString(userPath).append("/ozwdaemon.ini"), QSettings::IniFormat);
 
 #ifdef HAVE_MQTT
     if (parser.isSet(MQTTServer)) {
@@ -300,13 +357,9 @@ int main(int argc, char *argv[])
         settings.setValue("StopOnFailure", true);
     }
 
-    QTOZWOptions options(QTOZWOptions::Local);
-    options.setUserPath(userPath);
-    options.setConfigPath(dbPath);
 
+    qtozwdaemon daemon(dbPath, userPath);
 
-
-    qtozwdaemon daemon;
     QObject::connect(&a, &QCoreApplication::aboutToQuit, &daemon, &qtozwdaemon::aboutToQuit);
     qCInfo(ozwdaemon) << "Staring " << QCoreApplication::applicationName() << " Version: " << QCoreApplication::applicationVersion();
     qCInfo(ozwdaemon) << "OpenZWave Version: " << daemon.getManager()->getVersionAsString();

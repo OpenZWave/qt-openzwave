@@ -75,8 +75,8 @@ public:
     };
     Q_ENUM(connectionStatus);
 
-    Q_PROPERTY(QDir OZWDatabasePath READ OZWDatabasePath WRITE setOZWDatabasePath)
-    Q_PROPERTY(QDir OZWUserPath READ OZWUserPath WRITE setOZWUserPath)
+    Q_PROPERTY(QString OZWConfigPath READ OZWConfigPath WRITE setOZWConfigPath)
+    Q_PROPERTY(QString OZWUserPath READ OZWUserPath WRITE setOZWUserPath)
     Q_PROPERTY(QString m_clientAuth READ getClientAuth WRITE setClientAuth)
 
     QTOZWManager(QObject *parent = nullptr);
@@ -191,10 +191,10 @@ public:
 
 
 /* Property Methods */
-    QDir OZWDatabasePath() { return this->m_ozwdatabasepath; }
-    QDir OZWUserPath() { return this->m_ozwuserpath; }
-    void setOZWDatabasePath(QDir path);
-    void setOZWUserPath(QDir path);
+    QString OZWConfigPath() { return this->m_ozwconfigpath; }
+    QString OZWUserPath() { return this->m_ozwuserpath; }
+    void setOZWConfigPath(QString path);
+    void setOZWUserPath(QString path);
 
     void setClientAuth(QString auth) { this->m_clientAuth = auth; }
     QString getClientAuth() { return this->m_clientAuth; }
@@ -302,8 +302,8 @@ private:
     bool m_associationsState;
 
     bool m_running;
-    QDir m_ozwdatabasepath;
-    QDir m_ozwuserpath;
+    QString m_ozwconfigpath;
+    QString m_ozwuserpath;
     QString m_clientAuth;
 };
 

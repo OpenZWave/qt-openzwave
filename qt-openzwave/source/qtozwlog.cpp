@@ -49,7 +49,6 @@ QTOZWLog::~QTOZWLog()
 }
 
 bool QTOZWLog::initilizeBase() {
-    this->setReady(true);
     return true;
 }
 
@@ -272,7 +271,6 @@ bool QTOZWLogModel::insertLogMessage(QDateTime time, LogLevels::Level level, qui
     Q_UNUSED(level);
     Q_UNUSED(s_node);
     Q_UNUSED(s_msg);
-    qCDebug(logModel) << "Insert Log Message at " << this->m_qtozwlog->getLogEntries().count();
     this->beginInsertRows(QModelIndex(), this->m_qtozwlog->getLogEntries().count(), this->m_qtozwlog->getLogEntries().count());
     this->endInsertRows();
     return true;
@@ -284,7 +282,6 @@ bool QTOZWLogModel::syncLogMessage(QDateTime time, LogLevels::Level level, quint
     Q_UNUSED(level);
     Q_UNUSED(s_node);
     Q_UNUSED(s_msg);
-    qCDebug(logModel) << "Sync Log Message (total:" << this->m_qtozwlog->getLogEntries().count() << ")";
     this->beginInsertRows(QModelIndex(), 0, 0);
     this->endInsertRows();
     return true;

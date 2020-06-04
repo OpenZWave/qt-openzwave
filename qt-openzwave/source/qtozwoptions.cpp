@@ -31,75 +31,19 @@
 #include "qtozwoptions_p.h"
 #include "qtozw_logging.h"
 
-#ifndef Q_OS_WASM
-#define CONNECT_DPTR(x)     if (this->m_connectionType == connectionType::Local) { \
-        QObject::connect(this->d_ptr_internal, &QTOZWOptions_Internal::x, this, &QTOZWOptions::x);\
-    } else { \
-        QObject::connect(this->d_ptr_replica, &QTOZWOptionsReplica::x, this, &QTOZWOptions::x); \
-    };
-
-#define CONNECT_DPTR1(x, y)     if (this->m_connectionType == connectionType::Local) { \
-        QObject::connect(this->d_ptr_internal, &QTOZWOptions_Internal::x, this, &QTOZWOptions::y);\
-    } else { \
-        QObject::connect(this->d_ptr_replica, &QTOZWOptionsReplica::x, this, &QTOZWOptions::y); \
-    };
-
-#define CALL_DPTR(x) if (this->m_connectionType == QTOZWOptions::connectionType::Local) this->d_ptr_internal->x; else this->d_ptr_replica->x;
-
-#define CALL_DPTR_PROP(x) if (this->m_connectionType == QTOZWOptions::connectionType::Local) return this->d_ptr_internal->x; else return this->d_ptr_replica->x;
-
-#define CALL_DPTR_PROP_SET(x) if (this->m_connectionType == QTOZWOptions::connectionType::Local) { \
-        this->d_ptr_internal->setProperty(#x, x); \
-    } else { \
-        this->d_ptr_replica->setProperty(#x, x); \
-    }
-
-#define CALL_DPTR_PROP_SET_TYPE(x, y) if (this->m_connectionType == QTOZWOptions::connectionType::Local) { \
-        this->d_ptr_internal->setProperty(#x, QVariant::fromValue<y>(x)); \
-    } else { \
-        this->d_ptr_replica->setProperty(#x, QVariant::fromValue<y>(x)); \
-    }
-
-#define CALL_DPTR_METHOD_RTN(x, y) if (this->m_connectionType == QTOZWOptions::connectionType::Local) \
-    return this->d_ptr_internal->x; \
-    else { \
-    QRemoteObjectPendingReply<y> res = this->d_ptr_replica->x; \
-    res.waitForFinished(); \
-    return res.returnValue(); \
-    }
-
-#else
-
-#define CONNECT_DPTR(x) QObject::connect(this->d_ptr_replica, &QTOZWOptionsReplica::x, this, &QTOZWOptions::x)
-
-#define CONNECT_DPTR1(x, y) QObject::connect(this->d_ptr_replica, &QTOZWOptionsReplica::x, this, &QTOZWOptions::y)
-
-#define CALL_DPTR(x) this->d_ptr_replica->x
-
-#define CALL_DPTR_PROP(x) return this->d_ptr_replica->x
-
-#define CALL_DPTR_PROP_SET(x) this->d_ptr_replica->setProperty(#x, x)
-
-#define CALL_DPTR_PROP_SET_TYPE(x, y) this->d_ptr_replica->setProperty(#x, QVariant::fromValue<y>(x))
-
-#define CALL_DPTR_METHOD_RTN(x, y) QRemoteObjectPendingReply<y> res = this->d_ptr_replica->x; \
-    res.waitForFinished(); \
-    return res.returnValue(); 
-
-#endif
+#define REP_INTERNAL_CLASS QTOZWOptions_Internal
+#define REP_REPLICA_CLASS QTOZWOptionsReplica
+#define REP_PUBLIC_CLASS QTOZWOptions
 
 
-
-QTOZWOptions::QTOZWOptions(connectionType type, QObject *parent)
-    : QObject(parent),
-      m_connectionType(type)
-{
+QTOZWOptions::QTOZWOptions(ConnectionType::Type type, QObject *parent)
+    : QTOZWReplicaBase(type, parent)
+{ 
 #ifndef Q_OS_WASM    
-    if (type == QTOZWOptions::connectionType::Local) {
-        this->m_connectionType = connectionType::Local;
+    if (this->getConnectionType() == ConnectionType::Type::Local) {
         this->d_ptr_internal = new QTOZWOptions_Internal(this);
         connectSignals();
-    } else if (type == connectionType::Remote) {
+    } else if (this->getConnectionType() == ConnectionType::Type::Remote) {
         qDebug() << "Nothing to do till we connect";
     }
 #endif
@@ -110,20 +54,28 @@ bool QTOZWOptions::initilizeBase() {
 }
 #ifndef Q_OS_WASM
 bool QTOZWOptions::initilizeSource(QRemoteObjectHost *m_sourceNode) {
+    this->setConnectionType(ConnectionType::Type::Local);
+
     initilizeBase();
+
     if (m_sourceNode) {
         m_sourceNode->enableRemoting<QTOZWOptionsSourceAPI>(this->d_ptr_internal);
     }
+
     return true;
 }
 #endif
 
 bool QTOZWOptions::initilizeReplica(QRemoteObjectNode *m_replicaNode) {
+    this->setConnectionType(ConnectionType::Type::Remote);
+
     initilizeBase();
-    this->m_connectionType = connectionType::Remote;
+
     this->d_ptr_replica = m_replicaNode->acquire<QTOZWOptionsReplica>("QTOZWOptions");
     QObject::connect(this->d_ptr_replica, &QTOZWOptionsReplica::stateChanged, this, &QTOZWOptions::onOptionStateChange);
+
     connectSignals();
+
     return true;
 }
 
@@ -165,103 +117,103 @@ void QTOZWOptions::connectSignals() {
 }
 
 QString QTOZWOptions::ConfigPath() const {
-    CALL_DPTR_PROP(ConfigPath());
+    CALL_DPTR_PROP(ConfigPath(), QString());
 }
 QString QTOZWOptions::UserPath() const {
-    CALL_DPTR_PROP(UserPath());
+    CALL_DPTR_PROP(UserPath(), QString());
 }
 bool QTOZWOptions::Logging() const {
-    CALL_DPTR_PROP(Logging());
+    CALL_DPTR_PROP(Logging(), false);
 }
 QString QTOZWOptions::LogFileName() const {
-    CALL_DPTR_PROP(LogFileName());
+    CALL_DPTR_PROP(LogFileName(), QString());
 }
 bool QTOZWOptions::AppendLogFile() const {
-    CALL_DPTR_PROP(AppendLogFile());
+    CALL_DPTR_PROP(AppendLogFile(), false);
 }
 bool QTOZWOptions::ConsoleOutput() const {
-    CALL_DPTR_PROP(ConsoleOutput());
+    CALL_DPTR_PROP(ConsoleOutput(), false);
 }
 OptionList QTOZWOptions::SaveLogLevel() const {
-    CALL_DPTR_PROP(SaveLogLevel());
+    CALL_DPTR_PROP(SaveLogLevel(), OptionList());
 }
 OptionList QTOZWOptions::QueueLogLevel() const {
-    CALL_DPTR_PROP(QueueLogLevel());
+    CALL_DPTR_PROP(QueueLogLevel(), OptionList());
 }
 OptionList QTOZWOptions::DumpTriggerLevel() const {
-    CALL_DPTR_PROP(DumpTriggerLevel());
+    CALL_DPTR_PROP(DumpTriggerLevel(), OptionList());
 }
 bool QTOZWOptions::Associate() const {
-    CALL_DPTR_PROP(Associate());
+    CALL_DPTR_PROP(Associate(), false);
 }
 QString QTOZWOptions::Exclude() const {
-    CALL_DPTR_PROP(Exclude());
+    CALL_DPTR_PROP(Exclude(), QString());
 }
 QString QTOZWOptions::Include() const {
-    CALL_DPTR_PROP(Include());
+    CALL_DPTR_PROP(Include(), QString());
 }
 bool QTOZWOptions::NotifyTransactions() const {
-    CALL_DPTR_PROP(NotifyTransactions());
+    CALL_DPTR_PROP(NotifyTransactions(), false);
 }
 QString QTOZWOptions::Interface() const {
-    CALL_DPTR_PROP(Interface());
+    CALL_DPTR_PROP(Interface(), QString());
 }
 bool QTOZWOptions::SaveConfiguration() const {
-    CALL_DPTR_PROP(SaveConfiguration());
+    CALL_DPTR_PROP(SaveConfiguration(), false);
 }
 qint32 QTOZWOptions::DriverMaxAttempts() const {
-    CALL_DPTR_PROP(DriverMaxAttempts());
+    CALL_DPTR_PROP(DriverMaxAttempts(), 0);
 }
 qint32 QTOZWOptions::PollInterval() const {
-    CALL_DPTR_PROP(PollInterval());
+    CALL_DPTR_PROP(PollInterval(), 0);
 }
 bool QTOZWOptions::SuppressValueRefresh() const {
-    CALL_DPTR_PROP(SuppressValueRefresh());
+    CALL_DPTR_PROP(SuppressValueRefresh(), false);
 }
 bool QTOZWOptions::IntervalBetweenPolls() const {
-    CALL_DPTR_PROP(IntervalBetweenPolls());
+    CALL_DPTR_PROP(IntervalBetweenPolls(), false);
 }
 bool QTOZWOptions::PerformReturnRoutes() const {
-    CALL_DPTR_PROP(PerformReturnRoutes());
+    CALL_DPTR_PROP(PerformReturnRoutes(), false);
 }
 QString QTOZWOptions::NetworkKey() const {
-    CALL_DPTR_PROP(NetworkKey());
+    CALL_DPTR_PROP(NetworkKey(), QString());
 }
 bool QTOZWOptions::RefreshAllUserCodes() const {
-    CALL_DPTR_PROP(RefreshAllUserCodes());
+    CALL_DPTR_PROP(RefreshAllUserCodes(), false);
 }
 qint32 QTOZWOptions::RetryTimeout() const {
-    CALL_DPTR_PROP(RetryTimeout());
+    CALL_DPTR_PROP(RetryTimeout(), 0);
 }
 bool QTOZWOptions::EnableSIS() const {
-    CALL_DPTR_PROP(EnableSIS());
+    CALL_DPTR_PROP(EnableSIS(), false);
 }
 bool QTOZWOptions::AssumeAwake() const {
-    CALL_DPTR_PROP(AssumeAwake());
+    CALL_DPTR_PROP(AssumeAwake(), false);
 }
 bool QTOZWOptions::NotifyOnDriverUnload() const {
-    CALL_DPTR_PROP(NotifyTransactions());
+    CALL_DPTR_PROP(NotifyTransactions(), false);
 }
 OptionList QTOZWOptions::SecurityStrategy() const {
-    CALL_DPTR_PROP(SecurityStrategy());
+    CALL_DPTR_PROP(SecurityStrategy(), OptionList());
 }
 QString QTOZWOptions::CustomSecuredCC() const {
-    CALL_DPTR_PROP(CustomSecuredCC());
+    CALL_DPTR_PROP(CustomSecuredCC(), QString());
 }
 bool QTOZWOptions::EnforceSecureReception() const {
-    CALL_DPTR_PROP(EnforceSecureReception());
+    CALL_DPTR_PROP(EnforceSecureReception(), false);
 }
 bool QTOZWOptions::AutoUpdateConfigFile() const {
-    CALL_DPTR_PROP(AutoUpdateConfigFile());
+    CALL_DPTR_PROP(AutoUpdateConfigFile(), false);
 }
 OptionList QTOZWOptions::ReloadAfterUpdate() const {
-    CALL_DPTR_PROP(ReloadAfterUpdate());
+    CALL_DPTR_PROP(ReloadAfterUpdate(), OptionList());
 }
 QString QTOZWOptions::Language() const {
-    CALL_DPTR_PROP(Language());
+    CALL_DPTR_PROP(Language(), QString());
 }
 bool QTOZWOptions::IncludeInstanceLabels() const {
-    CALL_DPTR_PROP(IncludeInstanceLabels());
+    CALL_DPTR_PROP(IncludeInstanceLabels(), false);
 }
 void QTOZWOptions::setConfigPath(QString ConfigPath) {
     CALL_DPTR_PROP_SET(ConfigPath);
@@ -362,26 +314,24 @@ void QTOZWOptions::setLanguage(QString Language) {
 void QTOZWOptions::setIncludeInstanceLabels(bool IncludeInstanceLabels) {
     CALL_DPTR_PROP_SET(IncludeInstanceLabels);
 }
-
 bool QTOZWOptions::AddOptionBool(QString option, bool value) {
-    CALL_DPTR_METHOD_RTN(AddOptionBool(option, value), bool);
+    CALL_DPTR_RTN(AddOptionBool(option, value), bool, false);
 }
 bool QTOZWOptions::AddOptionInt(QString option, qint32 value) {
-    CALL_DPTR_METHOD_RTN(AddOptionInt(option, value), bool)
+    CALL_DPTR_RTN(AddOptionInt(option, value), bool, false)
 }
 bool QTOZWOptions::AddOptionString(QString option, QString value) {
-    CALL_DPTR_METHOD_RTN(AddOptionString(option, value), bool)
+    CALL_DPTR_RTN(AddOptionString(option, value), bool, false)
 }
 bool QTOZWOptions::GetOptionAsBool(QString option) {
-    CALL_DPTR_METHOD_RTN(GetOptionAsBool(option), bool);
+    CALL_DPTR_RTN(GetOptionAsBool(option), bool, false);
 }
 qint32 QTOZWOptions::GetOptionAsInt(QString option) {
-    CALL_DPTR_METHOD_RTN(GetOptionAsInt(option), qint32);
+    CALL_DPTR_RTN(GetOptionAsInt(option), qint32, 0);
 }
 QString QTOZWOptions::GetOptionAsString(QString option) {
-    CALL_DPTR_METHOD_RTN(GetOptionAsString(option), QString);
+    CALL_DPTR_RTN(GetOptionAsString(option), QString, QString());
 }
-
 bool QTOZWOptions::isLocked() {
-    CALL_DPTR_METHOD_RTN(isLocked(), bool);
+    CALL_DPTR_RTN(isLocked(), bool, false);
 }

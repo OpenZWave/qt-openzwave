@@ -13,8 +13,8 @@ class QTOPENZWAVESHARED_EXPORT QTOZWReplicaBase : public QObject {
         Q_PROPERTY(ConnectionType::Type connectionType MEMBER m_connectionType READ getConnectionType WRITE setConnectionType NOTIFY connectionTypeChanged);
         Q_PROPERTY(bool ready MEMBER m_ready READ isReady WRITE setReady NOTIFY readyChanged);
 
-        ConnectionType::Type getConnectionType();
-        bool isReady();
+        ConnectionType::Type getConnectionType() const;
+        bool isReady() const;
 
         virtual bool initilizeBase() = 0;
         virtual bool initilizeSource(QRemoteObjectHost *m_sourceNode) = 0;
@@ -67,6 +67,28 @@ class QTOPENZWAVESHARED_EXPORT QTOZWReplicaBase : public QObject {
          return res.returnValue(); \
     }
 
+#define CALL_DPTR_PROP(x, ret) if (!this->isReady()) return ret; \
+    if (this->getConnectionType() == ConnectionType::Type::Local) { \
+        return this->d_ptr_internal->x; \
+    } else { \
+        return this->d_ptr_replica->x; \
+    }
+
+#define CALL_DPTR_PROP_SET(x) if (!this->isReady()) return; \
+    if (this->getConnectionType() == ConnectionType::Type::Local) { \
+        this->d_ptr_internal->setProperty(#x, x); \
+    } else { \
+        this->d_ptr_replica->setProperty(#x, x); \
+    }
+
+#define CALL_DPTR_PROP_SET_TYPE(x, y) if (!this->isReady()) return; \
+    if (this->getConnectionType() == ConnectionType::Type::Local) { \
+        this->d_ptr_internal->setProperty(#x, QVariant::fromValue<y>(x)); \
+    } else { \
+        this->d_ptr_replica->setProperty(#x, QVariant::fromValue<y>(x)); \
+    }
+
+    
 #else 
 
 #define CONNECT_DPTR(x) QObject::connect(this->d_ptr_replica, &REP_REPLICA_CLASS::x, this, &REP_PUBLIC_CLASS::x); 
