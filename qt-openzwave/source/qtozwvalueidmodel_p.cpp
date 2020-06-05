@@ -76,7 +76,7 @@ void QTOZW_ValueIds_internal::setValueFlags(quint64 _vidKey, QTOZW_ValueIds::Val
     if (this->m_valueData.at(row)[QTOZW_ValueIds::ValueFlags].toBitArray().at(_flags) != _value) {
         QBitArray flags = this->m_valueData.value(row)[QTOZW_ValueIds::ValueFlags].value<QBitArray>();
         flags.setBit(_flags, _value);
-        this->m_valueData.value(row)[QTOZW_ValueIds::ValueFlags] = flags;
+        this->m_valueData[row][QTOZW_ValueIds::ValueFlags] = flags;
         QVector<int> roles;
         roles << Qt::DisplayRole;
         if (!transaction) this->dataChanged(this->createIndex(row, QTOZW_ValueIds::ValueFlags), this->createIndex(row, QTOZW_ValueIds::ValueFlags), roles);
