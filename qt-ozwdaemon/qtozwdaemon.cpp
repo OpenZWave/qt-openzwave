@@ -75,7 +75,10 @@ qtozwdaemon::qtozwdaemon(QString configPath, QString userPath, QObject *parent) 
 
     this->m_openzwave = new QTOpenZwave(this, cfgDir.absoluteFilePath(), userDir.absoluteFilePath());
     this->m_qtozwmanager = this->m_openzwave->GetManager();
-    QObject::connect(this->m_qtozwmanager, &QTOZWManager::readyChanged, this, &qtozwdaemon::QTOZW_Ready);
+    
+    connect(this->m_qtozwmanager, &QTOZWManager::readyChanged, this, &qtozwdaemon::QTOZW_Ready);
+    connect(this->m_qtozwmanager, &QTOZWManager::nodeQueriesComplete, this, &qtozwdaemon::nodeQueriesComplete);
+    
     this->m_qtozwmanager->initilizeSource(true);
     if (!NetworkKey.isEmpty()) {
         this->m_qtozwmanager->getOptions()->setNetworkKey(NetworkKey);
@@ -127,4 +130,15 @@ void qtozwdaemon::handleSigTerm()
 
 void qtozwdaemon::aboutToQuit() {
     this->m_qtozwmanager->close();
+}
+
+void qtozwdaemon::nodeQueriesComplete(quint8 node) {
+    static QVector<quint8> s_completedNodes;
+    if (this->m_qtozwmanager->getControllerNodeId() != node) {
+        /* Also Refresh out Configuration CC Values when starting up */
+        if (!s_completedNodes.contains(node)) {
+            this->m_qtozwmanager->requestAllConfigParam(node);
+            s_completedNodes.append(node);
+        }
+    }
 }

@@ -33,6 +33,9 @@ public slots:
     void aboutToQuit();
     void setConfigPath(QString configPath) { this->m_configPath = configPath; }
     void setUserPath(QString userPath) { this->m_userPath = userPath; }
+    void nodeQueriesComplete(quint8 node);
+
+
 private:
     QTOpenZwave *m_openzwave;
     QTOZWManager *m_qtozwmanager;

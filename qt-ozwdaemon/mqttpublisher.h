@@ -32,17 +32,22 @@ class mqttpublisher : public QObject
 {
     Q_OBJECT
 public:
+    Q_PROPERTY(bool ready READ isReady WRITE setReady NOTIFY readyChanged);
+
     explicit mqttpublisher(QSettings *setting, QObject *parent = nullptr);
     ~mqttpublisher();
     void setOZWDaemon(qtozwdaemon *ozwdaemon);
     QTOZWManager *getQTOZWManager();
-    void sendCommandUpdate(QString, rapidjson::Document &);
-    void sendAssociationUpdate(quint8 node, quint8 group, rapidjson::Document &js);
+    bool sendCommandUpdate(QString, rapidjson::Document &);
+    bool sendAssociationUpdate(quint8 node, quint8 group, rapidjson::Document &js);
     bool isValidNode(quint8 node);
     bool isValidValueID(quint64 vidKey);
     QVariant getValueData(quint64, mqttValueIDModel::ValueIdColumns);
     bool setValue(quint64, QVariant);
+    bool isReady();
+    void setReady(bool ready);
 signals:
+    void readyChanged(bool ready);
 
 public slots:
     void ready(bool);
@@ -126,6 +131,7 @@ private:
     MqttCommands *m_commands;
     QMqttSubscription *m_cleanTopicSubscription;
     QDateTime m_currentStartTime;
+    bool m_ready;
 };
 
 #endif // MQTTPUBLISHER_H

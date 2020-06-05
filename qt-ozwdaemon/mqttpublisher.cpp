@@ -10,7 +10,48 @@
 
 Q_LOGGING_CATEGORY(ozwmp, "ozw.mqtt.publisher");
 
-mqttpublisher::mqttpublisher(QSettings *settings, QObject *parent) : QObject(parent)
+QString mqttClientStateToString(QMqttClient::ClientState state) 
+{
+    switch (state) {
+        case QMqttClient::ClientState::Disconnected:
+            return "Disconnected";
+        case QMqttClient::ClientState::Connecting:
+            return "Connecting";
+        case QMqttClient::ClientState::Connected:
+            return "Connected";
+    }
+}
+
+QString mqttClientErrorToString(QMqttClient::ClientError error) 
+{
+    switch (error) {
+        case QMqttClient::ClientError::NoError:
+            return "NoError";
+        case QMqttClient::ClientError::InvalidProtocolVersion:
+            return "Invalid Protocol Version";
+        case QMqttClient::ClientError::IdRejected:
+            return "ID Rejected";
+        case QMqttClient::ClientError::ServerUnavailable:
+            return "Server Unavailable";
+        case QMqttClient::ClientError::BadUsernameOrPassword:
+            return "Bad Username or Passsord";
+        case QMqttClient::ClientError::NotAuthorized:
+            return "Not Authorized";
+        case QMqttClient::ClientError::TransportInvalid:
+            return "Transport Invalid";
+        case QMqttClient::ClientError::ProtocolViolation:
+            return "Protocol Violation";
+        case QMqttClient::ClientError::UnknownError:
+            return "Unknown Error";
+        case QMqttClient::ClientError::Mqtt5SpecificError:
+            return "MQTT5 Specific Error";
+    }
+}
+
+
+mqttpublisher::mqttpublisher(QSettings *settings, QObject *parent) : 
+    QObject(parent),
+    m_ready(false)
 {
     this->settings = settings;
     this->m_client = new QMqttClient(this);
@@ -60,10 +101,24 @@ mqttpublisher::mqttpublisher(QSettings *settings, QObject *parent) : QObject(par
     this->m_client->setWillRetain(true);
     connect(&this->m_statsTimer, &QTimer::timeout, this, &mqttpublisher::doStats);
 }
+
 mqttpublisher::~mqttpublisher() {
     rapidjson::Document willMsg(rapidjson::kObjectType);
     QT2JS::SetString(willMsg, "Status", "Offline");
     this->m_client->publish(QMqttTopicName(getTopic(MQTT_OZW_STATUS_TOPIC)), QT2JS::getJSON(willMsg), 0, true);
+}
+
+bool mqttpublisher::isReady()
+{
+    return this->m_ready;
+}
+void mqttpublisher::setReady(bool ready)
+{
+    if (this->m_ready != ready) 
+    {
+        this->m_ready = ready;
+        emit readyChanged(this->m_ready);
+    }
 }
 
 
@@ -96,16 +151,18 @@ void mqttpublisher::cleanTopics(QMqttMessage msg) {
 }
 
 void mqttpublisher::brokerError(QMqttClient::ClientError error) {
-    qCWarning(ozwmp) << "Broker Error" << error;
+    qCWarning(ozwmp) << "MQTT Client Error" << mqttClientErrorToString(error);
     if (settings->value("MQTTTLS").toBool() == true) {
         qCWarning(ozwmp) << qobject_cast<QSslSocket *>(this->m_client->transport())->errorString();
     }
-
 }
 
 
 
 void mqttpublisher::doStats() {
+    if (!this->isReady())
+        return;
+
     if (!this->m_qtozwdaemon) {
         return; 
     }
@@ -305,7 +362,7 @@ void mqttpublisher::setOZWDaemon(qtozwdaemon *ozwdaemon) {
 
 void mqttpublisher::updateLogStateChange()
 {
-    qCDebug(ozwmp) << "MQTT State Change" << m_client->state();
+    qCDebug(ozwmp) << "MQTT State Change" <<  mqttClientStateToString(this->m_client->state());
     if (this->m_client->state() == QMqttClient::ClientState::Connecting) {
         qCInfo(ozwmp) << "MQTT Client Connecting";
         if (settings->value("MQTTTLS").toBool() == true) {
@@ -314,11 +371,13 @@ void mqttpublisher::updateLogStateChange()
         }
     } else if (this->m_client->state() == QMqttClient::ClientState::Connected) {
         qCInfo(ozwmp) << "MQTT Client Connected";
+        this->setReady(true);
         this->m_cleanTopicSubscription = this->m_client->subscribe(QMqttTopicFilter(getTopic("#")));
         connect(this->m_cleanTopicSubscription, &QMqttSubscription::messageReceived, this, &mqttpublisher::cleanTopics);
         this->m_commands->setupSubscriptions(this->m_client, this->getCommandTopic());
         return;
     } else if (this->m_client->state() == QMqttClient::ClientState::Disconnected) {
+        this->setReady(false);
         if (settings->value("StopOnFailure", false).toBool()) {
             qCWarning(ozwmp) << "Exiting on Failure";
             QCoreApplication::quit();
@@ -330,12 +389,15 @@ void mqttpublisher::updateLogStateChange()
 
 void mqttpublisher::brokerDisconnected()
 {
-    qCDebug(ozwmp) << "Disconnnected";
+    this->setReady(false);
+    qCWarning(ozwmp) << "MQTT Client Disconnnected";
 }
 
 bool mqttpublisher::sendStatusUpdate() {
     QT2JS::SetUInt64(this->m_ozwstatus, "TimeStamp", QDateTime::currentSecsSinceEpoch());
     this->m_client->publish(QMqttTopicName(getTopic(MQTT_OZW_STATUS_TOPIC)), QT2JS::getJSON(this->m_ozwstatus), 0, true);
+    if (!this->isReady())
+        return false;
     return true;
 }
 
@@ -354,6 +416,8 @@ bool mqttpublisher::clearStatusUpdate() {
 bool mqttpublisher::sendNodeUpdate(quint8 node) {
     QT2JS::SetUInt64(*this->m_nodes[node], "TimeStamp", QDateTime::currentSecsSinceEpoch());
     this->m_client->publish(QMqttTopicName(getNodeTopic(MQTT_OZW_NODE_TOPIC, node)), QT2JS::getJSON(*this->m_nodes[node]), 0, true);
+    if (!this->isReady())
+        return false;
     return true;
 }
 
@@ -375,6 +439,8 @@ bool mqttpublisher::sendValueUpdate(quint64 vidKey) {
     }
     QT2JS::SetUInt64(*this->m_values[vidKey], "TimeStamp", QDateTime::currentSecsSinceEpoch()); 
     this->m_client->publish(QMqttTopicName(getValueTopic(MQTT_OZW_VID_TOPIC, node, instance, cc, vidKey)), QT2JS::getJSON(*this->m_values[vidKey]), 0, true);
+    if (!this->isReady())
+        return false;
     return true;
 }
 
@@ -385,6 +451,8 @@ bool mqttpublisher::sendInstanceUpdate(quint8 node, quint8 instance) {
     }
     QT2JS::SetUInt64(*jsinstance, "TimeStamp", QDateTime::currentSecsSinceEpoch());
     this->m_client->publish(QMqttTopicName(getInstanceTopic(MQTT_OZW_INSTANCE_TOPIC, node, instance)), QT2JS::getJSON(*jsinstance), 0, true);
+    if (!this->isReady())
+        return false;
     return true;
 }
 
@@ -395,24 +463,32 @@ bool mqttpublisher::sendCommandClassUpdate(quint8 node, quint8 instance, quint8 
     }
     QT2JS::SetUInt64(*jsCommandClass, "TimeStamp", QDateTime::currentSecsSinceEpoch());
     this->m_client->publish(QMqttTopicName(getCommandClassTopic(MQTT_OZW_COMMANDCLASS_TOPIC, node, instance, cc)), QT2JS::getJSON(*jsCommandClass), 0, true);
+    if (!this->isReady())
+        return false;
     return true;
 }
 
-void mqttpublisher::sendCommandUpdate(QString command, rapidjson::Document &js) {
+bool mqttpublisher::sendCommandUpdate(QString command, rapidjson::Document &js) {
     QT2JS::SetUInt64(js, "TimeStamp", QDateTime::currentSecsSinceEpoch());
     this->m_client->publish(QMqttTopicName(getCommandResponseTopic(command.toLower())), QT2JS::getJSON(js), 0, false);
-    return;
+    if (!this->isReady())
+        return false;
+    return true;
 }
 
-void mqttpublisher::sendAssociationUpdate(quint8 node, quint8 group, rapidjson::Document &js) {
+bool mqttpublisher::sendAssociationUpdate(quint8 node, quint8 group, rapidjson::Document &js) {
     QT2JS::SetUInt64(js, "TimeStamp", QDateTime::currentSecsSinceEpoch());
     this->m_client->publish(QMqttTopicName(getAssociationTopic(node, group)), QT2JS::getJSON(js), 0, true);
-    return;
+    if (!this->isReady())
+        return false;
+    return true;
 }
 
 bool mqttpublisher::delNodeTopic(quint8 node) {
     this->m_client->publish(QMqttTopicName(getNodeTopic(MQTT_OZW_NODE_TOPIC, node)), NULL, 0, true);
     this->m_client->publish(QMqttTopicName(getNodeTopic(MQTT_OZW_STATS_NODE_TOPIC, node)), NULL, 0, true);
+    if (!this->isReady())
+        return false;
     return true;
 }
 
@@ -433,21 +509,29 @@ bool mqttpublisher::delValueTopic(quint64 vidKey) {
         return false;
     }
     this->m_client->publish(QMqttTopicName(getValueTopic(MQTT_OZW_VID_TOPIC, node, instance, cc, vidKey)), NULL, 0, true);
+    if (!this->isReady())
+        return false;
     return true;
 }
 
 bool mqttpublisher::delInstanceTopic(quint8 node, quint8 instance) {
     this->m_client->publish(QMqttTopicName(getInstanceTopic(MQTT_OZW_INSTANCE_TOPIC, node, instance)), NULL, 0, true);
+    if (!this->isReady())
+        return false;
     return true;
 }
 
 bool mqttpublisher::delCommandClassTopic(quint8 node, quint8 instance, quint8 cc) {
     this->m_client->publish(QMqttTopicName(getCommandClassTopic(MQTT_OZW_COMMANDCLASS_TOPIC, node, instance, cc)), NULL, 0, true);
+    if (!this->isReady())
+        return false;
     return true;
 }
 
 bool mqttpublisher::delAssociationTopic(quint8 node, quint8 group) {
     this->m_client->publish(QMqttTopicName(getAssociationTopic(node, group)), NULL, 0, true);
+    if (!this->isReady())
+        return false;
     return true;
 }
 
@@ -460,7 +544,6 @@ void mqttpublisher::ready(bool ready) {
     }
 }
 void mqttpublisher::valueAdded(quint64 vidKey) {
-    qCDebug(ozwmp) << "Publishing Event valueAdded:" << vidKey;
     /* create instance and CC Topics if necessary */
     rapidjson::Document *jsinstance = nullptr;
     quint8 node = this->m_valueModel->getValueData(vidKey, QTOZW_ValueIds::Node).value<quint8>();
@@ -491,12 +574,15 @@ void mqttpublisher::valueAdded(quint64 vidKey) {
     if (this->m_valueModel->populateJsonObject(*this->m_values[vidKey], vidKey, this->m_qtozwdaemon->getManager())) {
         /* something has changed */
         QT2JS::SetString(*this->m_values[vidKey], "Event", "valueAdded");
-        this->sendValueUpdate(vidKey);
+        if (this->sendValueUpdate(vidKey))
+            qCDebug(ozwmp) << "Publishing Event valueAdded:" << vidKey;
+ 
     }
 }
 void mqttpublisher::valueRemoved(quint64 vidKey) {
-    qCDebug(ozwmp) << "Publishing Event valueRemoved:" << vidKey;
-    this->delValueTopic(vidKey);
+    if (this->delValueTopic(vidKey)) 
+        qCDebug(ozwmp) << "Publishing Event valueRemoved:" << vidKey;
+
     if (this->m_values.find(vidKey) == this->m_values.end()) {
         qCWarning(ozwmp) << "valueRemoved: vidKey does not exist in Values Map:" << vidKey;
         return;
@@ -558,42 +644,46 @@ void mqttpublisher::valueRemoved(quint64 vidKey) {
     }
 }
 void mqttpublisher::valueChanged(quint64 vidKey) {
-    qCDebug(ozwmp) << "Publishing Event valueChanged:" << vidKey;
     if (this->m_valueModel->encodeValue(*this->m_values[vidKey], vidKey)) {
         /* something has changed */
         QT2JS::SetString(*this->m_values[vidKey], "Event", "valueChanged");
-        this->sendValueUpdate(vidKey);
+        if (this->sendValueUpdate(vidKey))
+            qCDebug(ozwmp) << "Publishing Event valueChanged:" << vidKey;
     }
 }
 void mqttpublisher::valueRefreshed(quint64 vidKey) {
-    qCDebug(ozwmp) << "Publishing Event valueRefreshed:" << vidKey;
     if (this->m_valueModel->encodeValue(*this->m_values[vidKey], vidKey)) {
         /* something has changed */
         QT2JS::SetString(*this->m_values[vidKey], "Event", "valueRefreshed");
-        this->sendValueUpdate(vidKey);
+        if (this->sendValueUpdate(vidKey))
+            qCDebug(ozwmp) << "Publishing Event valueRefreshed:" << vidKey;
+
     }
 }
 void mqttpublisher::nodeNew(quint8 node) {
-    qCDebug(ozwmp) << "Publishing Event NodeNew:" << node;
     if (this->m_nodes.find(node) == this->m_nodes.end()) {
         this->m_nodes.insert(node, new rapidjson::Document(rapidjson::kObjectType));
     }
     this->m_nodeModel->populateJsonObject(*this->m_nodes[node], node, this->m_qtozwdaemon->getManager());
     QT2JS::SetString(*this->m_nodes[node], "Event", "nodeNew");
-    this->sendNodeUpdate(node);
+    if (this->sendNodeUpdate(node)) 
+        qCDebug(ozwmp) << "Publishing Event NodeNew:" << node;
+
 }
 void mqttpublisher::nodeAdded(quint8 node) {
-    qCDebug(ozwmp) << "Publishing Event NodeAdded:" << node;
     if (this->m_nodes.find(node) == this->m_nodes.end()) {
         this->m_nodes.insert(node, new rapidjson::Document(rapidjson::kObjectType));
     }
     this->m_nodeModel->populateJsonObject(*this->m_nodes[node], node, this->m_qtozwdaemon->getManager());
     QT2JS::SetString(*this->m_nodes[node], "Event", "nodeAdded");
-    this->sendNodeUpdate(node);
+    if (this->sendNodeUpdate(node)) 
+        qCDebug(ozwmp) << "Publishing Event NodeAdded:" << node;
+
 }
 void mqttpublisher::nodeRemoved(quint8 node) {
-    qCDebug(ozwmp) << "Publishing Event nodeRemoved:" << node;
-    this->delNodeTopic(node);
+    if (this->delNodeTopic(node))
+        qCDebug(ozwmp) << "Publishing Event nodeRemoved:" << node;
+
 
     if (this->m_assoications.find(node) != this->m_assoications.end()) {
         quint8 group;
@@ -608,8 +698,9 @@ void mqttpublisher::nodeRemoved(quint8 node) {
     }
 }
 void mqttpublisher::nodeReset(quint8 node) {
-    qCDebug(ozwmp) << "Publishing Event nodeReset:" << node;
-    this->delNodeTopic(node);
+    if (this->delNodeTopic(node))
+        qCDebug(ozwmp) << "Publishing Event nodeReset:" << node;
+
     if (this->m_assoications.find(node) != this->m_assoications.end()) {
         quint8 group;
         foreach(group, this->m_assoications[node]) {
@@ -623,10 +714,11 @@ void mqttpublisher::nodeReset(quint8 node) {
     }
 }
 void mqttpublisher::nodeNaming(quint8 node) {
-    qCDebug(ozwmp) << "Publishing Event nodeNaming:" << node;
     this->m_nodeModel->populateJsonObject(*this->m_nodes[node], node, this->m_qtozwdaemon->getManager());
     QT2JS::SetString(*this->m_nodes[node], "Event", "nodeNaming");
-    this->sendNodeUpdate(node);
+    if (this->sendNodeUpdate(node))
+        qCDebug(ozwmp) << "Publishing Event nodeNaming:" << node;
+
 }
 void mqttpublisher::nodeEvent(quint8 node, quint8 event) {
     Q_UNUSED(node);
@@ -636,29 +728,34 @@ void mqttpublisher::nodeEvent(quint8 node, quint8 event) {
      */
 }
 void mqttpublisher::nodeProtocolInfo(quint8 node) {
-    qCDebug(ozwmp) << "Publishing Event nodeProtocolInfo:" << node;
     this->m_nodeModel->populateJsonObject(*this->m_nodes[node], node, this->m_qtozwdaemon->getManager());
     QT2JS::SetString(*this->m_nodes[node], "Event", "nodeProtocolInfo");
-    this->sendNodeUpdate(node);
+    if (this->sendNodeUpdate(node))
+        qCDebug(ozwmp) << "Publishing Event nodeProtocolInfo:" << node;
+
 }
 void mqttpublisher::nodeEssentialNodeQueriesComplete(quint8 node) {
-    qCDebug(ozwmp) << "Publishing Event nodeEssentialNodeQueriesComplete:" << node;
     this->m_nodeModel->populateJsonObject(*this->m_nodes[node], node, this->m_qtozwdaemon->getManager());
     QT2JS::SetString(*this->m_nodes[node], "Event", "nodeEssentialNodeQueriesComplete");
-    this->sendNodeUpdate(node);
+    if (this->sendNodeUpdate(node))
+        qCDebug(ozwmp) << "Publishing Event nodeEssentialNodeQueriesComplete:" << node;
+
 }
 void mqttpublisher::nodeQueriesComplete(quint8 node) {
-    qCDebug(ozwmp) << "Publishing Event nodeQueriesComplete:" << node;
     this->m_nodeModel->populateJsonObject(*this->m_nodes[node], node, this->m_qtozwdaemon->getManager());
     QT2JS::SetString(*this->m_nodes[node], "Event", "nodeQueriesComplete");
-    this->sendNodeUpdate(node);
+    if (this->sendNodeUpdate(node))
+        qCDebug(ozwmp) << "Publishing Event nodeQueriesComplete:" << node;
+
 }
 
 void mqttpublisher::nodeGroupChanged(quint8 node, quint8 group) {
-    qCDebug(ozwmp) << "Publishing Event nodeGroupChanged: " << node << " Group: " << group;
     rapidjson::Document *jsinstance = new rapidjson::Document(rapidjson::kObjectType);
     this->m_assocModel->populateJsonObject(*jsinstance, node, group, this->m_qtozwdaemon->getManager());
-    this->sendAssociationUpdate(node, group, *jsinstance);
+    
+    if (this->sendAssociationUpdate(node, group, *jsinstance))
+        qCDebug(ozwmp) << "Publishing Event nodeGroupChanged: " << node << " Group: " << group;
+
     delete jsinstance;
     if (this->m_assoications.count(node) == 0 ) {
         this->m_assoications.insert(node, QVector<quint8>());
@@ -670,7 +767,6 @@ void mqttpublisher::nodeGroupChanged(quint8 node, quint8 group) {
 }
 
 void mqttpublisher::driverReady(quint32 homeID) {
-    qCDebug(ozwmp) << "Publishing Event driverReady:" << homeID;
     QT2JS::SetString(this->m_ozwstatus, "Status", "driverReady");
     QT2JS::SetUint(this->m_ozwstatus, "getControllerNodeId", this->getQTOZWManager()->getControllerNodeId());
     QT2JS::SetUint(this->m_ozwstatus, "getSUCNodeId", this->getQTOZWManager()->getSucNodeId());
@@ -681,52 +777,59 @@ void mqttpublisher::driverReady(quint32 homeID) {
     QT2JS::SetString(this->m_ozwstatus, "getControllerLibraryType", this->getQTOZWManager()->getLibraryTypeName());
     QT2JS::SetString(this->m_ozwstatus, "getControllerPath", this->getQTOZWManager()->getControllerPath());
     QT2JS::SetUint(this->m_ozwstatus, "homeID", homeID);
-    this->sendStatusUpdate();
+    if (this->sendStatusUpdate())
+        qCDebug(ozwmp) << "Publishing Event driverReady:" << homeID;
+
 }
 void mqttpublisher::driverFailed(quint32 homeID) {
-    qCDebug(ozwmp) << "Publishing Event driverFailed:" << homeID;
     this->clearStatusUpdate();
     QT2JS::SetString(this->m_ozwstatus, "Status", "driverFailed");
     QT2JS::SetUint(this->m_ozwstatus, "homeID", homeID);
-    this->sendStatusUpdate();
+    if (this->sendStatusUpdate())
+        qCDebug(ozwmp) << "Publishing Event driverFailed:" << homeID;
+
     if (settings->value("StopOnFailure", false).toBool()) {
         qCWarning(ozwmp) << "Exiting on Failure";
         QCoreApplication::quit();
     }
 }
 void mqttpublisher::driverReset(quint32 homeID) {
-    qCDebug(ozwmp) << "Publishing Event driverReset:" << homeID;
     this->clearStatusUpdate();
     QT2JS::SetString(this->m_ozwstatus, "Status", "driverReset");
     QT2JS::SetUint(this->m_ozwstatus, "homeID", homeID);
-    this->sendStatusUpdate();
+    if (this->sendStatusUpdate())
+        qCDebug(ozwmp) << "Publishing Event driverReset:" << homeID;
+
     /* XXX TODO: Scan Nodes, Instances, CC and Value Lists and delete them */
 }
 void mqttpublisher::driverRemoved(quint32 homeID) {
-    qCDebug(ozwmp) << "Publishing Event driverRemoved:" << homeID;
     this->clearStatusUpdate();
     QT2JS::SetString(this->m_ozwstatus, "Status", "driverRemoved");
     QT2JS::SetUint(this->m_ozwstatus, "homeID", homeID);
-    this->sendStatusUpdate();
+    if (this->sendStatusUpdate())
+        qCDebug(ozwmp) << "Publishing Event driverRemoved:" << homeID;
+
     /* XXX TODO: Scan Nodes, Instances, CC and Value Lists and delete them */
 }
 void mqttpublisher::driverAllNodesQueriedSomeDead() {
-    qCDebug(ozwmp) << "Publishing Event driverAllNodesQueriedSomeDead:" ;
     QT2JS::SetString(this->m_ozwstatus, "Status", "driverAllNodesQueriedSomeDead");
-    this->sendStatusUpdate();
+    if (this->sendStatusUpdate())
+        qCDebug(ozwmp) << "Publishing Event driverAllNodesQueriedSomeDead:" ;
+
 }
 void mqttpublisher::driverAllNodesQueried() {
-    qCDebug(ozwmp) << "Publishing Event driverAllNodesQueried:" ;
     QT2JS::SetString(this->m_ozwstatus, "Status", "driverAllNodesQueried");
-    this->sendStatusUpdate();
+    if (this->sendStatusUpdate())
+        qCDebug(ozwmp) << "Publishing Event driverAllNodesQueried:" ;
+
 }
 void mqttpublisher::driverAwakeNodesQueried() {
-    qCDebug(ozwmp) << "Publishing Event driverAwakeNodesQueried:" ;
     QT2JS::SetString(this->m_ozwstatus, "Status", "driverAwakeNodesQueried");
-    this->sendStatusUpdate();
+    if (this->sendStatusUpdate())
+        qCDebug(ozwmp) << "Publishing Event driverAwakeNodesQueried:" ;
+
 }
 void mqttpublisher::controllerCommand(quint8 node, NotificationTypes::QTOZW_Notification_Controller_Cmd command, NotificationTypes::QTOZW_Notification_Controller_State state, NotificationTypes::QTOZW_Notification_Controller_Error error) {
-    qCDebug(ozwmp) << "Publishing Event controllerCommand" << node << command << state << error;
     rapidjson::Document js;
     if (node > 0)
         QT2JS::SetUint(js, "Node", node);
@@ -743,73 +846,104 @@ void mqttpublisher::controllerCommand(quint8 node, NotificationTypes::QTOZW_Noti
             break;
         }
         case NotificationTypes::Ctrl_Cmd_AddNode: {
-            this->sendCommandUpdate("AddNode", js);
+            if (this->sendCommandUpdate("AddNode", js))
+                qCDebug(ozwmp) << "Publishing Event controllerCommand" << node << command << state << error;
+
             break;
         }
         case NotificationTypes::Ctrl_Cmd_AssignReturnRoute: {
-            this->sendCommandUpdate("AssignReturnRoute", js);
+            if (this->sendCommandUpdate("AssignReturnRoute", js))
+                qCDebug(ozwmp) << "Publishing Event controllerCommand" << node << command << state << error;
+
             break;
         }
         case NotificationTypes::Ctrl_Cmd_CreateButton: {
             QT2JS::SetString(js, "Command", QMetaEnum::fromType<NotificationTypes::QTOZW_Notification_Controller_Cmd>().valueToKey(command));
-            this->sendCommandUpdate("ControllerCommand", js);
+            if (this->sendCommandUpdate("ControllerCommand", js))
+                qCDebug(ozwmp) << "Publishing Event controllerCommand" << node << command << state << error;
+
             break;
         }
         case NotificationTypes::Ctrl_Cmd_CreateNewPrimary: {
             QT2JS::SetString(js, "Command", QMetaEnum::fromType<NotificationTypes::QTOZW_Notification_Controller_Cmd>().valueToKey(command));
-            this->sendCommandUpdate("ControllerCommand", js);
+            if (this->sendCommandUpdate("ControllerCommand", js))
+                qCDebug(ozwmp) << "Publishing Event controllerCommand" << node << command << state << error;
+
             break;
         }
         case NotificationTypes::Ctrl_Cmd_DeleteAllReturnRoute: {
-            this->sendCommandUpdate("DeleteAllReturnRoute", js);
+            if (this->sendCommandUpdate("DeleteAllReturnRoute", js))
+                qCDebug(ozwmp) << "Publishing Event controllerCommand" << node << command << state << error;
+
             break;
         }
         case NotificationTypes::Ctrl_Cmd_DeleteButton: {
             QT2JS::SetString(js, "Command", QMetaEnum::fromType<NotificationTypes::QTOZW_Notification_Controller_Cmd>().valueToKey(command));
-            this->sendCommandUpdate("ControllerCommand", js);
+            if (this->sendCommandUpdate("ControllerCommand", js))
+                qCDebug(ozwmp) << "Publishing Event controllerCommand" << node << command << state << error;
+
             break;
         }
         case NotificationTypes::Ctrl_Cmd_HasNodeFailed: {
-            this->sendCommandUpdate("HasNodeFailed", js);
+            if (this->sendCommandUpdate("HasNodeFailed", js))
+                qCDebug(ozwmp) << "Publishing Event controllerCommand" << node << command << state << error;
+
             break;
         }
         case NotificationTypes::Ctrl_Cmd_ReceiveConfiguration: {
             QT2JS::SetString(js, "Command", QMetaEnum::fromType<NotificationTypes::QTOZW_Notification_Controller_Cmd>().valueToKey(command));
-            this->sendCommandUpdate("ControllerCommand", js);
+            if (this->sendCommandUpdate("ControllerCommand", js))
+                qCDebug(ozwmp) << "Publishing Event controllerCommand" << node << command << state << error;
+
             break;
         }
         case NotificationTypes::Ctrl_Cmd_RemoveFailedNode: {
-            this->sendCommandUpdate("RemoveFailedNode", js);
+            if (this->sendCommandUpdate("RemoveFailedNode", js))
+                qCDebug(ozwmp) << "Publishing Event controllerCommand" << node << command << state << error;
+
             break;
         }
         case NotificationTypes::Ctrl_Cmd_RemoveNode: {
-            this->sendCommandUpdate("RemoveNode", js);
+            if (this->sendCommandUpdate("RemoveNode", js))
+                qCDebug(ozwmp) << "Publishing Event controllerCommand" << node << command << state << error;
+
             break;
         }
         case NotificationTypes::Ctrl_Cmd_ReplaceFailedNode: {
-            this->sendCommandUpdate("ReplaceFailedNode", js);
+            if (this->sendCommandUpdate("ReplaceFailedNode", js))
+                qCDebug(ozwmp) << "Publishing Event controllerCommand" << node << command << state << error;
             break;
         }
         case NotificationTypes::Ctrl_Cmd_ReplicationSend: {
             QT2JS::SetString(js, "Command", QMetaEnum::fromType<NotificationTypes::QTOZW_Notification_Controller_Cmd>().valueToKey(command));
-            this->sendCommandUpdate("ControllerCommand", js);
+            if (this->sendCommandUpdate("ControllerCommand", js))
+                qCDebug(ozwmp) << "Publishing Event controllerCommand" << node << command << state << error;
+
             break;
         }
         case NotificationTypes::Ctrl_Cmd_RequestNetworkUpdate: {
-            this->sendCommandUpdate("RequestNetworkUpdate", js);
+            if (this->sendCommandUpdate("RequestNetworkUpdate", js))
+                qCDebug(ozwmp) << "Publishing Event controllerCommand" << node << command << state << error;
+
             break;
         }
         case NotificationTypes::Ctrl_Cmd_RequestNodeNeighborUpdate: {
-            this->sendCommandUpdate("RequestNodeNeighborUpdate", js);
+            if (this->sendCommandUpdate("RequestNodeNeighborUpdate", js))
+                qCDebug(ozwmp) << "Publishing Event controllerCommand" << node << command << state << error;
+
             break;
         }
         case NotificationTypes::Ctrl_Cmd_SendNodeInformation: {
-            this->sendCommandUpdate("SendNodeInformation", js);
+            if (this->sendCommandUpdate("SendNodeInformation", js))
+                qCDebug(ozwmp) << "Publishing Event controllerCommand" << node << command << state << error;
+
             break;
         }
         case NotificationTypes::Ctrl_Cmd_TransferPrimaryRole: {
             QT2JS::SetString(js, "Command", QMetaEnum::fromType<NotificationTypes::QTOZW_Notification_Controller_Cmd>().valueToKey(command));
-            this->sendCommandUpdate("ControllerCommand", js);
+            if (this->sendCommandUpdate("ControllerCommand", js))
+                qCDebug(ozwmp) << "Publishing Event controllerCommand" << node << command << state << error;
+
             break;
         }
         case NotificationTypes::Ctrl_Cmd_count: {
@@ -819,15 +953,15 @@ void mqttpublisher::controllerCommand(quint8 node, NotificationTypes::QTOZW_Noti
     };
 }
 void mqttpublisher::ozwNotification(quint8 node, NotificationTypes::QTOZW_Notification_Code event) {
-    qCDebug(ozwmp) << "Publishing Event ozwNotification";
     rapidjson::Document js;
     QMetaEnum metaEnum = QMetaEnum::fromType<NotificationTypes::QTOZW_Notification_Code>();
     QT2JS::SetUint(js, "Node", node);
     QT2JS::SetString(js, "Event", metaEnum.valueToKey(event));
-    this->sendCommandUpdate("Notification", js);
+    if (this->sendCommandUpdate("Notification", js))
+        qCDebug(ozwmp) << "Publishing Event ozwNotification";
+
 }
 void mqttpublisher::ozwUserAlert(quint8 node, NotificationTypes::QTOZW_Notification_User event, quint8 retry) {
-    qCDebug(ozwmp) << "Publishing Event ozwUserAlert";
     rapidjson::Document js;
     QMetaEnum metaEnum = QMetaEnum::fromType<NotificationTypes::QTOZW_Notification_User>();
     QT2JS::SetUint(js, "Node", node);
@@ -835,37 +969,42 @@ void mqttpublisher::ozwUserAlert(quint8 node, NotificationTypes::QTOZW_Notificat
     if (event == NotificationTypes::QTOZW_Notification_User::Notification_User_ApplicationStatus_Retry) {
         QT2JS::SetUint(js, "Retry", retry);
     }
-    this->sendCommandUpdate("UserAlert", js);
+    if (this->sendCommandUpdate("UserAlert", js))
+        qCDebug(ozwmp) << "Publishing Event ozwUserAlert";
+
 }
 void mqttpublisher::manufacturerSpecificDBReady() {
-    qCDebug(ozwmp) << "Publishing Event manufacturerSpecificDBReady";
     QT2JS::SetBool(this->m_ozwstatus, "ManufacturerSpecificDBReady", true);
-    this->sendStatusUpdate();
+    if (this->sendStatusUpdate())
+        qCDebug(ozwmp) << "Publishing Event manufacturerSpecificDBReady";
+
 }
 
 void mqttpublisher::starting() {
-    qCDebug(ozwmp) << "Publishing Event starting";
     this->clearStatusUpdate();
     QT2JS::SetString(this->m_ozwstatus, "Status", "starting");
-    this->sendStatusUpdate();
+    if (this->sendStatusUpdate())
+        qCDebug(ozwmp) << "Publishing Event starting";
+
 }
 void mqttpublisher::started(quint32 homeID) {
-    qCDebug(ozwmp) << "Publishing Event started";
     this->clearStatusUpdate();
     QT2JS::SetString(this->m_ozwstatus, "Status", "started");
     QT2JS::SetUint(this->m_ozwstatus, "homeID", homeID);
-    this->sendStatusUpdate();
+    if (this->sendStatusUpdate())
+        qCDebug(ozwmp) << "Publishing Event started";
+
     this->m_statsTimer.start(settings->value("StatisticsUpdateInterval", 30000).toInt());
 }
 void mqttpublisher::stopped(quint32 homeID) {
-    qCDebug(ozwmp) << "Publishing Event stopped";
     this->clearStatusUpdate();
     QT2JS::SetString(this->m_ozwstatus, "Status", "stopped");
     QT2JS::SetUint(this->m_ozwstatus, "homeID", homeID);
-    this->sendStatusUpdate();
+    if (this->sendStatusUpdate())
+        qCDebug(ozwmp) << "Publishing Event stopped";
+
     this->m_statsTimer.stop();
 }
-//void error(QTOZWErrorCodes errorcode);
 
 QTOZWManager *mqttpublisher::getQTOZWManager() {
     return this->m_qtozwdaemon->getManager();
