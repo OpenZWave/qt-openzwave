@@ -56,8 +56,9 @@ public:
     explicit QTOZW_proxyValueModel(QObject *parent = nullptr);
     void setSelectionModel(QItemSelectionModel *);
     void setFilterGenre(QTOZW_ValueIds::ValueIdGenres genre);
-    //    setNodeView(QAbstractItemView *);
-
+    QTOZW_ValueIds::ValueIdGenres getFilterGenre();
+    QItemSelectionModel *getSelectionModel();
+    quint8 getCurrentFilteredNode();
 public slots:
     void currentSelectedRowChanged(const QModelIndex &current, const QModelIndex &previous);
 

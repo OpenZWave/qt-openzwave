@@ -62,6 +62,23 @@ void QTOZW_proxyValueModel::setFilterGenre(QTOZW_ValueIds::ValueIdGenres genre)
     invalidateFilter();
 }
 
+QTOZW_ValueIds::ValueIdGenres QTOZW_proxyValueModel::getFilterGenre() 
+{
+    return this->m_genreFilter;
+}
+
+QItemSelectionModel *QTOZW_proxyValueModel::getSelectionModel() 
+{
+    return this->m_selectionmodel;
+}
+
+quint8 QTOZW_proxyValueModel::getCurrentFilteredNode() 
+{
+    return this->m_nodeFilter;
+}
+
+
+
 bool QTOZW_proxyValueModel::filterAcceptsRow(int sourceRow, const QModelIndex &sourceParent) const {
     if (this->m_genreFilter != QTOZW_ValueIds::ValueIdGenres::GenreCount) {
         QModelIndex genreIndex = sourceModel()->index(sourceRow, QTOZW_ValueIds::ValueIdColumns::Genre, sourceParent);
