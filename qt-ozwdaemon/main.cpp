@@ -213,7 +213,8 @@ int main(int argc, char *argv[])
                                      "qt.remoteobjects.models.debug=false\n"
                                      "qt.remoteobjects.io.debug=false\n"
                                      "qt.mqtt.connection.debug=false\n"
-                                     "qt.mqtt.connection.verbose.debug=false");
+                                     "qt.mqtt.connection.verbose.debug=false\n"
+                                     "ozw.mqtt.qt2js.debug=false");
 #else
     QLoggingCategory::setFilterRules("*.debug=true");
 #endif
