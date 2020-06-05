@@ -73,10 +73,10 @@ bool copyConfigDatabase(QDir configpath)
         QString dirname = fi.dir().path().remove(":/config/");
         configpath.mkpath(dirname);
         if (!QFileInfo::exists(configpath.path()+fi.filePath().remove(0,1))) {
-            qCDebug(qtozwdatabase) << "Copying " << fi.filePath().remove(":/config/") << " to " << configpath.filePath(fi.filePath().remove(":/config/"));
+            qCDebug(qtozwdatabase) << "copyConfigDatabase: Copying " << fi.filePath().remove(":/config/") << " to " << configpath.filePath(fi.filePath().remove(":/config/"));
             QFile::copy(fi.filePath(), configpath.filePath(fi.filePath().remove(":/config/")));
         } else {
-            qCDebug(qtozwdatabase) << "Skipping " << fi.filePath().remove(":/config/") << " as it exists";
+            qCDebug(qtozwdatabase) << "copyConfigDatabase: Skipping " << fi.filePath().remove(":/config/") << " as it exists";
         }
     }
     return true;
@@ -90,10 +90,10 @@ bool copyUserDatabase(QDir configpath)
         configpath.mkpath(".");
         if (!QFileInfo::exists(configpath.path()+fi.filePath().remove(0,1))) {
             QDir target = configpath.filePath(fi.filePath().remove(":/config/"));    
-            qCDebug(qtozwdatabase) << "Copying " << fi.filePath().remove(":/config/") << " to " << target.path();
+            qCDebug(qtozwdatabase) << "copyUserDatabase: Copying " << fi.filePath().remove(":/config/") << " to " << target.path();
             QFile::copy(fi.filePath(), target.path());
         } else {
-            qCDebug(qtozwdatabase) << "Skipping " << fi.filePath().remove(":/config/") << " as it exists";
+            qCDebug(qtozwdatabase) << "copyUserDatabase: Skipping " << fi.filePath().remove(":/config/") << " as it exists";
         }
     }
     return true;

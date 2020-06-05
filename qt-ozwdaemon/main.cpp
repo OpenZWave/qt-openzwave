@@ -267,7 +267,7 @@ int main(int argc, char *argv[])
         /* if we dont have a dbPath, Deploy our config files there */
         if (dbPath.isEmpty()) {
 #ifndef Q_OS_WIN
-            dbPath = QFileInfo("./").absoluteFilePath();
+            dbPath = QFileInfo("./config/").absoluteFilePath();
             qWarning() << "Configuration Database Does Not Exist - Copying Database to Default Location " << dbPath;
             QStringList Locations;
             Locations << ".";
@@ -331,7 +331,7 @@ int main(int argc, char *argv[])
         /* if we dont have a dbPath, Deploy our config files there */
         if (userPath.isEmpty()) {
 #ifndef Q_OS_WIN
-            userPath = QFileInfo("./").absoluteFilePath();
+            userPath = QFileInfo("./config/").absoluteFilePath();
             qWarning() << "Configuration Database Does Not Exist - Copying Database to Default Location " << dbPath;
             QStringList Locations;
             Locations << ".";

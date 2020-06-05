@@ -28,7 +28,7 @@ RUN git clone https://chromium.googlesource.com/chromium/tools/depot_tools.git \
 RUN git clone https://github.com/qt/qtmqtt.git \
 	&& cd qtmqtt \
 	&& git checkout 5.12.5 \
-	&& /usr/lib/qt5/bin/qmake QT_BUILD_PARTS="libs tools" \
+	&& /usr/lib/qt5/bin/qmake CONFIG+=release QT_BUILD_PARTS="libs tools" \
 	&& make \
 	&& make install
 RUN git clone https://github.com/OpenZWave/open-zwave.git \
@@ -43,14 +43,14 @@ ARG BUILDNUMBER=0
 COPY . /opt/qt-openzwave/
 RUN	cd qt-openzwave \
 	&& if [ -f Makefile ]; then /usr/lib/qt5/bin/qmake -r; make distclean; fi \
-	&& /usr/lib/qt5/bin/qmake -r "BP_CLIENTID=$BP_CLIENTID" "BP_CLIENTKEY=$BP_CLIENTKEY" "BUILDNUMBER=$BUILDNUMBER" \
+	&& /usr/lib/qt5/bin/qmake -r CONFIG+=release "BP_CLIENTID=$BP_CLIENTID" "BP_CLIENTKEY=$BP_CLIENTKEY" "BUILDNUMBER=$BUILDNUMBER" \
 	&& make -j4 \
 	&& make install
 
 RUN git clone https://github.com/OpenZWave/ozw-admin.git \
 	&& cd ozw-admin \
 	&& if [ -f Makefile ]; then /usr/lib/qt5/bin/qmake -r; make distclean; fi \
-	&& /usr/lib/qt5/bin/qmake -r \
+	&& /usr/lib/qt5/bin/qmake -r CONFIG+=release \
 	&& make -j4 \
 	&& make install
 
