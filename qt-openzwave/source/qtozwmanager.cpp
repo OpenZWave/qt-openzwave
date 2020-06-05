@@ -44,6 +44,12 @@
 
 QTOZWManager::QTOZWManager(QObject *parent)
     : QTOZWReplicaBase(ConnectionType::Type::Invalid, parent),
+    m_managerState(QRemoteObjectReplica::State::Uninitialized),
+    m_optionsState(QRemoteObjectReplica::State::Uninitialized),
+    m_logState(QRemoteObjectReplica::State::Uninitialized),
+    m_nodeState(false),
+    m_valuesState(false),
+    m_associationsState(false),
     m_running(false),
     m_ozwconfigpath(""),
     m_ozwuserpath(""),
