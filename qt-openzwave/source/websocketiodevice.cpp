@@ -69,8 +69,8 @@ WebSocketIoDevice::WebSocketIoDevice(QWebSocket *webSocket, bool client, QString
     if (!m_client) {
         /* if we are the server, send our Protocol Message */
         /* PROTOCOL <VERSION>*/
-        QString msg("PROTOCOL 1 ");
-        webSocket->sendTextMessage(msg);
+        QString msg("PROTOCOL %1");
+        webSocket->sendTextMessage(msg.arg(PROTOCOL_VERSION));
         m_state = Stage_Protocol;
     }
 }
@@ -96,6 +96,12 @@ void WebSocketIoDevice::processTextMessage(const QString &msg) {
                     return;
                 }
                 m_version = msg.section(" ", 1, 1).toInt();
+                if (m_version != PROTOCOL_VERSION) {
+                    qCWarning(qtrowebsocket) << "Got Invalid Protocol Version " << m_version;
+                    m_socket->sendTextMessage("ERROR Incompatible Protocol Version");
+                    emit this->authError(QString("Got Invalid Protocol Version"));
+                    m_socket->close(QWebSocketProtocol::CloseCodeProtocolError);
+                }
                 /* future Vesions - Check Version */
                 m_socket->sendTextMessage("PROTOCOL OK");
                 m_state = Stage_Authenticate;

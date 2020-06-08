@@ -38,9 +38,7 @@
 #define OPENZWAVE_USEDLL 1
 #endif
 
-//#include "qtozwmanager.h"
-
-
+#define PROTOCOL_VERSION 2
 
 /**
  * \mainpage QT-OpenZWave

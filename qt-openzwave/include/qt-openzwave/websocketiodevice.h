@@ -56,6 +56,8 @@
 #include <QPointer>
 #include <QDebug>
 
+#include "qt-openzwave/qtopenzwave.h"
+
 class QWebSocket;
 
 class WebSocketIoDevice : public QIODevice

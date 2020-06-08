@@ -135,11 +135,14 @@ quint32 QTOZWLog::getLogCount()
 bool QTOZWLog::syncroniseLogs() 
 {
     qCDebug(logModel) << "SyncronizeLogs Called for " << this->getLogCount() << " Messages";
-    if (!this->isReady()) 
+    if (!this->isReady()) {
+        qCDebug(logModel) << "Logs not Ready";
         return false; 
+    }
     if (this->getConnectionType() == ConnectionType::Type::Local) 
     {
         /* if our connection is Local, Nothing to do */
+        qCDebug(logModel) << "Logs are Local - Nothing to do";
         return true;
     } 
     else 
@@ -147,6 +150,8 @@ bool QTOZWLog::syncroniseLogs()
         /* if its a Remote Connection, we have to reset our Local Copy and ask the Source to send us
          * the Log Entries 
          */
+        qCDebug(logModel) << "Logs are Remote - Asking for Logs";
+
         this->m_logData.clear();
         emit this->logCleared();
         QRemoteObjectPendingReply<bool> res = this->d_ptr_replica->syncroniseLogs(); 

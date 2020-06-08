@@ -61,6 +61,11 @@ void QTOZWLog_Internal::Write(OpenZWave::LogLevel _level, uint8 const _nodeId, c
         vsnprintf(lineBuf, sizeof(lineBuf), _format, _args);
         va_end(saveargs);
     }
+    if (strlen(lineBuf) == 0) {
+        /* OZW Has lots of Empty Lines to easy visibility, But lets ignore them */
+        return;
+    }
+
     LogLevels::Level qtozwlevel = LogLevels::Level::Debug;
     switch (_level) {
         case OpenZWave::LogLevel_Invalid:
