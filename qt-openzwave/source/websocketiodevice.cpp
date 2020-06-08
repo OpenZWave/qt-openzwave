@@ -77,7 +77,7 @@ WebSocketIoDevice::WebSocketIoDevice(QWebSocket *webSocket, bool client, QString
 
 void WebSocketIoDevice::processTextMessage(const QString &msg) {
     /* State Machine for Client */
-    if (msg.section(" ", 1, 1) == "ERROR") {
+    if (msg.section(" ", 0, 0) == "ERROR") {
         qCWarning(qtrowebsocket) << "Got Error Message From Peer: " << msg;
         emit this->authError(msg);
         m_socket->close(QWebSocketProtocol::CloseCodeNormal);

@@ -261,6 +261,7 @@ void QTOZWManager::clientAuthenticated() {
 void QTOZWManager::clientAuthError(QString error) {
     qCWarning(manager) << "WebSocket Client Authentication Error: " << error;
     this->setReady(false);
+    emit remoteConnectionStatus(connectionStatus::VersionMisMatchError, QAbstractSocket::UnknownSocketError);
 }
 
 void QTOZWManager::clientConnected() {
