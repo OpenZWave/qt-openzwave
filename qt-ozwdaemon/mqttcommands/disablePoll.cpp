@@ -14,5 +14,5 @@ bool MqttCommand_DisablePoll::processMessage(rapidjson::Document &msg) {
         return this->sendSimpleStatus(false, "Invalid ValueIDKey Number");
     }
     QTOZWManager *mgr = getOZWManager();
-    return this->sendSimpleStatus(mgr->disablePoll(msg["ValueIdKey"].GetUint64()));
+    return this->sendSimpleStatus(mgr->disablePoll(msg["ValueIDKey"].GetUint64()));
 }
