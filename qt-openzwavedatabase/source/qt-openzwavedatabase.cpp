@@ -46,10 +46,11 @@ bool initConfigDatabase(QStringList path) {
             qCInfo(qtozwdatabase) << "Found qt-openzwavedatabase.rcc at " << test;
             rccpath = test;
             return true;
-        } else if (QResource::registerResource(QCoreApplication::applicationDirPath() + test))
+        } else if (QResource::registerResource(QCoreApplication::applicationDirPath() + test)) {
             qCInfo(qtozwdatabase) << "Found qt-openzwavedatabase.rcc at " << QCoreApplication::applicationDirPath() + test;
             rccpath = QCoreApplication::applicationDirPath() + test;
             return true;
+        }
     }
 
     return false; 
