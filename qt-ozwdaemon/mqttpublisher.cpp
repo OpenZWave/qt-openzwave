@@ -72,7 +72,7 @@ mqttpublisher::mqttpublisher(QSettings *settings, QObject *parent) :
         }
         if (mqttpass.isEmpty()) {
             qWarning() << "Couldn't Find MQTT_PASSWORD enviroment variable or Docker Secret File";
-            QCoreApplication::quit();
+            QCoreApplication::exit(-1);
         }
         this->m_client->setUsername(settings->value("MQTTUsername", "").toString());
         this->m_client->setPassword(mqttpass);
@@ -380,7 +380,7 @@ void mqttpublisher::updateLogStateChange()
         this->setReady(false);
         if (settings->value("StopOnFailure", false).toBool()) {
             qCWarning(ozwmp) << "Exiting on Failure";
-            QCoreApplication::quit();
+            QCoreApplication::exit(-1);
         }
         return;
     }
@@ -790,7 +790,7 @@ void mqttpublisher::driverFailed(quint32 homeID) {
 
     if (settings->value("StopOnFailure", false).toBool()) {
         qCWarning(ozwmp) << "Exiting on Failure";
-        QCoreApplication::quit();
+        QCoreApplication::exit(-1);
     }
 }
 void mqttpublisher::driverReset(quint32 homeID) {
