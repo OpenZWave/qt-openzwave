@@ -44,8 +44,8 @@ class QTOPENZWAVESHARED_EXPORT QTOZWOptions : public QTOZWReplicaBase {
     friend class QTOZWManager;
     Q_OBJECT
 public:
-    QTOZWOptions(ConnectionType::Type type, QObject *parent = nullptr);
-
+    QTOZWOptions(ConnectionType::Type type, QString localConfigPath = QString(), QString localUserPath = QString(), QObject *parent = nullptr);
+    ~QTOZWOptions();
     Q_PROPERTY(QString ConfigPath READ ConfigPath WRITE setConfigPath NOTIFY ConfigPathChanged)
     Q_PROPERTY(QString UserPath READ UserPath WRITE setUserPath NOTIFY UserPathChanged)
     Q_PROPERTY(bool Logging READ Logging WRITE setLogging NOTIFY LoggingChanged)
@@ -201,11 +201,14 @@ Q_SIGNALS:
 
 private:
     void connectSignals();
+    void disconnectSignals();
 
 
     QTOZWOptions_Internal *d_ptr_internal;
     QTOZWOptionsReplica *d_ptr_replica;
     QRemoteObjectReplica::State m_optionState;
+    QString m_localConfigPath;
+    QString m_localUserPath;
 };
 
 

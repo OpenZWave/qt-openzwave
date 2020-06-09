@@ -34,15 +34,6 @@ QTOZWManager_Internal::QTOZWManager_Internal(QObject *parent)
     : QTOZWManagerSimpleSource (parent)
 {
     this->setObjectName("QTOZW_Manager");
-
-    try {
-        qCDebug(manager) << "OpenZWave Options Class Creating";
-        this->m_options = new QTOZWOptions_Internal(this);
-        qCDebug(manager) << "OpenZWave Options Class Set";
-    } catch (OpenZWave::OZWException &e) {
-        qCWarning(manager) << "Failed to Load Options Class" << QString(e.GetMsg().c_str());
-        return;
-    }
     this->m_nodeModel = new QTOZW_Nodes_internal(this);
     QObject::connect(this->m_nodeModel, &QTOZW_Nodes_internal::dataChanged, this, &QTOZWManager_Internal::pvt_nodeModelDataChanged);
     this->m_valueModel = new QTOZW_ValueIds_internal(this);
@@ -451,11 +442,12 @@ QByteArray QTOZWManager_Internal::GetMetaDataProductPic(quint8 _node) {
     if (!this->checkHomeId() || !this->checkNodeId(_node))
         return QByteArray();
     try {
-        this->m_options->GetOptionAsString("ConfigPath");
-        QString path(this->m_options->GetOptionAsString("ConfigPath"));
+        std::string ozwpath;
+        OpenZWave::Options::Get()->GetOptionAsString("ConfigPath", &ozwpath);
+        QString path(ozwpath.c_str());
         path.append(QString::fromStdString(this->m_manager->GetMetaData(this->homeId(), _node, OpenZWave::Node::MetaDataFields::MetaData_ProductPic)));
         qCDebug(manager) << "ProductPic Path: " << path;
-        if (path == this->m_options->GetOptionAsString("ConfigPath"))
+        if (path == QString(ozwpath.c_str()))
             return QByteArray();
         QFile file(path);
         if (!file.open(QIODevice::ReadOnly)) return QByteArray();
@@ -1280,10 +1272,6 @@ QTOZW_ValueIds *QTOZWManager_Internal::getValueModel() {
 
 QTOZW_Associations *QTOZWManager_Internal::getAssociationModel() {
     return static_cast<QTOZW_Associations *>(this->m_associationsModel);
-}
-
-QTOZWOptions_Internal *QTOZWManager_Internal::getOptions() {
-    return this->m_options;
 }
 
 QTOZWLog_Internal *QTOZWManager_Internal::getLog() {

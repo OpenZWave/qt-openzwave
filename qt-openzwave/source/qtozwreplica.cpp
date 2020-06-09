@@ -1,17 +1,14 @@
 #include "qt-openzwave/qtozwreplica.h"
 #include "qtozw_logging.h"
 
-
 QTOZWReplicaBase::QTOZWReplicaBase(ConnectionType::Type connectionType, QObject *parent) :
     QObject(parent),
     m_connectionType(connectionType),
     m_ready(false)
 {
-
 }
 QTOZWReplicaBase::~QTOZWReplicaBase() 
 {
-
 }
 
 ConnectionType::Type QTOZWReplicaBase::getConnectionType() const

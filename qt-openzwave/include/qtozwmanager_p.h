@@ -63,7 +63,6 @@ public:
     QTOZW_Nodes *getNodeModel();
     QTOZW_ValueIds *getValueModel();
     QTOZW_Associations *getAssociationModel();
-    QTOZWOptions_Internal *getOptions();
     QTOZWLog_Internal *getLog();
     bool setLog(QTOZWLog_Internal *);
 
@@ -202,7 +201,6 @@ private:
     bool convertValueID(quint64 vidKey);
 
 
-    QTOZWOptions_Internal *m_options;
     OpenZWave::Manager *m_manager;
     QTOZW_Nodes_internal *m_nodeModel;
     QTOZW_ValueIds_internal *m_valueModel;

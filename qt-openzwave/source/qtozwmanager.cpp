@@ -44,11 +44,18 @@
 
 QTOZWManager::QTOZWManager(QObject *parent)
     : QTOZWReplicaBase(ConnectionType::Type::Invalid, parent),
+    d_ptr_internal(nullptr),
+    d_ptr_replica(nullptr),
     m_managerState(QRemoteObjectReplica::State::Uninitialized),
+    m_ozwoptions(nullptr),
     m_optionsState(QRemoteObjectReplica::State::Uninitialized),
+    m_log(nullptr),
     m_logState(QRemoteObjectReplica::State::Uninitialized),
+    m_nodeModel(nullptr),
     m_nodeState(false),
+    m_valueModel(nullptr),
     m_valuesState(false),
+    m_associationModel(nullptr),
     m_associationsState(false),
     m_running(false),
     m_ozwconfigpath(""),
@@ -78,14 +85,12 @@ bool QTOZWManager::initilizeSource(bool enableServer) {
 
     qCDebug(manager) << "Database Path: " << QFileInfo(this->m_ozwconfigpath.append("/")).absoluteFilePath() << " User Path" << QFileInfo(this->m_ozwuserpath.append("/")).absoluteFilePath();
 
-    OpenZWave::Options::Create(QFileInfo(this->m_ozwconfigpath.append("/")).absoluteFilePath().toStdString(), QFileInfo(this->m_ozwuserpath.append("/")).absoluteFilePath().toStdString(), "");
-
     /* Initilize our QTOZWManager Class */
 
     this->m_log = new QTOZWLog(ConnectionType::Type::Local, this);
     connect(this, &QTOZWManager::readyChanged, this->m_log, &QTOZWLog::setReady);
 
-    this->m_ozwoptions = new QTOZWOptions(ConnectionType::Type::Local, this);
+    this->m_ozwoptions = new QTOZWOptions(ConnectionType::Type::Local, this->m_ozwconfigpath, this->m_ozwuserpath, this);
     connect(this, &QTOZWManager::readyChanged, this->m_ozwoptions, &QTOZWOptions::setReady);
     
     this->d_ptr_internal = new QTOZWManager_Internal(this);
@@ -216,7 +221,7 @@ bool QTOZWManager::initilizeReplica(QUrl remote) {
     this->m_log = new QTOZWLog(ConnectionType::Type::Remote, this);
     connect(this, &QTOZWManager::readyChanged, this->m_log, &QTOZWLog::setReady);
 
-    this->m_ozwoptions = new QTOZWOptions(ConnectionType::Type::Remote, this);
+    this->m_ozwoptions = new QTOZWOptions(ConnectionType::Type::Remote, QString(), QString(), this);
     connect(this, &QTOZWManager::readyChanged, this->m_ozwoptions, &QTOZWOptions::setReady);
 
     this->m_webSockClient = new QWebSocket();
@@ -432,7 +437,12 @@ QAbstractItemModel *QTOZWManager::getAssociationModel() {
 }
 
 QTOZWOptions *QTOZWManager::getOptions() {
-    return this->m_ozwoptions;
+    if (this->m_ozwoptions) {
+        return this->m_ozwoptions;
+    } else {
+        return this->m_ozwoptions = new QTOZWOptions(this->getConnectionType(), this->m_ozwconfigpath, this->m_ozwuserpath, this);        
+    }
+
 }
 
 QTOZWLog *QTOZWManager::getLog() {

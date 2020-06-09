@@ -13,6 +13,7 @@ Q_LOGGING_CATEGORY(notifications, "ozw.notifications");
 Q_LOGGING_CATEGORY(logModel, "ozw.logging");
 Q_LOGGING_CATEGORY(libopenzwave, "ozw.library");
 Q_LOGGING_CATEGORY(qtrowebsocket, "ozw.remote");
+Q_LOGGING_CATEGORY(options, "ozw.options");
 
 
 QTOpenZwave::QTOpenZwave

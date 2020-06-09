@@ -88,6 +88,13 @@ class QTOPENZWAVESHARED_EXPORT QTOZWReplicaBase : public QObject {
         this->d_ptr_replica->setProperty(#x, QVariant::fromValue<y>(x)); \
     }
 
+#define DISCONNECT_DPTR(x) if (this->getConnectionType() == ConnectionType::Type::Local) { \
+        if (this->d_ptr_replica) \
+            QObject::disconnect(this->d_ptr_replica, SIGNAL(x));\
+    } else { \
+        if (this->d_ptr_internal) \
+            QObject::disconnect(this->d_ptr_internal, SIGNAL(x)); \
+    };  
     
 #else 
 

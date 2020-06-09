@@ -27,20 +27,22 @@
 
 #include "qtozwoptions_p.h"
 #include "platform/Log.h"
+#include "qtozw_logging.h"
 
 
-QTOZWOptions_Internal::QTOZWOptions_Internal(QObject *parent)
+QTOZWOptions_Internal::QTOZWOptions_Internal(QString localConfigPath, QString localUserPath, QObject *parent)
     : QTOZWOptionsSimpleSource (parent),
-      m_updating(false)
+      m_updating(false),
+      m_localConfigPath(localConfigPath),
+      m_localUserPath(localUserPath)
 {
     this->setObjectName("QTOZW_Options");
 
     this->m_options = OpenZWave::Options::Get();
     if (!this->m_options) {
-        /* Not Created...Bail Out*/
-        emit this->error(QTOZWOptionsErrorCodes::NoOptionClass);
-        return;
+        this->m_options = OpenZWave::Options::Create(QFileInfo(m_localConfigPath.append("/")).absoluteFilePath().toStdString(), QFileInfo(m_localUserPath.append("/")).absoluteFilePath().toStdString(), "");
     }
+
 
     this->populateProperties();
 

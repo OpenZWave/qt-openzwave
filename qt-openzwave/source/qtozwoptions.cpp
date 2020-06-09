@@ -36,18 +36,28 @@
 #define REP_PUBLIC_CLASS QTOZWOptions
 
 
-QTOZWOptions::QTOZWOptions(ConnectionType::Type type, QObject *parent)
-    : QTOZWReplicaBase(type, parent)
+QTOZWOptions::QTOZWOptions(ConnectionType::Type type, QString localConfigPath, QString localUserPath, QObject *parent)
+    : QTOZWReplicaBase(type, parent),
+    d_ptr_internal(nullptr),
+    d_ptr_replica(nullptr),
+    m_localConfigPath(localConfigPath),
+    m_localUserPath(localUserPath)
 { 
 #ifndef Q_OS_WASM    
-    if (this->getConnectionType() == ConnectionType::Type::Local) {
-        this->d_ptr_internal = new QTOZWOptions_Internal(this);
+    if ((this->getConnectionType() == ConnectionType::Type::Local) || (this->getConnectionType() == ConnectionType::Invalid)) {
+        if (this->getConnectionType() == ConnectionType::Type::Invalid)
+            this->setConnectionType(ConnectionType::Type::Local);
+        this->d_ptr_internal = new QTOZWOptions_Internal(m_localConfigPath, m_localUserPath, this);
         connectSignals();
     } else if (this->getConnectionType() == ConnectionType::Type::Remote) {
-        qDebug() << "Nothing to do till we connect";
+        qCDebug(options) << "Nothing to do till we connect";
     }
 #endif
 }
+QTOZWOptions::~QTOZWOptions() {
+}
+
+
 
 bool QTOZWOptions::initilizeBase() {
     return true;
@@ -74,9 +84,48 @@ bool QTOZWOptions::initilizeReplica(QRemoteObjectNode *m_replicaNode) {
     this->d_ptr_replica = m_replicaNode->acquire<QTOZWOptionsReplica>("QTOZWOptions");
     QObject::connect(this->d_ptr_replica, &QTOZWOptionsReplica::stateChanged, this, &QTOZWOptions::onOptionStateChange);
 
+    disconnectSignals();
+
     connectSignals();
 
     return true;
+}
+
+void QTOZWOptions::disconnectSignals() {
+    DISCONNECT_DPTR(ConfigPathChanged);
+    DISCONNECT_DPTR(UserPathChanged);
+    DISCONNECT_DPTR(LoggingChanged);
+    DISCONNECT_DPTR(LogFileNameChanged);
+    DISCONNECT_DPTR(AppendLogFileChanged);
+    DISCONNECT_DPTR(ConsoleOutputChanged);
+    DISCONNECT_DPTR(SaveLogLevelChanged);
+    DISCONNECT_DPTR(QueueLogLevelChanged);
+    DISCONNECT_DPTR(DumpTriggerLevelChanged);
+    DISCONNECT_DPTR(AssociateChanged);
+    DISCONNECT_DPTR(ExcludeChanged);
+    DISCONNECT_DPTR(IncludeChanged);
+    DISCONNECT_DPTR(NotifyTransactionsChanged);
+    DISCONNECT_DPTR(InterfaceChanged);
+    DISCONNECT_DPTR(SaveConfigurationChanged);
+    DISCONNECT_DPTR(DriverMaxAttemptsChanged);
+    DISCONNECT_DPTR(PollIntervalChanged);
+    DISCONNECT_DPTR(IntervalBetweenPollsChanged);
+    DISCONNECT_DPTR(SuppressValueRefreshChanged);
+    DISCONNECT_DPTR(PerformReturnRoutesChanged);
+    DISCONNECT_DPTR(NetworkKeyChanged);
+    DISCONNECT_DPTR(RefreshAllUserCodesChanged);
+    DISCONNECT_DPTR(RetryTimeoutChanged);
+    DISCONNECT_DPTR(EnableSISChanged);
+    DISCONNECT_DPTR(AssumeAwakeChanged);
+    DISCONNECT_DPTR(NotifyOnDriverUnloadChanged);
+    DISCONNECT_DPTR(SecurityStrategyChanged);
+    DISCONNECT_DPTR(CustomSecuredCCChanged);
+    DISCONNECT_DPTR(EnforceSecureReceptionChanged);
+    DISCONNECT_DPTR(AutoUpdateConfigFileChanged);
+    DISCONNECT_DPTR(ReloadAfterUpdateChanged);
+    DISCONNECT_DPTR(LanguageChanged);
+    DISCONNECT_DPTR(IncludeInstanceLabelsChanged);
+
 }
 
 void QTOZWOptions::connectSignals() {

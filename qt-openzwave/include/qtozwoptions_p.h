@@ -42,7 +42,7 @@ class QTOZWOptions_Internal : public QTOZWOptionsSimpleSource
 {
     Q_OBJECT
 public:
-    QTOZWOptions_Internal(QObject *parent = nullptr);
+    QTOZWOptions_Internal(QString localConfigPath, QString localUserPath, QObject *parent = nullptr);
 
 public Q_SLOTS:
     bool AddOptionBool(QString option, bool value);
@@ -92,6 +92,8 @@ private:
     bool populateProperties();
     bool m_updating;
     OpenZWave::Options *m_options;
+    QString m_localConfigPath;
+    QString m_localUserPath;
 };
 
 #endif // QTOZWOPTIONS_P_H
