@@ -132,6 +132,7 @@ private:
     QMqttSubscription *m_cleanTopicSubscription;
     QDateTime m_currentStartTime;
     bool m_ready;
+    bool m_uncleanshutdown;
 };
 
 #endif // MQTTPUBLISHER_H

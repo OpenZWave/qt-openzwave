@@ -20,6 +20,7 @@ QString mqttClientStateToString(QMqttClient::ClientState state)
         case QMqttClient::ClientState::Connected:
             return "Connected";
     }
+    return "Unknown";
 }
 
 QString mqttClientErrorToString(QMqttClient::ClientError error) 
@@ -46,12 +47,14 @@ QString mqttClientErrorToString(QMqttClient::ClientError error)
         case QMqttClient::ClientError::Mqtt5SpecificError:
             return "MQTT5 Specific Error";
     }
+    return "Unknown";
 }
 
 
 mqttpublisher::mqttpublisher(QSettings *settings, QObject *parent) : 
     QObject(parent),
-    m_ready(false)
+    m_ready(false),
+    m_uncleanshutdown(false)
 {
     this->settings = settings;
     this->m_client = new QMqttClient(this);
@@ -103,9 +106,41 @@ mqttpublisher::mqttpublisher(QSettings *settings, QObject *parent) :
 }
 
 mqttpublisher::~mqttpublisher() {
-    rapidjson::Document willMsg(rapidjson::kObjectType);
-    QT2JS::SetString(willMsg, "Status", "Offline");
-    this->m_client->publish(QMqttTopicName(getTopic(MQTT_OZW_STATUS_TOPIC)), QT2JS::getJSON(willMsg), 0, true);
+    QCoreApplication::processEvents();
+    foreach(rapidjson::Document *doc, this->m_values)
+    {
+        qDebug(ozwmp) << "Deleting Value In Destructor";
+        delete doc;
+    }
+    this->m_values.clear();
+    foreach(rapidjson::Document *doc, this->m_nodes)
+    {
+        delete doc;
+    }
+    typedef QMap<quint8, rapidjson::Document *> t_entry;
+    foreach(t_entry entry, this->m_instances)
+    {
+        foreach (rapidjson::Document *doc, entry)
+        {
+            delete doc;
+        }
+    }
+    typedef QMap<quint8, QMap <quint8, rapidjson::Document *> > t_entry2;
+    foreach(t_entry2 entry2, this->m_CommandClasses)
+    {
+        foreach(t_entry entry, entry2)
+        {
+            foreach(rapidjson::Document *doc, entry)
+            {
+                delete doc;
+            }
+        }
+    }
+    if (!this->m_uncleanshutdown) {
+        rapidjson::Document willMsg(rapidjson::kObjectType);
+        QT2JS::SetString(willMsg, "Status", "Offline");
+        this->m_client->publish(QMqttTopicName(getTopic(MQTT_OZW_STATUS_TOPIC)), QT2JS::getJSON(willMsg), 0, true);
+    }
 }
 
 bool mqttpublisher::isReady()
@@ -134,6 +169,7 @@ void mqttpublisher::cleanTopics(QMqttMessage msg) {
                 qCWarning(ozwmp) << "If not, please clean up the MQTT Topic: " << msg.topic().name();
                 qCWarning(ozwmp) << msg.payload();
                 this->m_cleanTopicSubscription->unsubscribe();
+                this->m_uncleanshutdown = true;
                 QCoreApplication::exit(-1);
             }
             return;
@@ -638,7 +674,7 @@ void mqttpublisher::valueRemoved(quint64 vidKey) {
 
 
     if (this->m_values.find(vidKey) != this->m_values.end()) {
-        this->m_values.remove(vidKey);
+        delete this->m_values.take(vidKey);
     } else {
         qCWarning(ozwmp) << "Can't Find Value Map for " << vidKey;
     }
@@ -694,7 +730,7 @@ void mqttpublisher::nodeRemoved(quint8 node) {
     }
 
     if (this->m_nodes.find(node) == this->m_nodes.end()) { 
-        this->m_nodes.remove(node);
+        delete this->m_nodes.take(node);
     }
 }
 void mqttpublisher::nodeReset(quint8 node) {
@@ -710,7 +746,7 @@ void mqttpublisher::nodeReset(quint8 node) {
     }
 
     if (this->m_nodes.find(node) == this->m_nodes.end()) { 
-        this->m_nodes.remove(node);
+        delete this->m_nodes.take(node);
     }
 }
 void mqttpublisher::nodeNaming(quint8 node) {

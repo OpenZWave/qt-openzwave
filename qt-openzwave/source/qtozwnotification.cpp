@@ -243,5 +243,7 @@ void OZWNotification::processNotification
             break;
         }
     }
+    QCoreApplication::processEvents(QEventLoop::ExcludeUserInputEvents|QEventLoop::ExcludeSocketNotifiers);
+
 };
 

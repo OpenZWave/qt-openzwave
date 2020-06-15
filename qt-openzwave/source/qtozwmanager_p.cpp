@@ -1315,154 +1315,173 @@ bool QTOZWManager_Internal::checkValueKey(quint64 _vidKey) {
 }
 
 bool QTOZWManager_Internal::convertValueID(quint64 vidKey) {
+    if (!this->checkValueKey(vidKey)) {
+        qCWarning(notifications) << "convertValueID for Key " << vidKey << " Is Invalid. Key Probably Deleted (internal)";
+        return false;
+    }
+
     OpenZWave::ValueID vid(this->homeId(), vidKey);
 
-    this->m_valueModel->setValueData(vidKey, QTOZW_ValueIds::ValueIdColumns::Units, this->m_manager->GetValueUnits(vid).c_str(), true);
-    this->m_valueModel->setValueFlags(vidKey, QTOZW_ValueIds::ValueIDFlags::ValueSet, this->m_manager->IsValueSet(vid), true);
-    this->m_valueModel->setValueFlags(vidKey, QTOZW_ValueIds::ValueIDFlags::ValuePolled, this->m_manager->IsValuePolled(vid), true);
-    this->m_valueModel->setValueFlags(vidKey, QTOZW_ValueIds::ValueIDFlags::ChangeVerified, this->m_manager->GetChangeVerified(vid), true);
+    try {
+
+        if (!this->m_manager->IsValueValid(vid)) {
+            qCWarning(notifications) << "convertValueID for Key " << vidKey << " Is Invalid. Key Probably Deleted (manager)";
+            return false;
+        }
+
+        this->m_valueModel->setValueData(vidKey, QTOZW_ValueIds::ValueIdColumns::Units, this->m_manager->GetValueUnits(vid).c_str(), true);
+        this->m_valueModel->setValueFlags(vidKey, QTOZW_ValueIds::ValueIDFlags::ValueSet, this->m_manager->IsValueSet(vid), true);
+        this->m_valueModel->setValueFlags(vidKey, QTOZW_ValueIds::ValueIDFlags::ValuePolled, this->m_manager->IsValuePolled(vid), true);
+        this->m_valueModel->setValueFlags(vidKey, QTOZW_ValueIds::ValueIDFlags::ChangeVerified, this->m_manager->GetChangeVerified(vid), true);
 
 
-    switch (vid.GetType()) {
-        case OpenZWave::ValueID::ValueType_Bool:
-        {
-            bool value;
-            this->m_manager->GetValueAsBool(vid, &value);
-            this->m_valueModel->setValueData(vidKey, QTOZW_ValueIds::ValueIdColumns::Value, QVariant::fromValue(value), true);
-            this->m_valueModel->setValueData(vidKey, QTOZW_ValueIds::ValueIdColumns::Type, QTOZW_ValueIds::ValueIdTypes::Bool, true);
-            this->m_valueModel->finishTransaction(vidKey);
-            return true;
-        }
-        case OpenZWave::ValueID::ValueType_Byte:
-        {
-            quint8 value;
-            this->m_manager->GetValueAsByte(vid, &value);
-            /* QT has a habbit of treating quint8 as char... so cast it to 32 to get around that */
-            this->m_valueModel->setValueData(vidKey, QTOZW_ValueIds::ValueIdColumns::Value, QVariant::fromValue(static_cast<quint32>(value)), true);
-            this->m_valueModel->setValueData(vidKey, QTOZW_ValueIds::ValueIdColumns::Type, QTOZW_ValueIds::ValueIdTypes::Byte, true);
-            this->m_valueModel->finishTransaction(vidKey);
-            return true;
-        }
-        case OpenZWave::ValueID::ValueType_Decimal:
-        {
-            std::string value;
-            this->m_manager->GetValueAsString(vid, &value);
-            this->m_valueModel->setValueData(vidKey, QTOZW_ValueIds::ValueIdColumns::Value, QVariant::fromValue(QString(value.c_str()).toFloat()), true);
-            this->m_valueModel->setValueData(vidKey, QTOZW_ValueIds::ValueIdColumns::Type, QTOZW_ValueIds::ValueIdTypes::Decimal, true);
-            this->m_valueModel->finishTransaction(vidKey);
-            return true;
-        }
-        case OpenZWave::ValueID::ValueType_Int:
-        {
-            qint32 value;
-            this->m_manager->GetValueAsInt(vid, &value);
-            this->m_valueModel->setValueData(vidKey, QTOZW_ValueIds::ValueIdColumns::Value, QVariant::fromValue(value), true);
-            this->m_valueModel->setValueData(vidKey, QTOZW_ValueIds::ValueIdColumns::Type, QTOZW_ValueIds::ValueIdTypes::Int, true);
-            this->m_valueModel->finishTransaction(vidKey);
-            return true;
-        }
-        case OpenZWave::ValueID::ValueType_List:
-        {
-            std::vector<std::string> items;
-            std::vector<int32> values;
-            this->m_manager->GetValueListItems(vid, &items);
-            this->m_manager->GetValueListValues(vid, &values);
-            if (items.size() != values.size()) {
-                qCWarning(manager) << "ValueList Item Size Does not equal Value Size";
-            } else {
-                std::vector<std::string>::iterator it;
-                size_t i = 0;
-                QTOZW_ValueIDList vidlist;
-                for(it = items.begin(); it != items.end(); it++) {
-                    vidlist.labels.push_back(QString::fromStdString(*it));
-                    vidlist.values.push_back(static_cast<unsigned int>(values.at(i)));
-                    i++;
+        switch (vid.GetType()) {
+            case OpenZWave::ValueID::ValueType_Bool:
+            {
+                bool value;
+                this->m_manager->GetValueAsBool(vid, &value);
+                this->m_valueModel->setValueData(vidKey, QTOZW_ValueIds::ValueIdColumns::Value, QVariant::fromValue(value), true);
+                this->m_valueModel->setValueData(vidKey, QTOZW_ValueIds::ValueIdColumns::Type, QTOZW_ValueIds::ValueIdTypes::Bool, true);
+                this->m_valueModel->finishTransaction(vidKey);
+                return true;
+            }
+            case OpenZWave::ValueID::ValueType_Byte:
+            {
+                quint8 value;
+                this->m_manager->GetValueAsByte(vid, &value);
+                /* QT has a habbit of treating quint8 as char... so cast it to 32 to get around that */
+                this->m_valueModel->setValueData(vidKey, QTOZW_ValueIds::ValueIdColumns::Value, QVariant::fromValue(static_cast<quint32>(value)), true);
+                this->m_valueModel->setValueData(vidKey, QTOZW_ValueIds::ValueIdColumns::Type, QTOZW_ValueIds::ValueIdTypes::Byte, true);
+                this->m_valueModel->finishTransaction(vidKey);
+                return true;
+            }
+            case OpenZWave::ValueID::ValueType_Decimal:
+            {
+                std::string value;
+                this->m_manager->GetValueAsString(vid, &value);
+                this->m_valueModel->setValueData(vidKey, QTOZW_ValueIds::ValueIdColumns::Value, QVariant::fromValue(QString(value.c_str()).toFloat()), true);
+                this->m_valueModel->setValueData(vidKey, QTOZW_ValueIds::ValueIdColumns::Type, QTOZW_ValueIds::ValueIdTypes::Decimal, true);
+                this->m_valueModel->finishTransaction(vidKey);
+                return true;
+            }
+            case OpenZWave::ValueID::ValueType_Int:
+            {
+                qint32 value;
+                this->m_manager->GetValueAsInt(vid, &value);
+                this->m_valueModel->setValueData(vidKey, QTOZW_ValueIds::ValueIdColumns::Value, QVariant::fromValue(value), true);
+                this->m_valueModel->setValueData(vidKey, QTOZW_ValueIds::ValueIdColumns::Type, QTOZW_ValueIds::ValueIdTypes::Int, true);
+                this->m_valueModel->finishTransaction(vidKey);
+                return true;
+            }
+            case OpenZWave::ValueID::ValueType_List:
+            {
+                std::vector<std::string> items;
+                std::vector<int32> values;
+                this->m_manager->GetValueListItems(vid, &items);
+                this->m_manager->GetValueListValues(vid, &values);
+                if (items.size() != values.size()) {
+                    qCWarning(manager) << "ValueList Item Size Does not equal Value Size";
+                } else {
+                    std::vector<std::string>::iterator it;
+                    size_t i = 0;
+                    QTOZW_ValueIDList vidlist;
+                    for(it = items.begin(); it != items.end(); it++) {
+                        vidlist.labels.push_back(QString::fromStdString(*it));
+                        vidlist.values.push_back(static_cast<unsigned int>(values.at(i)));
+                        i++;
+                    }
+                    std::string selectedItem;
+                    this->m_manager->GetValueListSelection(vid, &selectedItem);
+                    vidlist.selectedItem = QString::fromStdString(selectedItem);
+                    this->m_manager->GetValueListSelection(vid, (int32*)&vidlist.selectedItemId);
+                    this->m_valueModel->setValueData(vidKey, QTOZW_ValueIds::ValueIdColumns::Value, QVariant::fromValue(vidlist), true);
                 }
-                std::string selectedItem;
-                this->m_manager->GetValueListSelection(vid, &selectedItem);
-                vidlist.selectedItem = QString::fromStdString(selectedItem);
-                this->m_manager->GetValueListSelection(vid, (int32*)&vidlist.selectedItemId);
-                this->m_valueModel->setValueData(vidKey, QTOZW_ValueIds::ValueIdColumns::Value, QVariant::fromValue(vidlist), true);
+                this->m_valueModel->setValueData(vidKey, QTOZW_ValueIds::ValueIdColumns::Type, QTOZW_ValueIds::ValueIdTypes::List, true);
+                this->m_valueModel->finishTransaction(vidKey);
+                return true;
             }
-            this->m_valueModel->setValueData(vidKey, QTOZW_ValueIds::ValueIdColumns::Type, QTOZW_ValueIds::ValueIdTypes::List, true);
-            this->m_valueModel->finishTransaction(vidKey);
-            return true;
-        }
-        case OpenZWave::ValueID::ValueType_Schedule:
-        {
-            qCWarning(manager) << "ValueType_Schedule Not Implemented for convertValueID";
-            this->m_valueModel->setValueData(vidKey, QTOZW_ValueIds::ValueIdColumns::Type, QTOZW_ValueIds::ValueIdTypes::Schedule, true);
-            this->m_valueModel->finishTransaction(vidKey);
-            return true;
-        }
-        case OpenZWave::ValueID::ValueType_Short:
-        {
-            int16_t value;
-            this->m_manager->GetValueAsShort(vid, &value);
-            this->m_valueModel->setValueData(vidKey, QTOZW_ValueIds::ValueIdColumns::Value, QVariant::fromValue(value), true);
-            this->m_valueModel->setValueData(vidKey, QTOZW_ValueIds::ValueIdColumns::Type, QTOZW_ValueIds::ValueIdTypes::Short, true);
-            this->m_valueModel->finishTransaction(vidKey);
-            return true;
-        }
-        case OpenZWave::ValueID::ValueType_String:
-        {
-            std::string value;
-            this->m_manager->GetValueAsString(vid, &value);
-            this->m_valueModel->setValueData(vidKey, QTOZW_ValueIds::ValueIdColumns::Value, QVariant::fromValue(QString(value.c_str())), true);
-            this->m_valueModel->setValueData(vidKey, QTOZW_ValueIds::ValueIdColumns::Type, QTOZW_ValueIds::ValueIdTypes::String, true);
-            this->m_valueModel->finishTransaction(vidKey);
-            return true;
-        }
-        case OpenZWave::ValueID::ValueType_Button:
-        {
-            bool value;
-            this->m_manager->GetValueAsBool(vid, &value);
-            this->m_valueModel->setValueData(vidKey, QTOZW_ValueIds::ValueIdColumns::Value, QVariant::fromValue(value), true);
-            this->m_valueModel->setValueData(vidKey, QTOZW_ValueIds::ValueIdColumns::Type, QTOZW_ValueIds::ValueIdTypes::Button, true);
-            this->m_valueModel->finishTransaction(vidKey);
-            return true;
-        }
-        case OpenZWave::ValueID::ValueType_Raw:
-        {
-            uint8* rawval;
-            uint8 length; // strangely GetValueAsRaw wants uint8
-            this->m_manager->GetValueAsRaw(vid, &rawval, &length);
-            QByteArray value((const char*)rawval, length);
-            this->m_valueModel->setValueData(vidKey, QTOZW_ValueIds::ValueIdColumns::Value, QVariant::fromValue(value), true);
-            this->m_valueModel->setValueData(vidKey, QTOZW_ValueIds::ValueIdColumns::Type, QTOZW_ValueIds::ValueIdTypes::Raw, true);
-            this->m_valueModel->finishTransaction(vidKey);
-            delete[] rawval;
-            return true;
-        }
-        case OpenZWave::ValueID::ValueType_BitSet:
-        {
-            quint8 bssize;
-            qint32 bsmask;
-            this->m_manager->GetBitSetSize(vid, &bssize);
-            this->m_manager->GetBitMask(vid, &bsmask);
-            QTOZW_ValueIDBitSet vidbs;
-            vidbs.mask.resize(bssize * 8);
-            for (int i = 1; i < bssize * 8; ++i) {
-                vidbs.mask[i] = (bsmask & (1 << i));
+            case OpenZWave::ValueID::ValueType_Schedule:
+            {
+                qCWarning(manager) << "ValueType_Schedule Not Implemented for convertValueID";
+                this->m_valueModel->setValueData(vidKey, QTOZW_ValueIds::ValueIdColumns::Type, QTOZW_ValueIds::ValueIdTypes::Schedule, true);
+                this->m_valueModel->finishTransaction(vidKey);
+                return true;
             }
-            vidbs.values.resize(bssize * 8);
-            for (quint8 i = 1; i <= bssize * 8; ++i) {
-                /* OZW is 1 base - QT is 0 base. */
-                if (vidbs.mask.at(i-1)) {
-                    bool value;
-                    if (this->m_manager->GetValueAsBitSet(vid, i, &value)) {
-                        vidbs.values[i-1] = value;
-                        vidbs.label[i-1] = QString::fromStdString(this->m_manager->GetValueLabel(vid, i));
-                        vidbs.help[i-1] = QString::fromStdString(this->m_manager->GetValueHelp(vid, i));
+            case OpenZWave::ValueID::ValueType_Short:
+            {
+                int16_t value;
+                this->m_manager->GetValueAsShort(vid, &value);
+                this->m_valueModel->setValueData(vidKey, QTOZW_ValueIds::ValueIdColumns::Value, QVariant::fromValue(value), true);
+                this->m_valueModel->setValueData(vidKey, QTOZW_ValueIds::ValueIdColumns::Type, QTOZW_ValueIds::ValueIdTypes::Short, true);
+                this->m_valueModel->finishTransaction(vidKey);
+                return true;
+            }
+            case OpenZWave::ValueID::ValueType_String:
+            {
+                std::string value;
+                this->m_manager->GetValueAsString(vid, &value);
+                this->m_valueModel->setValueData(vidKey, QTOZW_ValueIds::ValueIdColumns::Value, QVariant::fromValue(QString(value.c_str())), true);
+                this->m_valueModel->setValueData(vidKey, QTOZW_ValueIds::ValueIdColumns::Type, QTOZW_ValueIds::ValueIdTypes::String, true);
+                this->m_valueModel->finishTransaction(vidKey);
+                return true;
+            }
+            case OpenZWave::ValueID::ValueType_Button:
+            {
+                bool value;
+                this->m_manager->GetValueAsBool(vid, &value);
+                this->m_valueModel->setValueData(vidKey, QTOZW_ValueIds::ValueIdColumns::Value, QVariant::fromValue(value), true);
+                this->m_valueModel->setValueData(vidKey, QTOZW_ValueIds::ValueIdColumns::Type, QTOZW_ValueIds::ValueIdTypes::Button, true);
+                this->m_valueModel->finishTransaction(vidKey);
+                return true;
+            }
+            case OpenZWave::ValueID::ValueType_Raw:
+            {
+                uint8* rawval;
+                uint8 length; // strangely GetValueAsRaw wants uint8
+                this->m_manager->GetValueAsRaw(vid, &rawval, &length);
+                QByteArray value((const char*)rawval, length);
+                this->m_valueModel->setValueData(vidKey, QTOZW_ValueIds::ValueIdColumns::Value, QVariant::fromValue(value), true);
+                this->m_valueModel->setValueData(vidKey, QTOZW_ValueIds::ValueIdColumns::Type, QTOZW_ValueIds::ValueIdTypes::Raw, true);
+                this->m_valueModel->finishTransaction(vidKey);
+                delete[] rawval;
+                return true;
+            }
+            case OpenZWave::ValueID::ValueType_BitSet:
+            {
+                quint8 bssize;
+                qint32 bsmask;
+                this->m_manager->GetBitSetSize(vid, &bssize);
+                this->m_manager->GetBitMask(vid, &bsmask);
+                QTOZW_ValueIDBitSet vidbs;
+                vidbs.mask.resize(bssize * 8);
+                for (int i = 1; i < bssize * 8; ++i) {
+                    vidbs.mask[i] = (bsmask & (1 << i));
+                }
+                vidbs.values.resize(bssize * 8);
+                for (quint8 i = 1; i <= bssize * 8; ++i) {
+                    /* OZW is 1 base - QT is 0 base. */
+                    if (vidbs.mask.at(i-1)) {
+                        bool value;
+                        if (this->m_manager->GetValueAsBitSet(vid, i, &value)) {
+                            vidbs.values[i-1] = value;
+                            vidbs.label[i-1] = QString::fromStdString(this->m_manager->GetValueLabel(vid, i));
+                            vidbs.help[i-1] = QString::fromStdString(this->m_manager->GetValueHelp(vid, i));
+                        }
                     }
                 }
+                this->m_valueModel->setValueData(vidKey, QTOZW_ValueIds::ValueIdColumns::Value, QVariant::fromValue(vidbs), true);
+                this->m_valueModel->setValueData(vidKey, QTOZW_ValueIds::ValueIdColumns::Type, QTOZW_ValueIds::ValueIdTypes::BitSet, true);
+                this->m_valueModel->finishTransaction(vidKey);
+                return true;
             }
-            this->m_valueModel->setValueData(vidKey, QTOZW_ValueIds::ValueIdColumns::Value, QVariant::fromValue(vidbs), true);
-            this->m_valueModel->setValueData(vidKey, QTOZW_ValueIds::ValueIdColumns::Type, QTOZW_ValueIds::ValueIdTypes::BitSet, true);
-            this->m_valueModel->finishTransaction(vidKey);
-            return true;
         }
+    } catch (OpenZWave::OZWException &e) {
+        emit this->error(QTOZWManagerErrorCodes::OZWException);
+        this->setErrorString(e.GetMsg().c_str());
+        qCWarning(manager) << "convertValueID Failed: " << QString(e.GetMsg().c_str());
+        return false;
     }
+
     return false;
 }
 
@@ -1481,7 +1500,7 @@ void QTOZWManager_Internal::pvt_valueAdded(quint64 vidKey)
         emit this->error(QTOZWManagerErrorCodes::OZWException);
     }
 
-    qCDebug(notifications) << "Notification pvt_valueAdded:" << vidKey;
+    qCDebug(notifications) << "Notification pvt_valueAdded:" << vidKey << "Thread: " << QThread::currentThreadId();
     if (!this->m_validValues.contains(vidKey))
         this->m_validValues.push_back(vidKey);
 
@@ -1527,7 +1546,8 @@ void QTOZWManager_Internal::pvt_valueAdded(quint64 vidKey)
 }
 void QTOZWManager_Internal::pvt_valueRemoved(quint64 vidKey)
 {
-    qCDebug(notifications) << "Notification pvt_valueRemoved: " << vidKey;
+
+    qCDebug(notifications) << "Notification pvt_valueRemoved: " << vidKey << "Thread: " << QThread::currentThreadId();
     emit this->valueRemoved(vidKey);
     if (this->m_validValues.contains(vidKey))
         this->m_validValues.removeAll(vidKey);
@@ -1535,74 +1555,87 @@ void QTOZWManager_Internal::pvt_valueRemoved(quint64 vidKey)
 }
 void QTOZWManager_Internal::pvt_valueChanged(quint64 vidKey)
 {
-    qCDebug(notifications) << "Notification pvt_valueChanged: " << vidKey;
-    this->convertValueID(vidKey);
-    emit this->valueChanged(vidKey);
+    qCDebug(notifications) << "Notification pvt_valueChanged: " << vidKey  << "Thread: " << QThread::currentThreadId();
+    if (this->convertValueID(vidKey))
+        emit this->valueChanged(vidKey);
+    else
+        qCWarning(notifications) << "Notification pvt_valueChanged: Dropped As Key could not be converted" << vidKey;
+    
 }
 void QTOZWManager_Internal::pvt_valueRefreshed(quint64 vidKey)
 {
-    qCDebug(notifications) << "Notification pvt_valueRefreshed: " << vidKey;
+    qCDebug(notifications) << "Notification pvt_valueRefreshed: " << vidKey << "Thread: " << QThread::currentThreadId();
 
-    this->convertValueID(vidKey);
-    emit this->valueRefreshed(vidKey);
+    if (this->convertValueID(vidKey))
+        emit this->valueRefreshed(vidKey);
+    else
+        qCWarning(notifications) << "Notification pvt_valueRefreshed: Dropped As Key could not be converted" << vidKey;
+
 }
 void QTOZWManager_Internal::pvt_valuePollingEnabled(quint64 vidKey)
 {
-    qCDebug(notifications) << "Notification pvt_valuePollingEnabled " << vidKey;
+    qCDebug(notifications) << "Notification pvt_valuePollingEnabled " << vidKey << "Thread: " << QThread::currentThreadId();
     this->m_valueModel->setValueFlags(vidKey, QTOZW_ValueIds::ValueIDFlags::ValuePolled, true, true);
     this->m_valueModel->finishTransaction(vidKey);
 
 }
 void QTOZWManager_Internal::pvt_valuePollingDisabled(quint64 vidKey)
 {
-    qCDebug(notifications) << "Notification pvt_valuePollingDisabled " << vidKey;
+    qCDebug(notifications) << "Notification pvt_valuePollingDisabled " << vidKey << "Thread: " << QThread::currentThreadId();
     this->m_valueModel->setValueFlags(vidKey, QTOZW_ValueIds::ValueIDFlags::ValuePolled, false, true);
     this->m_valueModel->finishTransaction(vidKey);
 
 }
 void QTOZWManager_Internal::pvt_nodeGroupChanged(quint8 node, quint8 group)
 {
-    qCDebug(notifications) << "Notification pvt_nodeGroupChanged " << node << " Group: " << group;
+    qCDebug(notifications) << "Notification pvt_nodeGroupChanged " << node << " Group: " << group << "Thread: " << QThread::currentThreadId();
 
-    if (this->m_associationsModel->getassocationRow(node, group) == -1) {
-        this->m_associationsModel->addGroup(node, group);
-        this->m_associationsModel->setGroupData(node, group, QTOZW_Associations::associationColumns::MaxAssocations, this->m_manager->GetMaxAssociations(this->homeId(), node, group));
-        this->m_associationsModel->setGroupFlags(node, group, QTOZW_Associations::associationFlags::isMultiInstance, this->m_manager->IsMultiInstance(this->homeId(), node, group));
-        this->m_associationsModel->setGroupData(node, group, QTOZW_Associations::associationColumns::GroupName, this->m_manager->GetGroupLabel(this->homeId(), node, group).c_str());
+    try { 
+        if (this->m_associationsModel->getassocationRow(node, group) == -1) {
+            this->m_associationsModel->addGroup(node, group);
+            this->m_associationsModel->setGroupData(node, group, QTOZW_Associations::associationColumns::MaxAssocations, this->m_manager->GetMaxAssociations(this->homeId(), node, group));
+            this->m_associationsModel->setGroupFlags(node, group, QTOZW_Associations::associationFlags::isMultiInstance, this->m_manager->IsMultiInstance(this->homeId(), node, group));
+            this->m_associationsModel->setGroupData(node, group, QTOZW_Associations::associationColumns::GroupName, this->m_manager->GetGroupLabel(this->homeId(), node, group).c_str());
+        }
+
+        OpenZWave::InstanceAssociation *ia;
+        quint32 count = this->m_manager->GetAssociations(this->homeId(), node, group, &ia);
+        for (quint32 i = 0;  i < count; i++) {
+            if (!this->m_associationsModel->findAssociation(node, group, ia[i].m_nodeId, ia[i].m_instance)) {
+                this->m_associationsModel->addAssociation(node, group, ia[i].m_nodeId, ia[i].m_instance);
+            }
+        }
+
+        QStringList list = this->m_associationsModel->getassocationData(node, group, QTOZW_Associations::associationColumns::Members).toStringList();
+        QStringList removeitems;
+        for (int i = 0; i < list.size(); ++i) {
+            QString member = list.at(i);
+            int targetnode = member.split(".")[0].toInt();
+            int targetinstance = member.split(".")[1].toInt();
+            bool found = false;
+            for (quint32 j = 0; j < count; j++) {
+                if (targetnode == ia[i].m_nodeId && targetinstance == ia[i].m_instance)
+                    found = true;
+            }
+            if (found == false) {
+                this->m_associationsModel->delAssociation(node, group, static_cast<quint8>(targetnode), static_cast<quint8>(targetinstance));
+            }
+        }
+
+        if (count > 0)
+            delete [] ia;
+        
+        emit this->nodeGroupChanged(node, group);
+    } catch (OpenZWave::OZWException &e) {
+        qCWarning(notifications) << "OZW Exception: " << e.GetMsg().c_str() << " at " << e.GetFile().c_str() <<":" << e.GetLine();
+        emit this->error(QTOZWManagerErrorCodes::OZWException);
+        this->setErrorString(e.GetMsg().c_str());
     }
 
-    OpenZWave::InstanceAssociation *ia;
-    quint32 count = this->m_manager->GetAssociations(this->homeId(), node, group, &ia);
-    for (quint32 i = 0;  i < count; i++) {
-        if (!this->m_associationsModel->findAssociation(node, group, ia[i].m_nodeId, ia[i].m_instance)) {
-            this->m_associationsModel->addAssociation(node, group, ia[i].m_nodeId, ia[i].m_instance);
-        }
-    }
-
-    QStringList list = this->m_associationsModel->getassocationData(node, group, QTOZW_Associations::associationColumns::Members).toStringList();
-    QStringList removeitems;
-    for (int i = 0; i < list.size(); ++i) {
-        QString member = list.at(i);
-        int targetnode = member.split(".")[0].toInt();
-        int targetinstance = member.split(".")[1].toInt();
-        bool found = false;
-        for (quint32 j = 0; j < count; j++) {
-            if (targetnode == ia[i].m_nodeId && targetinstance == ia[i].m_instance)
-                found = true;
-        }
-        if (found == false) {
-            this->m_associationsModel->delAssociation(node, group, static_cast<quint8>(targetnode), static_cast<quint8>(targetinstance));
-        }
-    }
-
-    if (count > 0)
-        delete [] ia;
-    
-    emit this->nodeGroupChanged(node, group);
 }
 void QTOZWManager_Internal::pvt_nodeNew(quint8 node)
 {
-    qCDebug(notifications) << "Notification pvt_nodeNew " << node;
+    qCDebug(notifications) << "Notification pvt_nodeNew " << node << "Thread: " << QThread::currentThreadId();
     if (!this->m_validNodes.contains(node))
         this->m_validNodes.push_back(node);
     this->m_nodeModel->addNode(node);
@@ -1626,7 +1659,7 @@ void QTOZWManager_Internal::pvt_nodeNew(quint8 node)
 }
 void QTOZWManager_Internal::pvt_nodeAdded(quint8 node)
 {
-    qCDebug(notifications) << "Notification pvt_nodeAdded " << node;
+    qCDebug(notifications) << "Notification pvt_nodeAdded " << node << "Thread: " << QThread::currentThreadId();
     if (!this->m_validNodes.contains(node))
         this->m_validNodes.push_back(node);
 
@@ -1652,7 +1685,7 @@ void QTOZWManager_Internal::pvt_nodeAdded(quint8 node)
 }
 void QTOZWManager_Internal::pvt_nodeRemoved(quint8 node)
 {
-    qCDebug(notifications) << "Notification pvt_nodeRemoved " << node;
+    qCDebug(notifications) << "Notification pvt_nodeRemoved " << node << "Thread: " << QThread::currentThreadId();
     QVector<quint64> valueList(this->m_validValues);
     for (QVector<quint64>::Iterator it = valueList.begin(); it != valueList.end(); it++) {
         if (this->m_valueModel->getValueData(*it, QTOZW_ValueIds::ValueIdColumns::Node).toInt() == node) 
@@ -1671,7 +1704,7 @@ void QTOZWManager_Internal::pvt_nodeRemoved(quint8 node)
 }
 void QTOZWManager_Internal::pvt_nodeReset(quint8 node)
 {
-    qCDebug(notifications) << "Notification pvt_nodeReset " << node;
+    qCDebug(notifications) << "Notification pvt_nodeReset " << node << "Thread: " << QThread::currentThreadId();
     QVector<quint64> valueList(this->m_validValues);
     for (QVector<quint64>::Iterator it = valueList.begin(); it != valueList.end(); it++) {
         if (this->m_valueModel->getValueData(*it, QTOZW_ValueIds::ValueIdColumns::Node).toInt() == node) 
@@ -1691,7 +1724,7 @@ void QTOZWManager_Internal::pvt_nodeReset(quint8 node)
 }
 void QTOZWManager_Internal::pvt_nodeNaming(quint8 node)
 {
-    qCDebug(notifications) << "Notification pvt_nodeNaming " << node;
+    qCDebug(notifications) << "Notification pvt_nodeNaming " << node << "Thread: " << QThread::currentThreadId();
     try {
         QString data = this->m_manager->GetNodeName(this->homeId(), node).c_str();
         this->m_nodeModel->setNodeData(node, QTOZW_Nodes::NodeName, data, true);
@@ -1717,7 +1750,7 @@ void QTOZWManager_Internal::pvt_nodeNaming(quint8 node)
 }
 void QTOZWManager_Internal::pvt_nodeEvent(quint8 node, quint8 event)
 {
-    qCDebug(notifications) << "Notification pvt_nodeEvent " << node << " Event: " << event;
+    qCDebug(notifications) << "Notification pvt_nodeEvent " << node << " Event: " << event << "Thread: " << QThread::currentThreadId();
     try {
         QVariant data = this->m_manager->GetNodeQueryStage(this->homeId(), node).c_str();
         this->m_nodeModel->setNodeData(node, QTOZW_Nodes::NodeQueryStage, data, true);
@@ -1736,7 +1769,7 @@ void QTOZWManager_Internal::pvt_nodeEvent(quint8 node, quint8 event)
 }
 void QTOZWManager_Internal::pvt_nodeProtocolInfo(quint8 node)
 {
-    qCDebug(notifications) << "Notification pvt_nodeProtocolInfo " << node;
+    qCDebug(notifications) << "Notification pvt_nodeProtocolInfo " << node << "Thread: " << QThread::currentThreadId();
     try {
         QVariant data = this->m_manager->GetNodeProductName(this->homeId(), node).c_str();
         this->m_nodeModel->setNodeData(node, QTOZW_Nodes::NodeProductName, data, true);
@@ -1811,7 +1844,7 @@ void QTOZWManager_Internal::pvt_nodeProtocolInfo(quint8 node)
 }
 void QTOZWManager_Internal::pvt_nodeEssentialNodeQueriesComplete(quint8 node)
 {
-    qCDebug(notifications) << "Notification pvt_nodeEssentialNodeQueriesComplete " << node;
+    qCDebug(notifications) << "Notification pvt_nodeEssentialNodeQueriesComplete " << node << "Thread: " << QThread::currentThreadId();
     try {
         QVariant data = this->m_manager->GetNodeQueryStage(this->homeId(), node).c_str();
         this->m_nodeModel->setNodeData(node, QTOZW_Nodes::NodeQueryStage, data, true);
@@ -1889,7 +1922,7 @@ void QTOZWManager_Internal::pvt_nodeEssentialNodeQueriesComplete(quint8 node)
 }
 void QTOZWManager_Internal::pvt_nodeQueriesComplete(quint8 node)
 {
-    qCDebug(notifications) << "Notification pvt_nodeQueriesComplete " << node;
+    qCDebug(notifications) << "Notification pvt_nodeQueriesComplete " << node << "Thread: " << QThread::currentThreadId();
     /* Plus Type Info here */
     try {
         QVariant data = this->m_manager->GetNodeDeviceType(this->homeId(), node);
@@ -1979,14 +2012,14 @@ void QTOZWManager_Internal::pvt_nodeQueriesComplete(quint8 node)
 }
 void QTOZWManager_Internal::pvt_driverReady(quint32 _homeID)
 {
-    qCDebug(notifications) << "Notification pvt_driverRead " << _homeID;
+    qCDebug(notifications) << "Notification pvt_driverRead " << _homeID << "Thread: " << QThread::currentThreadId();
     this->setHomeId(_homeID);
     emit this->started(_homeID);
     emit this->driverReady(_homeID);
 }
 void QTOZWManager_Internal::pvt_driverFailed(quint32 _homeID)
 {
-    qCDebug(notifications) << "Notification pvt_driverFailed " << _homeID;
+    qCDebug(notifications) << "Notification pvt_driverFailed " << _homeID << "Thread: " << QThread::currentThreadId();
     QVector<quint8> nodeList(this->m_validNodes);
     for (QVector<quint8>::iterator it = nodeList.begin(); it != nodeList.end(); it++) 
         this->pvt_nodeRemoved(*it);
@@ -2000,7 +2033,7 @@ void QTOZWManager_Internal::pvt_driverFailed(quint32 _homeID)
 }
 void QTOZWManager_Internal::pvt_driverReset(quint32 _homeID)
 {
-    qCDebug(notifications) << "Notification pvt_driverReset " << _homeID;
+    qCDebug(notifications) << "Notification pvt_driverReset " << _homeID << "Thread: " << QThread::currentThreadId();
     QVector<quint8> nodeList(this->m_validNodes);
     for (QVector<quint8>::iterator it = nodeList.begin(); it != nodeList.end(); it++) 
         this->pvt_nodeRemoved(*it);
@@ -2014,7 +2047,7 @@ void QTOZWManager_Internal::pvt_driverReset(quint32 _homeID)
 }
 void QTOZWManager_Internal::pvt_driverRemoved(quint32 _homeID)
 {
-    qCDebug(notifications) << "Notification pvt_driverRemoved " << _homeID;
+    qCDebug(notifications) << "Notification pvt_driverRemoved " << _homeID << "Thread: " << QThread::currentThreadId();
     QVector<quint8> nodeList(this->m_validNodes);
     for (QVector<quint8>::iterator it = nodeList.begin(); it != nodeList.end(); it++) 
         this->pvt_nodeRemoved(*it);
@@ -2028,17 +2061,17 @@ void QTOZWManager_Internal::pvt_driverRemoved(quint32 _homeID)
 }
 void QTOZWManager_Internal::pvt_driverAllNodesQueriedSomeDead()
 {
-    qCDebug(notifications) << "Notification pvt_driverAllNodesQueriedSomeDead";
+    qCDebug(notifications) << "Notification pvt_driverAllNodesQueriedSomeDead" << "Thread: " << QThread::currentThreadId();
     emit this->driverAllNodesQueriedSomeDead();
 }
 void QTOZWManager_Internal::pvt_driverAllNodesQueried()
 {
-    qCDebug(notifications) << "Notification pvt_driverAllNodesQueried";
+    qCDebug(notifications) << "Notification pvt_driverAllNodesQueried" << "Thread: " << QThread::currentThreadId();
     emit this->driverAllNodesQueried();
 }
 void QTOZWManager_Internal::pvt_driverAwakeNodesQueried()
 {
-    qCDebug(notifications) << "Notification pvt_driverAwakeNodesQueried";
+    qCDebug(notifications) << "Notification pvt_driverAwakeNodesQueried" << "Thread: " << QThread::currentThreadId();
     emit this->driverAllNodesQueried();
 }
 void QTOZWManager_Internal::pvt_controllerCommand(quint8 node, quint32 cmd, quint32 state, quint32 error)
@@ -2046,25 +2079,25 @@ void QTOZWManager_Internal::pvt_controllerCommand(quint8 node, quint32 cmd, quin
     NotificationTypes::QTOZW_Notification_Controller_Cmd qtozwcmd = static_cast<NotificationTypes::QTOZW_Notification_Controller_Cmd>(cmd);
     NotificationTypes::QTOZW_Notification_Controller_State qtozwstate = static_cast<NotificationTypes::QTOZW_Notification_Controller_State>(state);
     NotificationTypes::QTOZW_Notification_Controller_Error qtozwerror = static_cast<NotificationTypes::QTOZW_Notification_Controller_Error>(error);
-    qCDebug(notifications) << "Notification pvt_controllerCommand " << cmd << state << error;
+    qCDebug(notifications) << "Notification pvt_controllerCommand " << cmd << state << error << "Thread: " << QThread::currentThreadId();
     emit this->controllerCommand(node, qtozwcmd, qtozwstate, qtozwerror );
 }
 void QTOZWManager_Internal::pvt_ozwNotification(quint8 node, quint32 event)
 {
     NotificationTypes::QTOZW_Notification_Code qtozwevent = static_cast<NotificationTypes::QTOZW_Notification_Code>(event);
-    qCDebug(notifications) << "Notification pvt_ozwNotification" << qtozwevent;
+    qCDebug(notifications) << "Notification pvt_ozwNotification" << qtozwevent << "Thread: " << QThread::currentThreadId();
     emit this->ozwNotification(node, qtozwevent);
 }
 void QTOZWManager_Internal::pvt_ozwUserAlert(quint8 node, quint32 event, quint8 retry)
 {
     NotificationTypes::QTOZW_Notification_User qtozwuser = static_cast<NotificationTypes::QTOZW_Notification_User>(event);
-    qCDebug(notifications) << "Notification pvt_ozwUserAlert"  << qtozwuser;
+    qCDebug(notifications) << "Notification pvt_ozwUserAlert"  << qtozwuser << "Thread: " << QThread::currentThreadId();
     emit this->ozwUserAlert(node, qtozwuser, retry);
 
 }
 void QTOZWManager_Internal::pvt_manufacturerSpecificDBReady()
 {
-    qCDebug(notifications) << "Notification pvt_manufacturerSpecificDBReady";
+    qCDebug(notifications) << "Notification pvt_manufacturerSpecificDBReady" << "Thread: " << QThread::currentThreadId();
     emit this->manufacturerSpecificDBReady();
 }
 

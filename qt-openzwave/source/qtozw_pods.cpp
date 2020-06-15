@@ -29,7 +29,9 @@
 
 
 
-OptionList::OptionList()
+OptionList::OptionList() :
+    enumnames(QStringList()),
+    selected(0)
 {
 }
 OptionList::~OptionList()

@@ -77,7 +77,6 @@ public:
     static void processNotification(OpenZWave::Notification const* _notification, void* _context);
 private:
     static OZWNotification *s_Instance;
-
 };
 
 
