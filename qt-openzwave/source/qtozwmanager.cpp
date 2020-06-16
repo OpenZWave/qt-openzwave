@@ -281,16 +281,16 @@ void QTOZWManager::clientConnected() {
     this->m_log->initilizeReplica(this->m_replicaNode);
     QObject::connect(this->m_log, &QTOZWLog::onStateChange, this, &QTOZWManager::onLogStateChange);
 
-//    this->m_nodeModel = this->m_replicaNode->acquireModel("QTOZW_nodeModel", QtRemoteObjects::InitialAction::PrefetchData);
-    this->m_nodeModel = this->m_replicaNode->acquireModel("QTOZW_nodeModel");
+    this->m_nodeModel = this->m_replicaNode->acquireModel("QTOZW_nodeModel", QtRemoteObjects::InitialAction::PrefetchData);
+//    this->m_nodeModel = this->m_replicaNode->acquireModel("QTOZW_nodeModel");
     QObject::connect(qobject_cast<QAbstractItemModelReplica*>(this->m_nodeModel), &QAbstractItemModelReplica::initialized, this, &QTOZWManager::onNodeInitialized);
 
-//    this->m_valueModel= this->m_replicaNode->acquireModel("QTOZW_valueModel", QtRemoteObjects::InitialAction::PrefetchData);
-    this->m_valueModel= this->m_replicaNode->acquireModel("QTOZW_valueModel");
+    this->m_valueModel= this->m_replicaNode->acquireModel("QTOZW_valueModel", QtRemoteObjects::InitialAction::PrefetchData);
+//    this->m_valueModel= this->m_replicaNode->acquireModel("QTOZW_valueModel");
     QObject::connect(qobject_cast<QAbstractItemModelReplica*>(this->m_valueModel), &QAbstractItemModelReplica::initialized, this, &QTOZWManager::onValueInitialized);
 
-//    this->m_associationModel= this->m_replicaNode->acquireModel("QTOZW_associationModel", QtRemoteObjects::InitialAction::PrefetchData);
-    this->m_associationModel= this->m_replicaNode->acquireModel("QTOZW_associationModel");
+    this->m_associationModel= this->m_replicaNode->acquireModel("QTOZW_associationModel", QtRemoteObjects::InitialAction::PrefetchData);
+//    this->m_associationModel= this->m_replicaNode->acquireModel("QTOZW_associationModel");
     QObject::connect(qobject_cast<QAbstractItemModelReplica*>(this->m_associationModel), &QAbstractItemModelReplica::initialized, this, &QTOZWManager::onAssociationInitialized);
 }
 void QTOZWManager::clientDisconnected() {
