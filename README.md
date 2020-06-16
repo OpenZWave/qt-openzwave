@@ -1,44 +1,47 @@
-# qt-openzwave
+# qt-openzwave [![Build Status](http://bamboo.my-ho.st/bamboo/plugins/servlet/wittified/build-status/OZW-OO)](http://bamboo.my-ho.st/bamboo/browse/OZW-OO/)
+
 This is a [QT](https://www.qt.io) Wrapper for OpenZWave and contains ozwdaemon - a service that allows you to remotely manage a Z-Wave Network via [ozw-admin](https://github.com/OpenZWave/ozw-admin) or connect to a MQTT Broker.
 
-## Home Assistant MQTT Client Adapter
+## Docker
 
-<p align="center">
-    <a href="http://bamboo.my-ho.st/bamboo/browse/OZW-OO/" alt="Build Status">
-        <img src="http://bamboo.my-ho.st/bamboo/plugins/servlet/wittified/build-status/OZW-OO">
-    </a>
-</p>
-  
+The ozwdaemon application is published as a [Docker image](https://hub.docker.com/r/openzwave/ozwdaemon). There are two types of images:
 
-A [Docker Container](https://hub.docker.com/r/openzwave/ozwdaemon) to connect to the [new Z-Wave Integration for Home Assistant - OpenZWave (Beta)](https://www.home-assistant.io/integrations/ozw/)
+* A dedicated container that contains only the ozwdaemon service
+* A "All In One" container that includes both the ozwdaemon service and an embedded version of the [ozw-admin](https://github.com/OpenZWave/ozw-admin) GUI management tool.
 
-There are two types of Docker Containers published:
-* A dedicated container that just contians ozwdaemon to bridge between the Z-Wave Network and a MQTT Broker
-* A "All In One" container that also contains [ozw-admin](https://github.com/OpenZWave/ozw-admin) that exposes a VNC Port or a Web Based VNC Interface to manage your Z-Wave Network. 
+### Using the standalone image
 
-Running the dedicated container (ozwdaemon):
--------------
-Start a container with one of the following examples:
+The dedicated ozwdaemon image contains only the ozwdaemon application and none of the management tools.
 
-**Dedicated Docker example:**
+The ozwdaemon uses the `/opt/ozw/config` directory as the default location to store its cache files, device config files, logs and crashdumps. Be sure to use a bind mount or named volume that is persistent.
 
-```docker run -it --security-opt seccomp=unconfined --device=/dev/ttyUSB0 -v /tmp/ozw/config:/opt/ozw/config -e MQTT_SERVER="10.100.200.102" -e USB_PATH=/dev/ttyUSB0 -p1983:1983 openzwave/ozwdaemon:latest```
+An example command for running the container would be:
+```
+docker run -it \
+    --security-opt seccomp=unconfined \
+    --device=/dev/ttyUSB0 \
+    -v $PWD/ozw:/opt/ozw/config \
+    -e MQTT_SERVER="10.100.200.102" \
+    -e USB_PATH=/dev/ttyUSB0 \
+    -p 1983:1983 \
+    openzwave/ozwdaemon:latest
+```
 
-**Dedicated Docker-compose example:** 
-``` yaml
+An example using Docker Compose would be this `docker-compose.yaml` file:
+```yaml
 version: '3'
 services:
-  qt-openzwave:
+  ozwd:
     image: openzwave/ozwdaemon:latest
-    container_name: "qt-openzwave"
+    container_name: "ozwd"
     security_opt:
       - seccomp:unconfined
     devices:
-      - "/dev/ttyUSB0:/dev/ttyUSB0"
+      - "/dev/ttyUSB0"
     volumes:
-      - /tmp/ozw:/opt/ozw/config
+      - ./ozw:/opt/ozw/config
     ports:
-      - "1983"
+      - "1983:1983"
     environment:
       MQTT_SERVER: "192.168.0.1"
       MQTT_USERNAME: "my-username"
@@ -48,37 +51,13 @@ services:
     restart: unless-stopped 
 ```
 
-**All-In-One Docker example:**
+The `--security-opt seccomp=unconfined` is needed to generate meaningful backtraces and crashdump files, otherwise it will be difficult for us to debug.
 
-```docker run -it --security-opt seccomp=unconfined --device=/dev/ttyUSB0 -v /tmp/ozw/config:/opt/ozw -e MQTT_SERVER="10.100.200.102" -e USB_PATH=/dev/ttyUSB0 -p1983:1983 -p 5901:5901 -p7800:7800 openzwave/ozwdaemon:allinone-latest```
+ozwdaemon will shutdown in certain conditions (errors, unable to connect to the MQTT broker), which will exit the container. Be sure to set an appropriate restart policy if you want the container to restart on failure.
 
-**All-In-One Docker-compose example:** 
-``` yaml
-version: '3'
-services:
-  qt-openzwave:
-    image: openzwave/ozwdaemon:allinone-latest
-    container_name: "qt-openzwave"
-    security_opt:
-      - seccomp:unconfined
-    devices:
-      - "/dev/ttyUSB0:/dev/ttyUSB0"
-    volumes:
-      - /tmp/ozw:/opt/ozw/config
-    ports:
-      - "1983"
-      - "5901"
-      - "7800"
-    environment:
-      MQTT_SERVER: "192.168.0.1"
-      MQTT_USERNAME: "my-username"
-      MQTT_PASSWORD: "my-password"
-      USB_PATH: "/dev/ttyUSB0"
-      OZW_NETWORK_KEY: "0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00"
-    restart: unless-stopped 
-```
+#### Enviroment Variables
 
-**Enviroment Variables**
+The container is configurable via several environment variables.
 
 * MQTT_SERVER - The IP Address of your MQTT Broker
 * MQTT_USERNAME - The Username to connect to your MQTT Broker
@@ -91,26 +70,98 @@ services:
 * STOP_ON_FAILURE - ozwdaemon will exit if it detects any failure, such as inability to connect to the MQTT Server, or open the Z-Wave Controller - Defaults to True.
 * MQTT_TLS - If ozwdaemon should connect with TLS encryption to your MQTT Broker
 
-For the All In One Image:
+#### Exposed Ports
 
-* VNC_PORT - The Port to run the VNC port for ozw-admin on. Defaults to 5901
-* WEB_PORT - The Port to run the Integrated Webserver for a web based VNC Client (NoVNC). Defaults to 7800
+The standalone image exposes the following ports:
 
-the `--security-opt seccomp=unconfined` is needed to generate meaningfull backtraces, otherwise it will be difficult for us to debug.
+* 1983 - ozw-admin port
 
-**Interacting with the Docker Containers**
+#### Logs
 
-For the Dedicated Container, Logs are captured by Docker and can be viewed with docker logs <-f> <container id>
+All log messages are printed to the container's console (stdout). They can be viewed with the docker logs command, e.g. `docker logs <container id>`.
 
-For the All In One Container - Logs are saved in your Volume Mapped to the container under the logs directory.
+### Using the All-In-One Image
 
-You can connect to ozw-admin via a dedicated VNC Client on the VNC_PORT (defaults to 5901) or open your browser to the IP address of your host on port 7800 (eg: http://192.168.1.2:7800/) to open a Web Based VNC Session
+The All-In-One image is a variant of the standalone image that includes both ozwdaemon and embedded version of the ozw-admin GUI management tool. The embedded ozw-admin tool is accessible via VNC, either with an external VNC client or the hosted HTML VNC client. The desktop application is not necessary in this case, although it can also be used.
 
-(once you connect to the ozw-admin via the VNC Client, Select Remote Connnection and put in the IP address of your host on port 1983)
+This image uses the same `/opt/ozw/config` directory to store persistent data.
 
-**MQTT API Documentation:** 
+An example command for running the container would be:
+```
+docker run -it \
+    --security-opt seccomp=unconfined \
+    --device=/dev/ttyUSB0 \
+    -v $PWD/ozw:/opt/ozw/config \
+    -e MQTT_SERVER="10.100.200.102" \
+    -e USB_PATH=/dev/ttyUSB0 \
+    -p 1983:1983 \
+    -p 5901:5901 \
+    -p 7800:7800 \
+    openzwave/ozwdaemon:allinone-latest
+```
 
-Please see [docs/MQTT.md](docs/MQTT.md) for complete instructions, including settting up Network Keys etc
+An example using Docker Compose would be this `docker-compose.yaml` file: 
+``` yaml
+version: '3'
+services:
+  ozwd:
+    image: openzwave/ozwdaemon:allinone-latest
+    container_name: "ozwd"
+    security_opt:
+      - seccomp:unconfined
+    devices:
+      - "/dev/ttyUSB0"
+    volumes:
+      - ./ozw:/opt/ozw/config
+    ports:
+      - "1983:1983"
+      - "5901:5901"
+      - "7800:7800"
+    environment:
+      MQTT_SERVER: "192.168.0.1"
+      MQTT_USERNAME: "my-username"
+      MQTT_PASSWORD: "my-password"
+      USB_PATH: "/dev/ttyUSB0"
+      OZW_NETWORK_KEY: "0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00"
+    restart: unless-stopped 
+```
+
+The `--security-opt seccomp=unconfined` is needed to generate meaningful backtraces and crashdump files, otherwise it will be difficult for us to debug.
+
+The ozwdaemon and ozw-admin processes are managed by a supervisor watchdog. The watchdog will restart the containers in certain error conditions. It is also advisable to set an appropriate restart policy in case the supervisor exits.
+
+#### Enviroment Variables
+
+All-In-One image supports all of the same environment variables as the standalone image. In addition, the following settings are available:
+
+* VNC_PORT - The VNC server port number. Provides remote access to the ozw-admin application via VNC. Defaults to 5901.
+* WEB_PORT - The integrated HTTP server port number. Provides a web based VNC client (NoVNC). Defaults to 7800.
+
+#### Exposed Ports
+
+The All-In-One image exposes the following ports:
+
+* 1983 - ozw-admin port
+* 5901 - VNC server port
+* 7800 - HTML VNC client port
+
+#### Logs
+
+Each application saves its own logs into separate log files. By default the logs are saved in the `/opt/ozw/config/logs` directory. Using the examples above, the logs would be accessible in the `$PWD/ozw/logs` directory.
+
+### Managing the Z-Wave Network
+
+Each of the image variants provides one or more ways of remotely managing the Z-Wave network.
+
+1. The standalone and All-In-One images expose the ozw-admin remote access port. The desktop application version of ozw-admin GUI tool can be installed on a PC and can remotely connect to the running container. The default ozw-admin port number is 1983. In the Remote OZWDaemon section of the Open dialog, specify the container host IP address and port 1983 to make a remote connection.
+2. The All-In-One image exposes a VNC server which is running an embedded version of the ozw-admin GUI tool. A dedicated VNC client can connect to the host IP address and the configured VNC port (default 5901) and the ozw-admin tool will be available remotely.
+3. The All-In-One image exposes a Web Based VNC client which connects to the internal VNC server that is running the ozw-admin GUI tool. Use your web browser and connect to the IP address of the container host and the configured HTML VNC client port (default 7800), for example http://192.168.1.2:7800. This will open a Web Based VNC session where you can control ozw-admin.
+
+For the VNC remote access methods, use the Open button to open the connection dialog. Click on the Start button in the Remote OZWDaemon section. Leave the host as localhost. Leave the port as 1983 or change if the ozw-admin port number was customized.
+
+## MQTT API Documentation
+
+Please see [docs/MQTT.md](docs/MQTT.md) for complete instructions, including settting up Network Keys, etc.
 
 ## Building Instructions
 
@@ -129,6 +180,10 @@ Other Dependancies:
 For Actual Build Instructions - Please consult the [docker/Dockerfile](Docker/Dockerfile) - You can ignore the depot_tools (Google Breakpad) as this is used for Crash Reporting that should not be used for non-official builds
 
 For All-In-One Container - Please also consult the ozw-admin repository for the requirements to build ozw-admin. 
+
+## Home Assistant Integration
+
+ozwdaemon integrates directly with Home Assistant. See the [OpenZWave (Beta)](https://www.home-assistant.io/integrations/ozw/) integration documentationi for more information.
 
 ## QT Wrapper Interface
 
