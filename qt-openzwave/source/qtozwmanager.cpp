@@ -280,6 +280,13 @@ void QTOZWManager::clientConnected() {
 
     this->m_log->initilizeReplica(this->m_replicaNode);
     QObject::connect(this->m_log, &QTOZWLog::onStateChange, this, &QTOZWManager::onLogStateChange);
+    bool ok;
+    int size = qEnvironmentVariableIntValue("QTRO_NODES_CACHE_SIZE", &ok);
+    if (!ok) {
+        qCDebug(manager) << "QTRO_NODES_CACHE_SIZE Enviroment missing - Using Defaults";
+    } else {
+        qCDebug(manager) << "QTRO_NODES_CACHE_SIZE Enviroment is set to" << size;
+    }
 
     this->m_nodeModel = this->m_replicaNode->acquireModel("QTOZW_nodeModel", QtRemoteObjects::InitialAction::PrefetchData);
 //    this->m_nodeModel = this->m_replicaNode->acquireModel("QTOZW_nodeModel");
