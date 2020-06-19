@@ -206,7 +206,6 @@ void QTOZWOptions_Internal::pvt_ConfigPathChanged(QString value) {
     if (this->m_updating)
         return;
     /* OZW expects the paths to end with a / otherwise it treats it as a file */
-    qDebug() << value << value.size();
     if (value.at(value.size()-1) != "/")
         value.append("/");
     this->m_options->AddOptionString("ConfigPath", value.toStdString(), false);

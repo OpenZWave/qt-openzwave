@@ -26,6 +26,7 @@
 //-----------------------------------------------------------------------------
 
 #include "qt-openzwave/qtozw_pods.h"
+#include "qtozw_logging.h"
 
 
 
@@ -39,7 +40,7 @@ OptionList::~OptionList()
 }
 bool OptionList::operator!=(OptionList &c2)
 {
-    return this->selected != c2.selected;
+    return (this->selected != c2.selected) | (this->enumnames != c2.enumnames);
 }
 void OptionList::setEnums(QStringList list)
 {
