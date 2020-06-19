@@ -61,6 +61,7 @@ bool QTOZWLog::initilizeSource(QRemoteObjectHost *m_sourceNode) {
     if (m_sourceNode) {
         m_sourceNode->enableRemoting<QTOZWLogSourceAPI>(this->d_ptr_internal);
     }
+    connect(this->d_ptr_internal, &QTOZWLog_Internal::logBufSizeChanged, this, &QTOZWLog::logBufSizeChanged);
 
     connectSignals();
 
@@ -100,6 +101,7 @@ void QTOZWLog::insertLogLine(QDateTime time, LogLevels::Level level, quint8 node
     le.s_level = level;
     if (static_cast<quint32>(this->m_logData.size()) >= this->m_maxLogLength) {
         this->m_logData.pop_front();
+        emit logLinesPopped(1);
     }
     this->m_logData.push_back(le);
     if (this->m_logData.size() == this->m_logData.capacity()-1) {
@@ -127,18 +129,19 @@ void QTOZWLog::syncLogMessages(QDateTime time, LogLevels::Level level, quint8 no
 
 
 
-quint32 QTOZWLog::getLogCount() 
+quint32 QTOZWLog::getLogCount() const
 {
     CALL_DPTR_RTN(getLogCount(), quint32, 0);
 }
 
 bool QTOZWLog::syncroniseLogs() 
 {
-    qCDebug(logModel) << "SyncronizeLogs Called for " << this->getLogCount() << " Messages";
     if (!this->isReady()) {
         qCDebug(logModel) << "Logs not Ready";
         return false; 
     }
+    qCDebug(logModel) << "SyncronizeLogs Called for " << this->getLogCount() << " Messages";
+
     if (this->getConnectionType() == ConnectionType::Type::Local) 
     {
         /* if our connection is Local, Nothing to do */
@@ -173,6 +176,44 @@ QVector<QTOZWLog::QTOZW_LogEntry> QTOZWLog::getLogEntries() {
     }
 }
 
+quint32 QTOZWLog::getLogBufSize() const 
+{
+    if (!this->isReady())
+        return 0;
+    if (this->getConnectionType() == ConnectionType::Type::Local)
+    {
+        return this->d_ptr_internal->getLogBufSize();
+    }
+    else
+    {
+        return this->m_maxLogLength;
+    }
+}
+void QTOZWLog::setLogBufSize(quint32 size)
+{
+    if (this->getConnectionType() == ConnectionType::Type::Local)
+    {
+        this->d_ptr_internal->setLogBufSize(size);
+    }
+    else
+    {
+        if (this->m_maxLogLength != size) {
+            /* if its smaller, then we need to pop some items of the existing list */
+            if (this->m_maxLogLength > size )
+            {
+                quint32 numbertopop = this->m_maxLogLength - size;
+                if (numbertopop > static_cast<quint32>(this->m_logData.size()))
+                    numbertopop = this->m_logData.size();
+
+                qCDebug(logModel) << "Removing " << numbertopop << "entries from log";
+                this->m_logData.remove(0, numbertopop);
+                emit this->logLinesPopped(numbertopop);
+            }
+            this->m_maxLogLength = size;
+            emit this->logBufSizeChanged(size);
+        }
+    }
+}
 
 
 
@@ -187,6 +228,7 @@ QTOZWLogModel::QTOZWLogModel(QTOZWLog *qtozwlog, QObject *parent) :
     connect(this->m_qtozwlog, &QTOZWLog::newLogLine, this, &QTOZWLogModel::insertLogMessage);
     connect(this->m_qtozwlog, &QTOZWLog::syncronizedLogLine, this, &QTOZWLogModel::syncLogMessage);
     connect(this->m_qtozwlog, &QTOZWLog::logCleared, this, &QTOZWLogModel::resetModel);
+    connect(this->m_qtozwlog, &QTOZWLog::logLinesPopped, this, &QTOZWLogModel::logsPoppped);
 }
 
 int QTOZWLogModel::rowCount(const QModelIndex &parent) const {
@@ -297,4 +339,10 @@ void QTOZWLogModel::resetModel() {
     this->beginResetModel();
     this->endResetModel();
     
+}
+
+void QTOZWLogModel::logsPoppped(quint32 size)
+{
+    this->beginRemoveRows(QModelIndex(), 0, size);
+    this->endRemoveRows();
 }

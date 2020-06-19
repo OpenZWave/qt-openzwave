@@ -48,8 +48,17 @@ class QTOZWLog_Internal : public QTOZWLogSimpleSource, public OpenZWave::i_LogIm
         virtual void SetLogFileName(const std::string &_filename) override;
         virtual quint32 getLogCount() override;
         virtual bool syncroniseLogs() override;
+        quint32 getLogBufSize() const;
+
     Q_SIGNALS:
         void sendLogLine(QDateTime time, LogLevels::Level level, quint8 s_node, QString s_msg);
+        void logLinesPopped(quint32 number);
+        void logBufSizeChanged(quint32 logBufSize);
+
+    public Q_SLOTS:
+        void setLogBufSize(quint32 size);
+
+
     protected:
         QVector<QTOZWLog::QTOZW_LogEntry> m_logData;
         quint32 m_maxLogLength;

@@ -125,6 +125,7 @@ void QTOZWLog_Internal::Write(OpenZWave::LogLevel _level, uint8 const _nodeId, c
     le.s_level = qtozwlevel;
     if (static_cast<quint32>(this->m_logData.size()) >= this->m_maxLogLength) {
         this->m_logData.pop_front();
+        emit logLinesPopped(1);
     }
     this->m_logData.push_back(le);
     if (this->m_logData.size() == this->m_logData.capacity()-1) {
@@ -170,3 +171,25 @@ bool QTOZWLog_Internal::syncroniseLogs()
     qCDebug(logModel) << "QTOZWLog_Internal::syncroniseLogs() Finished";
     return false;
 };
+
+quint32 QTOZWLog_Internal::getLogBufSize() const
+{
+    return this->m_maxLogLength;
+}
+void QTOZWLog_Internal::setLogBufSize(quint32 size) {
+    if (this->m_maxLogLength != size)
+    {
+        if (this->m_maxLogLength > size)
+        {
+            quint32 numbertopop = this->m_maxLogLength - size;
+            if (numbertopop > static_cast<quint32>(this->m_logData.size()))
+                numbertopop = this->m_logData.size();
+
+            qCDebug(logModel) << "Removing " << numbertopop << "entries from log";
+            this->m_logData.remove(0, numbertopop);
+            emit this->logLinesPopped(numbertopop);
+        }
+        this->m_maxLogLength = size;
+        emit this->logBufSizeChanged(size);            
+    }
+}

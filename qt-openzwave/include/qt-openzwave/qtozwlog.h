@@ -37,6 +37,7 @@
 
 class QTOZWLog_Internal;
 class QTOZWLogModel;
+
 class QTOPENZWAVESHARED_EXPORT QTOZWLog : public QTOZWReplicaBase {
     friend class QTOZWLogModel;
     Q_OBJECT
@@ -48,23 +49,30 @@ class QTOPENZWAVESHARED_EXPORT QTOZWLog : public QTOZWReplicaBase {
             LogLevels::Level s_level;
         };
 
-
         QTOZWLog(ConnectionType::Type connectionType, QObject *parent = nullptr);
         ~QTOZWLog();
+
+        Q_PROPERTY(quint32 logBufSize READ getLogBufSize WRITE setLogBufSize NOTIFY logBufSizeChanged)
 
         bool initilizeBase() override;
         bool initilizeSource(QRemoteObjectHost *m_sourceNode) override;
         bool initilizeReplica(QRemoteObjectNode *m_replicaNode) override;
         QVector<QTOZWLog::QTOZW_LogEntry> getLogEntries();
 
+    public:
+        quint32 getLogCount() const;
+        bool syncroniseLogs();
+        quint32 getLogBufSize() const;
+
     Q_SIGNALS:
         void newLogLine(QDateTime time, LogLevels::Level level, quint8 s_node, QString s_msg);
+        void logLinesPopped(quint32 number);
         void syncronizedLogLine(QDateTime time, LogLevels::Level level, quint8 s_node, QString s_msg);
         void logCleared();
+        void logBufSizeChanged(quint32 logBufSize);
 
     public Q_SLOTS:
-        quint32 getLogCount();
-        bool syncroniseLogs();
+        void setLogBufSize(quint32 size);
 
     protected:
         QVector<QTOZW_LogEntry> m_logData;
@@ -101,10 +109,10 @@ class QTOPENZWAVESHARED_EXPORT QTOZWLogModel : public QAbstractTableModel {
     public Q_SLOTS:
         bool insertLogMessage(QDateTime time, LogLevels::Level level, quint8 s_node, QString s_msg);
         bool syncLogMessage(QDateTime time, LogLevels::Level level, quint8 s_node, QString s_msg);
-
         void resetModel();
-        QTOZWLog::QTOZW_LogEntry getLogData(int) const;
+        void logsPoppped(quint32 size);
     private:
+        QTOZWLog::QTOZW_LogEntry getLogData(int) const;
         QTOZWLog *m_qtozwlog;
 };
 
