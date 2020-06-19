@@ -158,19 +158,38 @@ quint32 QTOZWLog_Internal::getLogCount()
 bool QTOZWLog_Internal::syncroniseLogs()
 {
     qCDebug(logModel) << "QTOZWLog_Internal::syncroniseLogs() called";
+    this->m_shadowLogData = this->m_logData;
+    this->sendSyncLogsBatch();
+    connect(&this->m_syncLogTrigger, &QTimer::timeout, this, &QTOZWLog_Internal::sendSyncLogsBatch);
+    emit this->syncStatus(this->m_shadowLogData.size(), false);
+    this->m_syncLogTrigger.start(500);
+    return false;
+};
+
+void QTOZWLog_Internal::sendSyncLogsBatch() 
+{
+    qCDebug(logModel) << "QTOZWLog_Internal::sendSyncLogsBatch running";
     QTOZWLog::QTOZW_LogEntry le;
-    QVectorIterator<QTOZWLog::QTOZW_LogEntry> i(this->m_logData);
+    static QVectorIterator<QTOZWLog::QTOZW_LogEntry> i(this->m_shadowLogData);
+    static bool started = false;
     int j = 0;
-    i.toBack();
+    if (started == false) {
+        started = true;
+        i.toBack();
+    }
     while (i.hasPrevious()) {
         le = i.previous();
         emit this->syncronizedLogLine(le.s_time, le.s_level, le.s_node, le.s_msg);
         j++;
-        if (j % 100 == 0) QCoreApplication::processEvents();
+        if (j % 100 == 0) return;
     }
-    qCDebug(logModel) << "QTOZWLog_Internal::syncroniseLogs() Finished";
-    return false;
-};
+    emit this->syncStatus(this->m_shadowLogData.size(), true);
+    this->m_shadowLogData.clear();
+    this->m_syncLogTrigger.stop();
+    qCDebug(logModel) << "QTOZWLog_Internal::sendSyncLogsBatch() Finished";
+}
+
+
 
 quint32 QTOZWLog_Internal::getLogBufSize() const
 {

@@ -49,7 +49,7 @@ class QTOZWLog_Internal : public QTOZWLogSimpleSource, public OpenZWave::i_LogIm
         virtual quint32 getLogCount() override;
         virtual bool syncroniseLogs() override;
         quint32 getLogBufSize() const;
-
+        void sendSyncLogsBatch();
     Q_SIGNALS:
         void sendLogLine(QDateTime time, LogLevels::Level level, quint8 s_node, QString s_msg);
         void logLinesPopped(quint32 number);
@@ -61,7 +61,10 @@ class QTOZWLog_Internal : public QTOZWLogSimpleSource, public OpenZWave::i_LogIm
 
     protected:
         QVector<QTOZWLog::QTOZW_LogEntry> m_logData;
+        QVector<QTOZWLog::QTOZW_LogEntry> m_shadowLogData;
+
         quint32 m_maxLogLength;
+        QTimer m_syncLogTrigger;
 };
 
 #endif // QTOZW_LOG_P_H

@@ -70,6 +70,7 @@ class QTOPENZWAVESHARED_EXPORT QTOZWLog : public QTOZWReplicaBase {
         void syncronizedLogLine(QDateTime time, LogLevels::Level level, quint8 s_node, QString s_msg);
         void logCleared();
         void logBufSizeChanged(quint32 logBufSize);
+        void syncStatus(quint32 size, bool finished);
 
     public Q_SLOTS:
         void setLogBufSize(quint32 size);

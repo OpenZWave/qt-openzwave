@@ -86,6 +86,7 @@ bool QTOZWLog::initilizeReplica(QRemoteObjectNode *m_replicaNode) {
 void QTOZWLog::connectSignals() {
     CONNECT_DPTR(newLogLine);
     CONNECT_DPTR(syncronizedLogLine);
+    CONNECT_DPTR(syncStatus);
 }
 
 /* This only runs for Remote Connections. For Local Connections, 
@@ -214,6 +215,7 @@ void QTOZWLog::setLogBufSize(quint32 size)
         }
     }
 }
+
 
 
 
