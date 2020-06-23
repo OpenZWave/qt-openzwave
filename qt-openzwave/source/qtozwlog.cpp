@@ -164,9 +164,10 @@ bool QTOZWLog::syncroniseLogs()
     }
 }
 
-QVector<QTOZWLog::QTOZW_LogEntry> QTOZWLog::getLogEntries() {
-    if (!this->isReady())
-        return QVector<QTOZW_LogEntry>();
+const QVector<QTOZWLog::QTOZW_LogEntry> &QTOZWLog::getLogEntries() {
+    if (!this->isReady()) {
+        return this->m_logData;
+    }
     if (this->getConnectionType() == ConnectionType::Type::Local)
     {
         return this->d_ptr_internal->m_logData;
@@ -301,13 +302,14 @@ QVariant QTOZWLogModel::headerData(int section, Qt::Orientation orientation, int
     }
     return QVariant();
 }
+
 Qt::ItemFlags QTOZWLogModel::flags(const QModelIndex &index) const {
     if (!index.isValid())
         return Qt::NoItemFlags;
     return QAbstractTableModel::flags(index);
 }
 
-QTOZWLog::QTOZW_LogEntry QTOZWLogModel::getLogData(int pos) const {
+const QTOZWLog::QTOZW_LogEntry QTOZWLogModel::getLogData(const int pos) const {
     if (this->m_qtozwlog->getLogEntries().count() >= pos)
         return this->m_qtozwlog->getLogEntries().at(pos+1);
     qCWarning(logModel) << "Can't find LogEntry at " << pos << " size:" << this->m_qtozwlog->getLogEntries().count();

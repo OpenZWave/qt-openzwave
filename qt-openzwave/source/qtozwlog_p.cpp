@@ -124,6 +124,7 @@ void QTOZWLog_Internal::Write(OpenZWave::LogLevel _level, uint8 const _nodeId, c
     le.s_time = QDateTime::currentDateTime();
     le.s_level = qtozwlevel;
     if (static_cast<quint32>(this->m_logData.size()) >= this->m_maxLogLength) {
+        qCDebug(logModel) << "popping Log Mesages";
         this->m_logData.pop_front();
         emit logLinesPopped(1);
     }
@@ -155,6 +156,7 @@ quint32 QTOZWLog_Internal::getLogCount()
 {
     return this->m_logData.count();
 };
+
 bool QTOZWLog_Internal::syncroniseLogs()
 {
     qCDebug(logModel) << "QTOZWLog_Internal::syncroniseLogs() called";
@@ -189,12 +191,11 @@ void QTOZWLog_Internal::sendSyncLogsBatch()
     qCDebug(logModel) << "QTOZWLog_Internal::sendSyncLogsBatch() Finished";
 }
 
-
-
 quint32 QTOZWLog_Internal::getLogBufSize() const
 {
     return this->m_maxLogLength;
 }
+
 void QTOZWLog_Internal::setLogBufSize(quint32 size) {
     if (this->m_maxLogLength != size)
     {

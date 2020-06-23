@@ -57,7 +57,7 @@ class QTOPENZWAVESHARED_EXPORT QTOZWLog : public QTOZWReplicaBase {
         bool initilizeBase() override;
         bool initilizeSource(QRemoteObjectHost *m_sourceNode) override;
         bool initilizeReplica(QRemoteObjectNode *m_replicaNode) override;
-        QVector<QTOZWLog::QTOZW_LogEntry> getLogEntries();
+        const QVector<QTOZWLog::QTOZW_LogEntry> &getLogEntries();
 
     public:
         quint32 getLogCount() const;
@@ -113,7 +113,7 @@ class QTOPENZWAVESHARED_EXPORT QTOZWLogModel : public QAbstractTableModel {
         void resetModel();
         void logsPoppped(quint32 size);
     private:
-        QTOZWLog::QTOZW_LogEntry getLogData(int) const;
+        const QTOZWLog::QTOZW_LogEntry getLogData(const int) const;
         QTOZWLog *m_qtozwlog;
 };
 
