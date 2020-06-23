@@ -56,7 +56,7 @@ QTOpenZwave::QTOpenZwave
 
 
 //    qSetMessagePattern("[%{time yyyyMMdd h:mm:ss.zzz t}] %{category} %{file}:%{line}:%{function}: %{message}");
-    qSetMessagePattern("[%{time yyyyMMdd h:mm:ss.zzz t}] [%{category}] [%{type}]: %{message}");
+    qSetMessagePattern("[%{time yyyyMMdd h:mm:ss.zzz t}] [%{category}] [%{type}]: %{message} %{if-fatal} %{backtrace [depth=10]} %{endif}");
 }
 
 QTOZWManager *QTOpenZwave::GetManager

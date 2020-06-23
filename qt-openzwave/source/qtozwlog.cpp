@@ -110,6 +110,7 @@ void QTOZWLog::insertLogLine(QDateTime time, LogLevels::Level level, quint8 node
         this->m_logData.reserve(this->m_logData.capacity()+1000);
     }
 }
+
 void QTOZWLog::syncLogMessages(QDateTime time, LogLevels::Level level, quint8 node, QString msg)
 {
     QTOZWLog::QTOZW_LogEntry le;
@@ -127,8 +128,6 @@ void QTOZWLog::syncLogMessages(QDateTime time, LogLevels::Level level, quint8 no
         this->m_logData.reserve(this->m_logData.capacity()+1000);
     }
 }
-
-
 
 quint32 QTOZWLog::getLogCount() const
 {
@@ -191,6 +190,7 @@ quint32 QTOZWLog::getLogBufSize() const
         return this->m_maxLogLength;
     }
 }
+
 void QTOZWLog::setLogBufSize(quint32 size)
 {
     if (this->getConnectionType() == ConnectionType::Type::Local)
@@ -239,11 +239,13 @@ int QTOZWLogModel::rowCount(const QModelIndex &parent) const {
         return 0;
     return this->m_qtozwlog->getLogEntries().count();
 }
+
 int QTOZWLogModel::columnCount(const QModelIndex &parent) const {
     if (parent.isValid())
         return 0;
     return LogColumns::Count;
 }
+
 QVariant QTOZWLogModel::data(const QModelIndex &index, int role) const {
     if (!index.isValid())
         return QVariant();
@@ -276,8 +278,8 @@ QVariant QTOZWLogModel::data(const QModelIndex &index, int role) const {
         }
     }
     return QVariant();
-
 }
+
 QVariant QTOZWLogModel::headerData(int section, Qt::Orientation orientation, int role) const {
     if (role != Qt::DisplayRole)
         return QVariant();
