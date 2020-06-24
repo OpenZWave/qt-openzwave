@@ -12,7 +12,7 @@ LABEL maintainer="justin@dynam.ac"
 WORKDIR /opt
 
 RUN apt update \
-	&& apt-get -y install rapidjson-dev git cmake make pkgconf bash python wget joe mc libunwind-dev libcurl4-openssl-dev g++ qt5-default libqt5websockets5-dev qtbase5-private-dev libqt5remoteobjects5-dev libqt5remoteobjects5-bin libqt5svg5-dev
+	&& apt-get -y install rapidjson-dev git cmake make pkgconf bash python wget joe mc libunwind-dev libcurl4-openssl-dev g++ qt5-default libqt5websockets5-dev qtbase5-private-dev libqt5remoteobjects5-dev libqt5remoteobjects5-bin libqt5svg5-dev libqt5serialport5-dev
 
 ENV PATH=$PATH:/opt/depot_tools/
 ENV DEPOT_TOOLS_UPDATE=0
@@ -23,17 +23,17 @@ RUN git clone https://chromium.googlesource.com/chromium/tools/depot_tools.git \
 	&& fetch breakpad \
 	&& cd src \
 	&& ./configure --disable-processor \
-	&& make \
+	&& make -j$(nproc)\
 	&& make install
 RUN git clone https://github.com/qt/qtmqtt.git \
 	&& cd qtmqtt \
 	&& git checkout 5.12.5 \
 	&& /usr/lib/qt5/bin/qmake CONFIG+=release QT_BUILD_PARTS="libs tools" \
-	&& make \
+	&&  make -j$(nproc) \
 	&& make install
 RUN git clone https://github.com/OpenZWave/open-zwave.git \
 	&& cd open-zwave \
-	&& /bin/bash -c "make -j4" \
+	&& /bin/bash -c " make -j$(nproc)" \
 	&& /bin/bash -c "make install"
 	
 ARG BP_CLIENTID
@@ -44,14 +44,15 @@ COPY . /opt/qt-openzwave/
 RUN	cd qt-openzwave \
 	&& if [ -f Makefile ]; then /usr/lib/qt5/bin/qmake -r; make distclean; fi \
 	&& /usr/lib/qt5/bin/qmake -r CONFIG+=release "BP_CLIENTID=$BP_CLIENTID" "BP_CLIENTKEY=$BP_CLIENTKEY" "BUILDNUMBER=$BUILDNUMBER" \
-	&& make -j4 \
+	&& make -j$(nproc) \
 	&& make install
 
 RUN git clone https://github.com/OpenZWave/ozw-admin.git \
 	&& cd ozw-admin \
+#	&& git checkout $(git describe --tags) \
 	&& if [ -f Makefile ]; then /usr/lib/qt5/bin/qmake -r; make distclean; fi \
 	&& /usr/lib/qt5/bin/qmake -r CONFIG+=release \
-	&& make -j4 \
+	&& make -j$(nproc) \
 	&& make install
 
 FROM debian:bullseye-slim
@@ -61,7 +62,7 @@ LABEL maintainer="justin@dynam.ac"
 WORKDIR /opt
 
 RUN apt update \
-    	&& apt-get --no-install-recommends -y install libunwind8 libcurl4 binutils libqt5core5a libqt5network5 libqt5websockets5 libqt5remoteobjects5 libqt5svg5 novnc supervisor libqt5xml5 \
+    	&& apt-get --no-install-recommends -y install libunwind8 libcurl4 binutils libqt5core5a libqt5network5 libqt5websockets5 libqt5remoteobjects5 libqt5svg5 novnc supervisor libqt5xml5 libqt5serialport5\
     	&& apt-get -y upgrade \
     	&& strip --remove-section=.note.ABI-tag /usr/lib/*/libQt5Core.so.5 \
     	&& apt-get -y purge binutils \
@@ -100,7 +101,6 @@ ENV BP_DB_PATH="/opt/ozw/config/crashes/"
 ENV VNC_PORT=5901
 ENV WEB_PORT=7800
 ENV QT_ASSUME_STDERR_HAS_CONSOLE=1
-RUN ldconfig -v
 WORKDIR /opt/ozw/
 EXPOSE 1983
 EXPOSE 5901
