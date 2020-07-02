@@ -688,13 +688,12 @@ void mqttpublisher::valueChanged(quint64 vidKey) {
     }
 }
 void mqttpublisher::valueRefreshed(quint64 vidKey) {
-    if (this->m_valueModel->encodeValue(*this->m_values[vidKey], vidKey)) {
-        /* something has changed */
-        QT2JS::SetString(*this->m_values[vidKey], "Event", "valueRefreshed");
-        if (this->sendValueUpdate(vidKey))
-            qCDebug(ozwmp) << "Publishing Event valueRefreshed:" << vidKey;
+    /* For Refresh - We still send a updated MQTT Message */
+    this->m_valueModel->encodeValue(*this->m_values[vidKey], vidKey);
 
-    }
+    QT2JS::SetString(*this->m_values[vidKey], "Event", "valueRefreshed");
+    if (this->sendValueUpdate(vidKey))
+        qCDebug(ozwmp) << "Publishing Event valueRefreshed:" << vidKey;
 }
 void mqttpublisher::nodeNew(quint8 node) {
     if (this->m_nodes.find(node) == this->m_nodes.end()) {
