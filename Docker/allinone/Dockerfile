@@ -86,11 +86,11 @@ COPY --from=builder /usr/lib/*/libQt5Mqtt* /usr/local/lib/
 COPY --from=builder /opt/qt-openzwave/tools/* /usr/local/bin/
 COPY --from=builder /usr/share/qt5/qt-openzwavedatabase.rcc /usr/share/OpenZWave/
 
-COPY Docker/startozwdaemon.sh /opt/
 COPY Docker/allinone/supervisord.conf /etc/
 COPY Docker/allinone/novnc/* /opt/novnc/
 COPY Docker/allinone/supervisord-watchdog /opt/
 COPY Docker/allinone/entrypoint.sh /opt/
+COPY Docker/startozwdaemon.sh /opt/
 
 ENV LD_LIBRARY_PATH="/usr/local/lib:/usr/local/lib64:$LD_LIBRARY_PATH"
 ENV USB_PATH="/dev/ttyUSB0"
