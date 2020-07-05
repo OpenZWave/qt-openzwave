@@ -2,6 +2,7 @@
 
 : "${MQTT_PORT:=1883}"
 : "${MQTT_SERVER:=localhost}"
+: "${USB_PATH:=/dev/ttyUSB0}"
 
 OZW_ARGS=()
 if [[ ! -c $USB_PATH ]]; then

@@ -80,10 +80,6 @@ COPY Docker/startozwdaemon.sh /opt/
 
 RUN mkdir -p /opt/ozw/config/crashes/
 ENV LD_LIBRARY_PATH="/usr/local/lib:/usr/local/lib64:$LD_LIBRARY_PATH"
-ENV USB_PATH="/dev/ttyUSB0"
-ENV MQTT_SERVER="localhost"
-ENV MQTT_PORT="1883"
-ENV OZW_INSTANCE="1"
 ENV BP_DB_PATH="/opt/ozw/config/crashes/"
 WORKDIR /opt/ozw/
 EXPOSE 1983
