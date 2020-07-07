@@ -87,16 +87,12 @@ COPY --from=builder /opt/qt-openzwave/tools/* /usr/local/bin/
 COPY --from=builder /usr/share/qt5/qt-openzwavedatabase.rcc /usr/share/OpenZWave/
 
 COPY Docker/allinone/supervisord.conf /etc/
-COPY Docker/allinone/startozwdaemon.sh /opt/
 COPY Docker/allinone/novnc/* /opt/novnc/
 COPY Docker/allinone/supervisord-watchdog /opt/
 COPY Docker/allinone/entrypoint.sh /opt/
+COPY Docker/startozwdaemon.sh /opt/
 
 ENV LD_LIBRARY_PATH="/usr/local/lib:/usr/local/lib64:$LD_LIBRARY_PATH"
-ENV USB_PATH="/dev/ttyUSB0"
-ENV MQTT_SERVER="localhost"
-ENV MQTT_PORT="1883"
-ENV OZW_INSTANCE="1"
 ENV BP_DB_PATH="/opt/ozw/config/crashes/"
 ENV VNC_PORT=5901
 ENV WEB_PORT=7800

@@ -75,15 +75,13 @@ COPY --from=builder /usr/local/lib*/libopenzwave* /usr/local/lib/
 COPY --from=builder /usr/lib/*/libQt5Mqtt* /usr/local/lib/
 COPY --from=builder /opt/qt-openzwave/tools/* /usr/local/bin/
 COPY --from=builder /usr/share/qt5/qt-openzwavedatabase.rcc /usr/share/OpenZWave/
-COPY Docker/startozwdaemon.sh /
+
+COPY Docker/startozwdaemon.sh /opt/
+
 RUN mkdir -p /opt/ozw/config/crashes/
 ENV LD_LIBRARY_PATH="/usr/local/lib:/usr/local/lib64:$LD_LIBRARY_PATH"
-ENV USB_PATH="/dev/ttyUSB0"
-ENV MQTT_SERVER="localhost"
-ENV MQTT_PORT="1883"
-ENV OZW_INSTANCE="1"
 ENV BP_DB_PATH="/opt/ozw/config/crashes/"
 WORKDIR /opt/ozw/
 EXPOSE 1983
 VOLUME ["/opt/ozw/config/"]
-ENTRYPOINT ["/startozwdaemon.sh"]
+ENTRYPOINT ["/opt/startozwdaemon.sh"]

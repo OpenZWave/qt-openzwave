@@ -48,7 +48,7 @@ services:
       MQTT_PASSWORD: "my-password"
       USB_PATH: "/dev/ttyUSB0"
       OZW_NETWORK_KEY: "0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00"
-    restart: unless-stopped 
+    restart: unless-stopped
 ```
 
 The `--security-opt seccomp=unconfined` is needed to generate meaningful backtraces and crashdump files, otherwise it will be difficult for us to debug.
@@ -59,16 +59,18 @@ ozwdaemon will shutdown in certain conditions (errors, unable to connect to the 
 
 The container is configurable via several environment variables.
 
-* MQTT_SERVER - The IP Address of your MQTT Broker
-* MQTT_USERNAME - The Username to connect to your MQTT Broker
-* MQTT_PASSWORD - The Password used to connect ot your MQTT Broker
-* USB_PATH - The Path to the USB Stick/Serial Device file in your container. You should also replace the --device parameter with the correct path to your USB Stick/Serial Device
-* OZW_NETWORK_KEY - The Network Key to secure communications with your devices (that are included Securely) - DO NOT LOSE THIS KEY OTHERWISE YOU WILL HAVE TO REINCLUDE YOUR SECURED DEVICES
-* OZW_INSTANCE - If you want to run more than one Z-Wave Network with multiple ozwdaemons, set this enviroment variable to a number greater than 1 (It affects the base topic that this instance will publish Messages to on your MQTT Broker - OpenZWave/#/...)
-* OZW_CONFIG_DIR - Change the path inside the container that points to the Device Database. You should not need to modify this.
-* OZW_USER_DIR - Change the path where Network Specific Cache/Config Files are stored. You should not need to modify this.
-* STOP_ON_FAILURE - ozwdaemon will exit if it detects any failure, such as inability to connect to the MQTT Server, or open the Z-Wave Controller - Defaults to True.
-* MQTT_TLS - If ozwdaemon should connect with TLS encryption to your MQTT Broker
+* MQTT_SERVER - The IP address or hostname of the MQTT broker. Defaults to `localhost`.
+* MQTT_PORT - The port number of the MQTT broker. Defaults to `1883`.
+* MQTT_USERNAME - The username to use when connecting to the MQTT broker. Do not set for anonymous logins.
+* MQTT_PASSWORD - The password used to connect to the MQTT broker, if needed.
+* MQTT_CONNECT_TIMEOUT - The number of seconds to wait for the MQTT broker to become available before starting ozwdaemon. If a connection cannot be made before the timeout expires the container will exit. Defaults to 30 seconds.
+* USB_PATH - The pathname of the USB stick/serial device file in the container. This value must match the name of the device that was mapped from the host with the Docker `--device` option. Defaults to `/dev/ttyUSB0`.
+* OZW_NETWORK_KEY - The Network Key to secure communications with your devices (that are included Securely) - DO NOT LOSE THIS KEY OTHERWISE YOU WILL HAVE TO REINCLUDE YOUR SECURED DEVICES. Defaults to no network key (secure inclusion not possible).
+* OZW_INSTANCE - Multiple Z-Wave networks can run concurrently by starting an individual container for each network. To distinguish the networks, set this enviroment variable to a unique value for each container instance. This affects the base topic that is published to the MQTT broker - `OpenZWave/<OZW_INSTANCE>/#`. Defaults to `1`.
+* OZW_CONFIG_DIR - Set the path inside the container that points to the Device Database. Most users should not need to modify this. Defaults to `/opt/ozw/config`.
+* OZW_USER_DIR - Change the path where Network Specific Cache/Config Files are stored. Most users should not need to modify this. Defaults to `/opt/ozw/config`.
+* STOP_ON_FAILURE - If true, ozwdaemon will exit when it detects any failure, such as the inability to connect to the MQTT broker, or open the Z-Wave Controller. Valid values are `true` or `false`. Defaults to `true`.
+* MQTT_TLS - If true, ozwdaemon will connect with TLS encryption to the MQTT broker. Valid values are `true` or `false`. Defaults to `false`.
 
 #### Exposed Ports
 
@@ -100,7 +102,7 @@ docker run -it \
     openzwave/ozwdaemon:allinone-latest
 ```
 
-An example using Docker Compose would be this `docker-compose.yaml` file: 
+An example using Docker Compose would be this `docker-compose.yaml` file:
 ``` yaml
 version: '3'
 services:
@@ -123,7 +125,7 @@ services:
       MQTT_PASSWORD: "my-password"
       USB_PATH: "/dev/ttyUSB0"
       OZW_NETWORK_KEY: "0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00"
-    restart: unless-stopped 
+    restart: unless-stopped
 ```
 
 The `--security-opt seccomp=unconfined` is needed to generate meaningful backtraces and crashdump files, otherwise it will be difficult for us to debug.
@@ -134,8 +136,8 @@ The ozwdaemon and ozw-admin processes are managed by a supervisor watchdog. The 
 
 All-In-One image supports all of the same environment variables as the standalone image. In addition, the following settings are available:
 
-* VNC_PORT - The VNC server port number. Provides remote access to the ozw-admin application via VNC. Defaults to 5901.
-* WEB_PORT - The integrated HTTP server port number. Provides a web based VNC client (NoVNC). Defaults to 7800.
+* VNC_PORT - The VNC server port number. Provides remote access to the ozw-admin application via VNC. Defaults to `5901`.
+* WEB_PORT - The integrated HTTP server port number. Provides a web based VNC client (NoVNC). Defaults to `7800`.
 
 #### Exposed Ports
 
@@ -179,7 +181,7 @@ Other Dependancies:
 
 For Actual Build Instructions - Please consult the [docker/Dockerfile](Docker/Dockerfile) - You can ignore the depot_tools (Google Breakpad) as this is used for Crash Reporting that should not be used for non-official builds
 
-For All-In-One Container - Please also consult the ozw-admin repository for the requirements to build ozw-admin. 
+For All-In-One Container - Please also consult the ozw-admin repository for the requirements to build ozw-admin.
 
 ## Home Assistant Integration
 
@@ -187,4 +189,4 @@ ozwdaemon integrates directly with Home Assistant. See the [OpenZWave (Beta)](ht
 
 ## QT Wrapper Interface
 
-Documentation is in progress. See the qt-simpleclient for a basic example. 
+Documentation is in progress. See the qt-simpleclient for a basic example.
