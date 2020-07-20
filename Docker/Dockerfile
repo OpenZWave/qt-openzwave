@@ -4,21 +4,20 @@
 ############################################################
 
 # Set the base image to Alpine
-FROM debian:bullseye-slim as builder
+FROM fishwaldo/ozw-base:5.12.9 as builder
 
 # File Author / Maintainer
 LABEL maintainer="justin@dynam.ac"
+
+ENV LC_ALL C
+ENV DEBIAN_FRONTEND noninteractive
 
 WORKDIR /opt
 
 #RUN echo 'APT::Default-Release "stable";' > /etc/apt/apt.conf.d/99defaultrelease \
 #	&& echo 'deb     http://ftp.debian.org/debian/    unstable main contrib non-free' > /etc/apt/sources.list.d/unstable.list \
 #	&& apt update
-RUN apt update
-RUN apt-get -y install rapidjson-dev git cmake make pkgconf bash python wget joe mc libunwind-dev libcurl4-openssl-dev 
-RUN apt-get -y install g++
-RUN apt-get -y install qt5-default libqt5websockets5-dev qtbase5-private-dev libqt5remoteobjects5-dev libqt5remoteobjects5-bin
-#&& apt-get -y -t unstable install qtbase5-private-dev && apt-get -y -t unstable install libqt5remoteobjects5-dev libqt5remoteobjects5-bin 
+RUN apt update && apt-get -y install rapidjson-dev cmake pkgconf python libunwind-dev libcurl4-openssl-dev libx11-dev libglu1-mesa-dev libexecline-dev
 
 ENV PATH=$PATH:/opt/depot_tools/
 ENV DEPOT_TOOLS_UPDATE=0
@@ -28,60 +27,109 @@ RUN git clone https://chromium.googlesource.com/chromium/tools/depot_tools.git \
 	&& cd breakpad \
 	&& fetch breakpad \
 	&& cd src \
-	&& ./configure --disable-processor \
+	&& ./configure --disable-processor --disable-tools \
 	&& make \
 	&& make install
-RUN git clone https://github.com/qt/qtmqtt.git \
-	&& cd qtmqtt \
-	&& git checkout 5.12 \
-	&& /usr/lib/qt5/bin/qmake QT_BUILD_PARTS="libs tools" CONFIG+=release\
-	&& make \
-	&& make install
+
 RUN git clone https://github.com/OpenZWave/open-zwave.git \
 	&& cd open-zwave \
 	&& make -j4 \
-	&& make install
+	&& make install instlibdir=/usr/local/lib/
+
 COPY . /opt/qt-openzwave/
+
 ARG BP_CLIENTID
 ARG BP_CLIENTKEY
 ARG BUILDNUMBER=0
 RUN cd qt-openzwave \
-	&& if [ -f Makefile ]; then /usr/lib/qt5/bin/qmake -r; make distclean; fi \
-	&& /usr/lib/qt5/bin/qmake -r CONFIG+=release "BP_CLIENTID=$BP_CLIENTID" "BP_CLIENTKEY=$BP_CLIENTKEY" "BUILDNUMBER=$BUILDNUMBER" \
-	&&  make -j4 \
+	&& if [ -f Makefile ]; then qmake -r; make distclean; fi \
+	&& qmake -r CONFIG+=release "BP_CLIENTID=$BP_CLIENTID" "BP_CLIENTKEY=$BP_CLIENTKEY" "BUILDNUMBER=$BUILDNUMBER" \
+	&& make -j4 \
+	&& make install 
+
+RUN git clone https://github.com/OpenZWave/ozw-admin.git \
+	&& cd ozw-admin \
+	&& if [ -f Makefile ]; then qmake -r; make distclean; fi \
+	&& qmake -r CONFIG+=release \
+	&& make -j$(nproc) \
 	&& make install
 
-FROM debian:bullseye-slim
+
+ENV LD_LIBRARY_PATH="/usr/local/lib:$LD_LIBRARY_PATH"
+
+FROM debian:buster-slim as base
+
+ENV LC_ALL C
+ENV DEBIAN_FRONTEND noninteractive
 
 LABEL maintainer="justin@dynam.ac"
 
 WORKDIR /opt
 
-#RUN echo 'APT::Default-Release "stable";' > /etc/apt/apt.conf.d/99defaultrelease \
-#    && echo 'deb http://ftp.debian.org/debian/ unstable main contrib non-free' > /etc/apt/sources.list.d/unstable.list \
+ARG TARGETARCH
+ADD https://github.com/just-containers/s6-overlay/releases/download/v2.0.0.1/s6-overlay-$TARGETARCH.tar.gz /tmp/
+
 RUN apt update \
-    && apt-get -y install libunwind8 libcurl4 binutils \
-    && apt-get -y install libqt5core5a libqt5network5 libqt5websockets5 libqt5remoteobjects5 \
-    && strip --remove-section=.note.ABI-tag /usr/lib/*/libQt5Core.so.5 \
+    && apt-get -y install libunwind8 libcurl4 binutils libglib2.0-0 libicu63 \
     && apt-get -y purge binutils \
     && apt-get -y autoremove \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/* \
-    && mkdir -p /opt/ozw/config/crashes/
+	&& tar xzf /tmp/s6-overlay-*.tar.gz -C /
 
-COPY --from=builder /usr/local/bin/* /usr/local/bin/
-COPY --from=builder /usr/lib/*/libqt-* /usr/local/lib/
-COPY --from=builder /usr/local/lib*/libopenzwave* /usr/local/lib/
-COPY --from=builder /usr/lib/*/libQt5Mqtt* /usr/local/lib/
-COPY --from=builder /opt/qt-openzwave/tools/* /usr/local/bin/
-COPY --from=builder /usr/share/qt5/qt-openzwavedatabase.rcc /usr/share/OpenZWave/
 
-COPY Docker/startozwdaemon.sh /opt/
+COPY --from=builder /usr/local/bin/ozwdaemon /usr/local/bin/s6* /usr/local/bin/
+COPY --from=builder /usr/local/lib/libopenzwave.so.1.6 /usr/local/lib/
+COPY --from=builder /opt/qt/5.12.9/lib/libQt5Core* /opt/qt/5.12.9/lib/libQt5Network* /opt/qt/5.12.9/lib/libQt5Mqtt* /opt/qt/5.12.9/lib/libQt5WebSockets* /opt/qt/5.12.9/lib/libQt5RemoteObjects* /opt/qt/5.12.9/lib/
+COPY --from=builder /opt/qt/5.12.9/lib/libqt-openzwave* /opt/qt/5.12.9/lib/
+COPY --from=builder /opt/qt/5.12.9/qt-openzwavedatabase.rcc /opt/
 
-RUN mkdir -p /opt/ozw/config/crashes/
-ENV LD_LIBRARY_PATH="/usr/local/lib:/usr/local/lib64:$LD_LIBRARY_PATH"
+COPY Docker/base/ /
+
+RUN ldconfig -v
+
 ENV BP_DB_PATH="/opt/ozw/config/crashes/"
 WORKDIR /opt/ozw/
 EXPOSE 1983
 VOLUME ["/opt/ozw/config/"]
-ENTRYPOINT ["/opt/startozwdaemon.sh"]
+ENTRYPOINT ["/init"]
+
+FROM base as allinone
+
+ENV LC_ALL C
+ENV DEBIAN_FRONTEND noninteractive
+
+ADD https://github.com/novnc/websockify/archive/v0.9.0.tar.gz /opt/source/
+ADD https://github.com/novnc/noVNC/archive/v1.2.0.tar.gz /opt/source/
+
+RUN apt update \
+    && apt-get -y install libgl1 libpng16-16 libharfbuzz0b libfontconfig1 libmtdev1 libinput10 libxkbcommon0 libdbus-1-3 python3-setuptools \
+    && apt-get -y autoremove \
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/* \
+	&& cd /opt/source/ \
+	&& tar -xzvf v0.9.0.tar.gz \
+	&& cd websockify-0.9.0 \
+	&& python3 setup.py install \
+	&& cd /opt/source/ \
+	&& tar -xzvf v1.2.0.tar.gz \
+	&& cp -R /opt/source/noVNC-1.2.0/ /opt/novnc/
+
+COPY --from=builder /usr/local/bin/ozwadmin /usr/local/bin/
+COPY --from=builder /opt/qt/5.12.9/lib/libQt5Svg* /opt/qt/5.12.9/lib/libQt5Widgets* /opt/qt/5.12.9/lib/libQt5Gui* /opt/qt/5.12.9/lib/libQt5Xml* /opt/qt/5.12.9/lib/libQt5SerialPort* /opt/qt/5.12.9/lib/libQt5DBus* /opt/qt/5.12.9/lib/
+COPY --from=builder /opt/qt/5.12.9/plugins /opt/qt/5.12.9/plugins
+COPY --from=builder /opt/qt/5.12.9/resources /opt/qt/5.12.9/resources
+COPY --from=builder /opt/qt/5.12.9/libexec /opt/qt/5.12.9/libexec
+COPY Docker/allinone/ /
+
+ENV BP_DB_PATH="/opt/ozw/config/crashes/"
+ENV VNC_PORT=5901
+ENV WEB_PORT=7800
+ENV QT_ASSUME_STDERR_HAS_CONSOLE=1
+WORKDIR /opt/ozw/
+EXPOSE 1983
+EXPOSE 5901
+EXPOSE 7800
+VOLUME ["/opt/ozw/config/"]
+
+ENTRYPOINT ["/init"]

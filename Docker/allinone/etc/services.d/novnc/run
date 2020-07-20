@@ -1,0 +1,3 @@
+#!/usr/bin/with-contenv bash 
+echo "/usr/local/bin/websockify --web /opt/novnc/ $WEB_PORT 127.0.0.1:$VNC_PORT"
+exec /usr/local/bin/websockify --web /opt/novnc/ $WEB_PORT 127.0.0.1:$VNC_PORT

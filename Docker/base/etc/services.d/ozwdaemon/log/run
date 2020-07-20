@@ -1,0 +1,2 @@
+#!/bin/sh
+exec logutil-service /opt/ozw/config/logs/ozwdaemon
