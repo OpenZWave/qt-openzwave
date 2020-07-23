@@ -50,7 +50,13 @@ RUN git clone https://github.com/OpenZWave/open-zwave.git \
 	&& make -j${concurrency} \
 	&& make install instlibdir=/usr/local/lib/
 
-COPY . /opt/qt-openzwave/
+COPY .qmake.conf /opt/qt-openzwave/
+COPY qt-openzwave /opt/qt-openzwave/qt-openzwave
+COPY qt-openzwave.pri /opt/qt-openzwave/
+COPY qt-openzwave.pro /opt/qt-openzwave/
+COPY qt-openzwavedatabase /opt/qt-openzwave/qt-openzwavedatabase
+COPY qt-ozwdaemon /opt/qt-openzwave/qt-ozwdaemon
+COPY qt-openzwave.pro /opt/qt-openzwave/
 
 ARG BP_CLIENTID
 ARG BP_CLIENTKEY
