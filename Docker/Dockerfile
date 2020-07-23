@@ -82,16 +82,16 @@ LABEL maintainer="justin@dynam.ac"
 
 WORKDIR /opt
 
-ARG TARGETARCH
-ADD https://github.com/just-containers/s6-overlay/releases/download/v2.0.0.1/s6-overlay-$TARGETARCH.tar.gz /tmp/
-
 RUN apt update \
-    && apt-get -y install libunwind8 libcurl4 binutils libglib2.0-0 libicu63 \
+    && apt-get -y install libunwind8 libcurl4 binutils libglib2.0-0 libicu63 wget \
     && apt-get -y purge binutils \
     && apt-get -y autoremove \
     && apt-get clean \
-    && rm -rf /var/lib/apt/lists/* \
-	&& tar xzf /tmp/s6-overlay-*.tar.gz -C /
+    && rm -rf /var/lib/apt/lists/* 
+
+RUN case `uname -m` in x86_64) var="amd64";; armhf) var="armhf";; aarch64) var="aarch64";; esac && wget https://github.com/just-containers/s6-overlay/releases/download/v2.0.0.1/s6-overlay-$var.tar.gz -O /tmp/s6-overlay.tar.gz \
+	&& tar xzf /tmp/s6-overlay.tar.gz -C / \
+	&& rm /tmp/s6-overlay.tar.gz
 
 
 COPY --from=builder /usr/local/bin/ozwdaemon /usr/local/bin/s6* /usr/local/bin/
@@ -132,7 +132,9 @@ RUN apt update \
 	&& python3 setup.py install \
 	&& cd /opt/source/ \
 	&& tar -xzvf v1.2.0.tar.gz \
-	&& cp -R /opt/source/noVNC-1.2.0/ /opt/novnc/
+	&& cp -R /opt/source/noVNC-1.2.0/ /opt/novnc/ \
+	&& rm -rf /opt/source/*
+
 
 COPY --from=builder /usr/local/bin/ozwadmin /usr/local/bin/
 COPY --from=builder /opt/qt/${qtversion}/lib/libQt5Svg* /opt/qt/${qtversion}/lib/libQt5Widgets* /opt/qt/${qtversion}/lib/libQt5Gui* /opt/qt/${qtversion}/lib/libQt5Xml* /opt/qt/${qtversion}/lib/libQt5SerialPort* /opt/qt/${qtversion}/lib/libQt5DBus* /opt/qt/${qtversion}/lib/
