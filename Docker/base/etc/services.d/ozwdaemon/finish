@@ -1,0 +1,8 @@
+#!/usr/bin/execlineb -S1
+if { fdmove -c 1 2 s6-echo [ozwdaemon]: Exited with Status Code ${1} }
+
+if { s6-test ${1} -ne 0 }
+if { s6-test ${1} -ne 256 }
+
+if { fdmove -c 1 2 s6-echo [ozwdaemon]: Shutting Down Container }
+if { s6-svscanctl -t /var/run/s6/services }

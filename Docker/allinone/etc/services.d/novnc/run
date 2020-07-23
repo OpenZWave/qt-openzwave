@@ -1,4 +1,8 @@
 #!/usr/bin/with-contenv bash 
 
-echo "/usr/local/bin/websockify --web /opt/novnc/ $WEB_PORT 127.0.0.1:$VNC_PORT"
-exec fdmove -c 2 1 /usr/local/bin/websockify --web /opt/novnc/ $WEB_PORT 127.0.0.1:$VNC_PORT
+logConsole() {
+        fdmove -c 1 2 s6-echo "[$(basename `pwd`)]: $1";
+}
+
+logConsole "Executing: /usr/local/bin/websockify --web /opt/novnc/ $WEB_PORT 127.0.0.1:$VNC_PORT"
+exec /bin/fdmove -c 2 1 /usr/local/bin/websockify --web /opt/novnc/ $WEB_PORT 127.0.0.1:$VNC_PORT
