@@ -61,7 +61,6 @@ QVariant QTOZW_Nodes::data(const QModelIndex &index, int role) const {
             qCWarning(nodeModel) << "data: Cant find any Node on Row " << index.row();
             return QVariant();
         }
-        qDebug() << node[static_cast<NodeColumns>(index.column())]; 
         return node[static_cast<NodeColumns>(index.column())];
     }
     return QVariant();

@@ -1,0 +1,8 @@
+#!/usr/bin/with-contenv bash 
+
+logConsole() {
+        fdmove -c 1 2 s6-echo "[$(basename `pwd`)]: $1";
+}
+
+logConsole "/usr/local/bin/ozwadmin -platform vnc:port=$VNC_PORT -c /opt/ozw/config/ -u /opt/ozw/config/"
+exec /bin/fdmove -c 2 1 /usr/local/bin/ozwadmin -platform vnc:size=1024x768:port=$VNC_PORT -c /opt/ozw/config/ -u /opt/ozw/config/

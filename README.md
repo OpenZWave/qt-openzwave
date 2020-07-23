@@ -169,19 +169,26 @@ Please see [docs/MQTT.md](docs/MQTT.md) for complete instructions, including set
 
 The Main Requirements for building this tool is QT 5.12 (LTS) with the QTRemoteObjects Module enabled. Not All Distributions currently ship this version of QT, so manually installing/updated QT on those versions is required.
 
-The Distributions known to meet the minimum requirements are:
-* Debian Bullseye
-* Debain Buster (but with Unstable Branch for QtRemoteObjects enabled)
-* Fedora 30 and above
-* Ubuntu 20.04 and above
+You can use [ozw-base](https://hub.docker.com/repository/docker/fishwaldo/ozw-base) as a stable image based on Buster with a custom build of QT 5.12.x
 
 Other Dependancies:
 * [QtMQTT Module](https://github.com/qt/qtmqtt) - You should clone and checkout the branch that matches your QT version
 * [open-zwave](https://github.com/OpenZWave/open-zwave) - You should clone open-zwave in the same top level as qt-openzwave
 
-For Actual Build Instructions - Please consult the [docker/Dockerfile](Docker/Dockerfile) - You can ignore the depot_tools (Google Breakpad) as this is used for Crash Reporting that should not be used for non-official builds
+For Building On Docker, you must use the enable [Docker BuildKit](https://docs.docker.com/develop/develop-images/build_enhancements/) and the command to build the base image would be:
 
-For All-In-One Container - Please also consult the ozw-admin repository for the requirements to build ozw-admin.
+```
+DOCKER_BUILDKIT=1 docker build . -f Docker/Dockerfile -t test --build-arg distcchosts='<list of distcc hosts>' --target base
+```
+
+or for the AllInOne Image:
+```
+DOCKER_BUILDKIT=1 docker build . -f Docker/Dockerfile -t test --build-arg distcchosts='<list of distcc hosts>' --target allinone
+```
+
+You can omit the --build-arg distcchosts=<..> portion if you do not have distcc configured on your network
+
+For Building stand alone binaries - Please consult the [docker/Dockerfile](Docker/Dockerfile) - You can ignore the depot_tools (Google Breakpad) as this is used for Crash Reporting that should not be used for non-official builds
 
 ## Home Assistant Integration
 

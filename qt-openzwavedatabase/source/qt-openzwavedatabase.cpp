@@ -20,6 +20,18 @@ bool initConfigDatabase(QStringList path) {
             return true;
         }
     }
+#ifdef QT_INSTALL_DATA
+#define xstr(s) str(s)
+#define str(s) #s
+    QString test = xstr(QT_INSTALL_DATA);
+    test.append("/qt-openzwavedatabase.rcc");
+    qCDebug(qtozwdatabase) << "Testing " << QFileInfo(test).absoluteFilePath();
+    if (QResource::registerResource(QFileInfo(test).absoluteFilePath())) {
+        qCInfo(qtozwdatabase) << "Found qt-openzwavedatabase.rcc at " << QFileInfo(test).absoluteFilePath();
+        rccpath = QFileInfo(test).absoluteFilePath();
+        return true;
+    }
+#endif
 #if defined(Q_OS_OSX)
     qCDebug(qtozwdatabase) << "Testng " << QFileInfo(QCoreApplication::applicationDirPath() + "/../Resources/qt-openzwavedatabase.rcc").absoluteFilePath();
     if (QResource::registerResource(QFileInfo(QCoreApplication::applicationDirPath() + "/../Resources/qt-openzwavedatabase.rcc").absoluteFilePath())) {
@@ -60,7 +72,6 @@ bool initConfigDatabase(QStringList path) {
         rccpath = QFileInfo("../../qt-openzwave/qt-openzwavedatabase/qt-openzwavedatabase.rcc").absoluteFilePath();
         return true;
     }
-
 
     for (int i = 0; i < QStandardPaths::standardLocations(QStandardPaths::GenericDataLocation).size(); ++i) {
         QString test = QStandardPaths::standardLocations(QStandardPaths::GenericDataLocation).at(i);

@@ -1,0 +1,5 @@
+#!/bin/sh
+mkdir -p /opt/ozw/config/logs
+chown nobody:nogroup /opt/ozw/config/logs/
+mkdir -p /opt/ozw/config/crashes
+chown nobody:nogroup /opt/ozw/config/crashes
