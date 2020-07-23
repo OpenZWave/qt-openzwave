@@ -13,4 +13,4 @@ jobs:
       with:
         fetch-depth: 1 # shallow clone
     - name: Build Docker Image
-      run: docker build . --file Docker/Dockerfile
+      run: DOCKER_BUILDKIT=1 docker build . --file Docker/Dockerfile
