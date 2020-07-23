@@ -29,7 +29,7 @@ ARG distcchosts=''
 ARG concurrency="12"
 ARG qtversion="5.12.9"
 
-ENV DISTCC_HOSTS="--randomize $distcchosts"
+ENV DISTCC_HOSTS="$distcchosts"
 
 RUN if [ -n "${DISTCC_HOSTS}" ]; then cd /usr/local/bin; ln /usr/bin/distcc gcc;  ln /usr/bin/distcc g++; echo "Using DistCC hosts ${DISTCC_HOSTS}"; fi
 
