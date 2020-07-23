@@ -75,11 +75,10 @@ void backtrace(int sig = 0)
 
 #ifndef HAVE_BP
     qWarning("Exiting....");
-    exit(-1);
+    exit(qtozwdaemon::EXIT_CRASH);
 #endif
 }
 
-void crash() { volatile int* a = (int*)(NULL); *a = 1; }
 
 #ifdef HAVE_BP
 static bool dumpCallback(const google_breakpad::MinidumpDescriptor& descriptor,
@@ -120,8 +119,10 @@ void* context, bool succeeded) {
     return succeeded;
 }
 #endif
-
 #endif /* Q_OS_LINUX */
+
+void crash() { volatile int* a = (int*)(NULL); *a = 1; }
+
 int main(int argc, char *argv[])
 {
 
@@ -130,6 +131,9 @@ int main(int argc, char *argv[])
     QCoreApplication::setApplicationVersion(DEF2STR(APP_VERSION));
     QCoreApplication::setOrganizationName("OpenZWave");
     QCoreApplication::setOrganizationDomain("openzwave.com");
+
+    qSetMessagePattern("[%{time yyyyMMdd h:mm:ss.zzz t}] [%{category}] [%{type}]: %{message} %{if-fatal} Ehhh %{backtrace [depth=10]} %{endif}");
+
 
     QCommandLineParser parser;
     parser.setApplicationDescription("QT OpenZWave Remote Daemon");
@@ -204,7 +208,7 @@ int main(int argc, char *argv[])
         fputs(qPrintable("Serial Port is Required\n"), stderr);
         fputs("\n\n", stderr);
         fputs(qPrintable(parser.helpText()), stderr);
-        QCoreApplication::quit();
+        exit(qtozwdaemon::EXIT_SETUPFAILED);
     }
 
 #if 1
@@ -235,19 +239,19 @@ int main(int argc, char *argv[])
         /* if we dont have a dbPath, Deploy our config files there */
         if (dbPath.isEmpty()) {
 #ifndef Q_OS_WIN
-            qWarning() << "Configuration Database Does Not Exist - Copying Database to Location " << QFileInfo(parser.value(configDir).append("/")).absoluteFilePath();
+            qCWarning(ozwdaemon) << "Configuration Database Does Not Exist - Copying Database to Location " << QFileInfo(parser.value(configDir).append("/")).absoluteFilePath();
             QStringList Locations;
             Locations << ".";
             if (initConfigDatabase(Locations)) {
                 copyConfigDatabase(QFileInfo(parser.value(configDir).append("/")).absoluteFilePath());
             } else {
-                qWarning() << "Cant find qt-openzwavedatabase.rcc";
-                QCoreApplication::exit(-1);
+                qCWarning(ozwdaemon) << "Cant find qt-openzwavedatabase.rcc";
+                exit(qtozwdaemon::EXIT_SETUPFAILED);
             }
             dbPath = QFileInfo(parser.value(configDir).append("/")).absoluteFilePath();
 #else 
-            qWarning() << "Configuration Database Not Found";
-            QCoreApplication::exit(-1);
+            qCWarning(ozwdaemon) << "Configuration Database Not Found";
+            exit(qtozwdaemon::EXIT_SETUPFAILED);
 #endif
         }
     } else {
@@ -269,18 +273,18 @@ int main(int argc, char *argv[])
         if (dbPath.isEmpty()) {
 #ifndef Q_OS_WIN
             dbPath = QFileInfo("./config/").absoluteFilePath();
-            qWarning() << "Configuration Database Does Not Exist - Copying Database to Default Location " << dbPath;
+            qCWarning(ozwdaemon) << "Configuration Database Does Not Exist - Copying Database to Default Location " << dbPath;
             QStringList Locations;
             Locations << ".";
             if (initConfigDatabase(Locations)) {
                 copyConfigDatabase(dbPath);
             } else {
-                qWarning() << "Cant find qt-openzwavedatabase.rcc";
-                QCoreApplication::exit(-1);
+                qCWarning(ozwdaemon) << "Cant find qt-openzwavedatabase.rcc";
+                exit(qtozwdaemon::EXIT_SETUPFAILED);
             }
 #else 
-            qWarning() << "Configuration Database Not Found";
-            QCoreApplication::exit(-1);
+            qCWarning(ozwdaemon) << "Configuration Database Not Found";
+            exit(qtozwdaemon::EXIT_SETUPFAILED);
 #endif
         }
     }
@@ -299,19 +303,19 @@ int main(int argc, char *argv[])
         /* if we dont have a userPath, Deploy our config files there */
         if (userPath.isEmpty()) {
 #ifndef Q_OS_WIN
-            qWarning() << "User Configuration Path Does Not Exist - Copying Config Files to Location " << QFileInfo(parser.value(userDir).append("/")).absoluteFilePath();
+            qCWarning(ozwdaemon) << "User Configuration Path Does Not Exist - Copying Config Files to Location " << QFileInfo(parser.value(userDir).append("/")).absoluteFilePath();
             QStringList Locations;
             Locations << ".";
             if (initConfigDatabase(Locations)) {
                 copyUserDatabase(QFileInfo(parser.value(userDir).append("/")).absoluteFilePath());
             } else {
-                qWarning() << "Cant find qt-openzwavedatabase.rcc";
-                QCoreApplication::exit(-1);
+                qCWarning(ozwdaemon) << "Cant find qt-openzwavedatabase.rcc";
+                exit(qtozwdaemon::EXIT_SETUPFAILED);
             }
             userPath = QFileInfo(parser.value(userDir).append("/")).absoluteFilePath();
 #else 
-            qWarning() << "Configuration Database Not Found";
-            QCoreApplication::exit(-1);
+            qCWarning(ozwdaemon) << "Configuration Database Not Found";
+            exit(qtozwdaemon::EXIT_SETUPFAILED);
 #endif
         }
     } else {
@@ -333,18 +337,18 @@ int main(int argc, char *argv[])
         if (userPath.isEmpty()) {
 #ifndef Q_OS_WIN
             userPath = QFileInfo("./config/").absoluteFilePath();
-            qWarning() << "Configuration Database Does Not Exist - Copying Database to Default Location " << dbPath;
+            qCWarning(ozwdaemon) << "Configuration Database Does Not Exist - Copying Database to Default Location " << dbPath;
             QStringList Locations;
             Locations << ".";
             if (initConfigDatabase(Locations)) {
                 copyUserDatabase(userPath);
             } else {
-                qWarning() << "Cant find qt-openzwavedatabase.rcc";
-                QCoreApplication::exit(-1);
+                qCWarning(ozwdaemon) << "Cant find qt-openzwavedatabase.rcc";
+                exit(qtozwdaemon::EXIT_SETUPFAILED);
             }
 #else 
             qWarning() << "Configuration Database Not Found";
-            QCoreApplication::exit(-1);
+            exit(qtozwdaemon::EXIT_SETUPFAILED);
 #endif
         }
     }
@@ -420,17 +424,23 @@ int main(int argc, char *argv[])
     term.sa_flags |= SA_RESTART;
 
     if (sigaction(SIGTERM, &term, 0))
-       return -2;
+       exit(qtozwdaemon::EXIT_SETUPFAILED);
 #endif
 
     daemon.setSerialPort(parser.value(serialPort));
     daemon.startOZW();
 //    assert(0);
 //    crash();
+
     int ret = a.exec();
     qCInfo(ozwdaemon) << "Shutting Down " << QCoreApplication::applicationName() << " Version: " << QCoreApplication::applicationVersion();
     qCInfo(ozwdaemon) << "OpenZWave Version: " << daemon.getManager()->getVersionAsString();
     qCInfo(ozwdaemon) << "QT-OpenZWave Version: " << daemon.getQTOpenZWave()->getVersion();
     qCInfo(ozwdaemon) << "QT Version: " << qVersion();
+    if (ret != qtozwdaemon::EXIT_NORMAL)
+    {
+        qCInfo(ozwdaemon) << "Exit Reason: " << QMetaEnum::fromType<qtozwdaemon::ExitCodes>().valueToKey(ret);
+        qCInfo(ozwdaemon) << "Please consult log messages for specific error messages if any";
+    }
     return ret;
 }

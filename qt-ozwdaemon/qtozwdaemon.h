@@ -16,6 +16,17 @@ class qtozwdaemon : public QObject
     Q_PROPERTY(QString configPath READ getConfigPath WRITE setConfigPath);
     Q_PROPERTY(QString userPath READ getUserPath WRITE setUserPath);
 public:
+    enum ExitCodes {
+        EXIT_NORMAL = 0,
+        EXIT_NOMQTTPASS = -1,
+        EXIT_ANOTHERINSTANCE = -2,
+        EXIT_MQTTDISCONNECTED = -3,
+        EXIT_OZWFAILED = -4,
+        EXIT_SETUPFAILED = -5,
+        EXIT_CRASH = -6
+    };
+    Q_ENUM(ExitCodes);
+
     explicit qtozwdaemon(QString configPath = QString(), QString userPath = QString(), QObject *parent = nullptr);
     QString getSerialPort() { return this->m_serialPort; }
     void setSerialPort(QString serialPort) { this->m_serialPort = serialPort;}

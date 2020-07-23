@@ -1,0 +1,2 @@
+/opt/ozw/config/logs true nobody 0644 0755
+/opt/ozw/config/crashes true nobody 0644 0755

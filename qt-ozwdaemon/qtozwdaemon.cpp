@@ -123,7 +123,7 @@ void qtozwdaemon::handleSigTerm()
     ::read(sigtermFd[1], &tmp, sizeof(tmp));
     qCInfo(ozwdaemon) << "Recieved SIGTERM: Shutting down ozwdaemon";
     this->m_qtozwmanager->close();
-    QCoreApplication::exit(0);
+    QCoreApplication::exit(qtozwdaemon::EXIT_NORMAL);
     snTerm->setEnabled(true);
 #endif
 }

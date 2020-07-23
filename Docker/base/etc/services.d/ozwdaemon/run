@@ -42,4 +42,4 @@ fi
 set -- ozwdaemon "${OZW_ARGS[@]}" "$@"
 
 echo "Executing:" "$@"
-exec "$@"
+exec "fdmove -c 2 1 $@"

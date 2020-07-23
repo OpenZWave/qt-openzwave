@@ -1,4 +1,4 @@
 #!/usr/bin/with-contenv bash 
 
 echo "/usr/local/bin/ozwadmin -platform vnc:port=$VNC_PORT -c /opt/ozw/config/ -u /opt/ozw/config/"
-exec /usr/local/bin/ozwadmin -platform vnc:size=1024x768:port=$VNC_PORT -c /opt/ozw/config/ -u /opt/ozw/config/
+exec fdmove -c 2 1 /usr/local/bin/ozwadmin -platform vnc:size=1024x768:port=$VNC_PORT -c /opt/ozw/config/ -u /opt/ozw/config/
