@@ -31,8 +31,6 @@ ARG qtversion="5.12.9"
 
 ENV DISTCC_HOSTS="--randomize $distcchosts"
 
-RUN echo $distcchosts
-
 RUN if [ -n "${DISTCC_HOSTS}" ]; then cd /usr/local/bin; ln /usr/bin/distcc gcc;  ln /usr/bin/distcc g++; echo "Using DistCC hosts ${DISTCC_HOSTS}"; fi
 
 ENV PATH=$PATH:/opt/depot_tools/
@@ -100,7 +98,7 @@ COPY --from=builder /usr/local/bin/ozwdaemon /usr/local/bin/s6* /usr/local/bin/
 COPY --from=builder /usr/local/lib/libopenzwave.so.1.6 /usr/local/lib/
 COPY --from=builder /opt/qt/${qtversion}/lib/libQt5Core* /opt/qt/${qtversion}/lib/libQt5Network* /opt/qt/${qtversion}/lib/libQt5Mqtt* /opt/qt/${qtversion}/lib/libQt5WebSockets* /opt/qt/${qtversion}/lib/libQt5RemoteObjects* /opt/qt/${qtversion}/lib/
 COPY --from=builder /opt/qt/${qtversion}/lib/libqt-openzwave* /opt/qt/${qtversion}/lib/
-COPY --from=builder /opt/qt/${qtversion}/qt-openzwavedatabase.rcc /opt/
+COPY --from=builder /opt/qt/${qtversion}/qt-openzwavedatabase.rcc /opt/qt/${qtversion}/
 
 COPY Docker/base/ /
 
