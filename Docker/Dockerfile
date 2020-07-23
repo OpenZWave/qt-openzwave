@@ -89,7 +89,7 @@ RUN apt update \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/* 
 
-RUN case `uname -m` in x86_64) var="amd64";; armhf) var="armhf";; aarch64) var="aarch64";; esac && wget https://github.com/just-containers/s6-overlay/releases/download/v2.0.0.1/s6-overlay-$var.tar.gz -O /tmp/s6-overlay.tar.gz \
+RUN case `uname -m` in x86_64) var="amd64";; armhf) var="armhf";; armv7l) var="armhf";; aarch64) var="aarch64";; esac && wget https://github.com/just-containers/s6-overlay/releases/download/v2.0.0.1/s6-overlay-$var.tar.gz -O /tmp/s6-overlay.tar.gz \
 	&& tar xzf /tmp/s6-overlay.tar.gz -C / \
 	&& rm /tmp/s6-overlay.tar.gz
 
