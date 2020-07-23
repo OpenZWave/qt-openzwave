@@ -122,7 +122,7 @@ ADD https://github.com/novnc/websockify/archive/v0.9.0.tar.gz /opt/source/
 ADD https://github.com/novnc/noVNC/archive/v1.2.0.tar.gz /opt/source/
 
 RUN apt update \
-    && apt-get -y install libgl1 libpng16-16 libharfbuzz0b libfontconfig1 libmtdev1 libinput10 libxkbcommon0 libdbus-1-3 python3-setuptools \
+    && apt-get -y install libgl1 libpng16-16 libharfbuzz0b libfontconfig1 libmtdev1 libinput10 libxkbcommon0 libdbus-1-3 python3-setuptools python3-numpy \
     && apt-get -y autoremove \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/* \
