@@ -13,14 +13,12 @@ then
 	exit -1
 fi
 echo "deb http://deb.debian.org/debian-debug/ buster-debug main" > /etc/apt/sources.list.d/debug.list
-echo "deb http://deb.debian.org/debian-debug/ buster-proposed-updates-debug main" >> /etc/apt/sources.list.d/debug.list
-echo "deb http://deb.debian.org/debian-debug/ testing-debug main" >> /etc/apt/sources.list.d/debug.list
-echo "deb http://deb.debian.org/debian-debug/ unstable-debug main" >> /etc/apt/sources.list.d/debug.list
-echo "deb http://deb.debian.org/debian-debug/ experimental-debug main" >> /etc/apt/sources.list.d/debug.list
 if [ ! -f /usr/local/bin/sentry-cli ]; then
 	apt-get update
-	apt-get install -y curl elfutils
-	apt-get install -y -t unstable libqt5core5a-dbgsym libqt5network5-dbgsym libqt5remoteobjects5-dbgsym
+	apt-get install -y curl elfutils debian-goodies
+	for i in `find-dbgsym-packages $EXECUTABLE`; do
+		apt-get install -y $i
+	done
 	ARCH=`uname -m`
 	if [ "$ARCH" == "aarch64" ]; then
 		echo "Installing sentry-cli for arm64"
