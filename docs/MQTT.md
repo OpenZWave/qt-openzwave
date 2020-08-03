@@ -740,7 +740,7 @@ This is a list of Commands that the MQTT Client will accept and process. As ment
 
 **Params**:
 
-​    None
+​    "doreturnroute" - bool: Specifies whether to heal node return routes.
 
 **Returns**:
 
