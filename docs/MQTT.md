@@ -740,7 +740,7 @@ This is a list of Commands that the MQTT Client will accept and process. As ment
 
 **Params**:
 
-​    None
+​    "doreturnroute" - bool: Update return route of driver.
 
 **Returns**:
 
@@ -770,6 +770,7 @@ See Also:
 **Params**:
 
 ​    "node" - uint8: The Node to execute this command on.
+​    "doreturnroute" - bool: Update return route of driver.
 
 **Returns**:
 
