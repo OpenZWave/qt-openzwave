@@ -377,7 +377,7 @@ Most OZW "Commands" run asynchronously meaning that the results of the command m
 The MQTT Client for OZW will usually report the status of each command it process in at least one stage, although some commands will return the progress of the command:
 
 1) Command Accepted by OZW - This means any parameters required are passed and valid and that the OZW library has accepted the command
-2) For some commands, the subsequent updates are reported via Notifications, which will be reported to the `/OpenZWave/<instance>/event/<command>/` (where command may be a specific command, or in some cases, "ControllerCommand" where the notification may be generic in nature)
+2) For some commands, the subsequent updates are reported via Notifications, which will be reported to the `OpenZWave/<instance>/event/<command>/` (where command may be a specific command, or in some cases, "ControllerCommand" where the notification may be generic in nature)
     
 
 ## Command Status and Feedback
