@@ -2205,7 +2205,12 @@ void QTOZWManager_Internal::pvt_valueModelDataChanged(const QModelIndex &topLeft
             }
             case OpenZWave::ValueID::ValueType_Button:
             {
-                this->m_manager->SetValue(vid, topLeft.data().toBool());
+                if (topLeft.data().toBool()) {
+                    this->m_manager->PressButton(vid);
+                }
+                else {
+                    this->m_manager->ReleaseButton(vid);
+                }
                 return;
             }
             case OpenZWave::ValueID::ValueType_Raw:
