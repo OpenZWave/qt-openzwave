@@ -69,6 +69,7 @@ The container is configurable via several environment variables.
 * OZW_INSTANCE - Multiple Z-Wave networks can run concurrently by starting an individual container for each network. To distinguish the networks, set this enviroment variable to a unique value for each container instance. This affects the base topic that is published to the MQTT broker - `OpenZWave/<OZW_INSTANCE>/#`. Defaults to `1`.
 * OZW_CONFIG_DIR - Set the path inside the container that points to the Device Database. Most users should not need to modify this. Defaults to `/opt/ozw/config`.
 * OZW_USER_DIR - Change the path where Network Specific Cache/Config Files are stored. Most users should not need to modify this. Defaults to `/opt/ozw/config`.
+* OZW_AUTH_KEY - Remote management (ozw-admin) authorization key. 
 * STOP_ON_FAILURE - If true, ozwdaemon will exit when it detects any failure, such as the inability to connect to the MQTT broker, or open the Z-Wave Controller. Valid values are `true` or `false`. Defaults to `true`.
 * MQTT_TLS - If true, ozwdaemon will connect with TLS encryption to the MQTT broker. Valid values are `true` or `false`. Defaults to `false`.
 
