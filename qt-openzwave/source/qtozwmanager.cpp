@@ -69,7 +69,7 @@ bool QTOZWManager::initilizeBase() {
     return true;
 }
 #ifndef Q_OS_WASM
-bool QTOZWManager::initilizeSource(bool enableServer) {
+bool QTOZWManager::initilizeSource(bool enableServer, int serverPort) {
     initilizeBase();
     this->setConnectionType(ConnectionType::Type::Local);
 
@@ -102,7 +102,7 @@ bool QTOZWManager::initilizeSource(bool enableServer) {
         QObject::connect(this->m_webSockServer, &QWebSocketServer::serverError, this, &QTOZWManager::serverError);
         QObject::connect(this->m_webSockServer, &QWebSocketServer::peerVerifyError, this, &QTOZWManager::peerVerifyError);
         QObject::connect(this->m_webSockServer, &QWebSocketServer::sslErrors, this, &QTOZWManager::sslErrors);
-        if (!this->m_webSockServer->listen(QHostAddress::Any, 1983)) {
+        if (!this->m_webSockServer->listen(QHostAddress::Any, serverPort)) {
             qCWarning(manager) << "Couldn't Start WebSocket Server Listening On Socket" << this->m_webSockServer->errorString();
             /* we continue on, just in case */
         } else {
