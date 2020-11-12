@@ -70,6 +70,7 @@ The container is configurable via several environment variables.
 * OZW_CONFIG_DIR - Set the path inside the container that points to the Device Database. Most users should not need to modify this. Defaults to `/opt/ozw/config`.
 * OZW_USER_DIR - Change the path where Network Specific Cache/Config Files are stored. Most users should not need to modify this. Defaults to `/opt/ozw/config`.
 * OZW_AUTH_KEY - Remote management (ozw-admin) authorization key. 
+* OZW_ADMIN_PORT - Remote management (ozw-admin) server port; defaults to 1983. 
 * STOP_ON_FAILURE - If true, ozwdaemon will exit when it detects any failure, such as the inability to connect to the MQTT broker, or open the Z-Wave Controller. Valid values are `true` or `false`. Defaults to `true`.
 * MQTT_TLS - If true, ozwdaemon will connect with TLS encryption to the MQTT broker. Valid values are `true` or `false`. Defaults to `false`.
 

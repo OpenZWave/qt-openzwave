@@ -59,7 +59,8 @@ qtozwdaemon::qtozwdaemon(QString configPath, QString userPath, QObject *parent) 
     }
 
     QString AuthKey = qgetenv("OZW_AUTH_KEY");
-    
+    QString ServerPort = qgetenv("OZW_ADMIN_PORT");
+
     QFile ak_file("/run/secrets/OZW_Auth_Key");
     if (ak_file.open(QIODevice::ReadOnly | QIODevice::Text)) {
         AuthKey = ak_file.readLine().trimmed();
@@ -79,7 +80,7 @@ qtozwdaemon::qtozwdaemon(QString configPath, QString userPath, QObject *parent) 
     connect(this->m_qtozwmanager, &QTOZWManager::readyChanged, this, &qtozwdaemon::QTOZW_Ready);
     connect(this->m_qtozwmanager, &QTOZWManager::nodeQueriesComplete, this, &qtozwdaemon::nodeQueriesComplete);
     
-    this->m_qtozwmanager->initilizeSource(true);
+    this->m_qtozwmanager->initilizeSource(true, ServerPort.isNull() ? 1983 : ServerPort.toInt());
     if (!NetworkKey.isEmpty()) {
         this->m_qtozwmanager->getOptions()->setNetworkKey(NetworkKey);
     }

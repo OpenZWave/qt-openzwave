@@ -82,7 +82,7 @@ public:
     QTOZWManager(QObject *parent = nullptr);
     bool initilizeBase() override;
 #ifndef Q_OS_WASM
-    bool initilizeSource(bool enableServer);
+    bool initilizeSource(bool enableServer, int serverPort);
     bool initilizeSource(QRemoteObjectHost *) override { return false; }
 #endif
     bool initilizeReplica(QUrl remoteaddress);

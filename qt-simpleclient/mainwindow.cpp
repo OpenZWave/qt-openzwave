@@ -72,7 +72,7 @@ void MainWindow::startRemote(QString url) {
 }
 void MainWindow::startLocal(QString serialPort, bool startServer) {
     this->m_serialPort = serialPort;
-    this->m_qtozwmanager->initilizeSource(startServer);
+    this->m_qtozwmanager->initilizeSource(startServer, 1983);
     qDebug() << "startLocal: " << this->m_serialPort;
 }
 
