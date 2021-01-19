@@ -65,11 +65,11 @@ The container is configurable via several environment variables.
 * MQTT_PASSWORD - The password used to connect to the MQTT broker, if needed.
 * MQTT_CONNECT_TIMEOUT - The number of seconds to wait for the MQTT broker to become available before starting ozwdaemon. If a connection cannot be made before the timeout expires the container will exit. Defaults to 30 seconds.
 * USB_PATH - The pathname of the USB stick/serial device file in the container. This value must match the name of the device that was mapped from the host with the Docker `--device` option. Defaults to `/dev/ttyUSB0`.
-* OZW_NETWORK_KEY - The Network Key to secure communications with your devices (that are included Securely) - DO NOT LOSE THIS KEY OTHERWISE YOU WILL HAVE TO REINCLUDE YOUR SECURED DEVICES. Defaults to no network key (secure inclusion not possible).
+* OZW_NETWORK_KEY - The Network Key to secure communications with your devices (that are included Securely) - DO NOT LOSE THIS KEY OTHERWISE YOU WILL HAVE TO REINCLUDE YOUR SECURED DEVICES. Defaults to no network key (secure inclusion not possible). Alternatively, for increased security, a Docker secret named OZW_Network_Key can be supplied instead.
 * OZW_INSTANCE - Multiple Z-Wave networks can run concurrently by starting an individual container for each network. To distinguish the networks, set this enviroment variable to a unique value for each container instance. This affects the base topic that is published to the MQTT broker - `OpenZWave/<OZW_INSTANCE>/#`. Defaults to `1`.
 * OZW_CONFIG_DIR - Set the path inside the container that points to the Device Database. Most users should not need to modify this. Defaults to `/opt/ozw/config`.
 * OZW_USER_DIR - Change the path where Network Specific Cache/Config Files are stored. Most users should not need to modify this. Defaults to `/opt/ozw/config`.
-* OZW_AUTH_KEY - Remote management (ozw-admin) authorization key. 
+* OZW_AUTH_KEY - Remote management (ozw-admin) authorization key. Alternatively, for increased security, a Docker secret named OZW_Auth_Key can be supplied instead.
 * STOP_ON_FAILURE - If true, ozwdaemon will exit when it detects any failure, such as the inability to connect to the MQTT broker, or open the Z-Wave Controller. Valid values are `true` or `false`. Defaults to `true`.
 * MQTT_TLS - If true, ozwdaemon will connect with TLS encryption to the MQTT broker. Valid values are `true` or `false`. Defaults to `false`.
 
