@@ -62,7 +62,7 @@ The container is configurable via several environment variables.
 * MQTT_SERVER - The IP address or hostname of the MQTT broker. Defaults to `localhost`.
 * MQTT_PORT - The port number of the MQTT broker. Defaults to `1883`.
 * MQTT_USERNAME - The username to use when connecting to the MQTT broker. Do not set for anonymous logins.
-* MQTT_PASSWORD - The password used to connect to the MQTT broker, if needed.
+* MQTT_PASSWORD - The password used to connect to the MQTT broker, if needed. Alternatively, for increased esecurity, a Docker secret named MQTT_PASSWORD can be supplied instead.
 * MQTT_CONNECT_TIMEOUT - The number of seconds to wait for the MQTT broker to become available before starting ozwdaemon. If a connection cannot be made before the timeout expires the container will exit. Defaults to 30 seconds.
 * USB_PATH - The pathname of the USB stick/serial device file in the container. This value must match the name of the device that was mapped from the host with the Docker `--device` option. Defaults to `/dev/ttyUSB0`.
 * OZW_NETWORK_KEY - The Network Key to secure communications with your devices (that are included Securely) - DO NOT LOSE THIS KEY OTHERWISE YOU WILL HAVE TO REINCLUDE YOUR SECURED DEVICES. Defaults to no network key (secure inclusion not possible). Alternatively, for increased security, a Docker secret named OZW_Network_Key can be supplied instead.
