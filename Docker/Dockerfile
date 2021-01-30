@@ -160,4 +160,6 @@ EXPOSE 5901
 EXPOSE 7800
 VOLUME ["/opt/ozw/config/"]
 
+HEALTHCHECK CMD /bin/head $USB_PATH
+
 ENTRYPOINT ["/init"]
